@@ -32,6 +32,7 @@ set wildmenu
 
 let g:javascript_plugin_jsdoc = 1
 
+autocmd BufWritePre * :%s/\s\+$//e
 
 " custom mappings
 map , <leader>
@@ -39,3 +40,4 @@ map , <leader>
 " ctrl p to FZF
 map <c-p> :FZF <enter>
 
+map <leader>n :NERDTree <enter>

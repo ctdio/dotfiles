@@ -19,7 +19,7 @@ alias awsgen='~/Documents/scripts/awsgen.sh'
 alias pawsgen='~/Documents/scripts/personal-awsgen.sh'
 
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
-
+alias adb='/Users/charlieduong/Library/Android/sdk/platform-tools/adb'
 set -o ignoreeof
 
 # nvm use default
