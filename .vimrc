@@ -9,8 +9,14 @@ Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
+Plug 'mhinz/vim-signify'
+Plug 'easymotion/vim-easymotion'
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-notes'
+Plug 'mhinz/vim-grepper'
 
 call plug#end()            " required
+
 filetype plugin indent on    " required
 
 set tabstop=4
@@ -26,7 +32,14 @@ colo delek
 syntax on
 
 let g:ctrlp_working_path_mode='r'
-set wildignore+=*/tmp/*,*/node_modules/*,*/dist/*,*/static/*,*.so,*.sw*,*.zip
+set wildignore+=**/tmp
+set wildignore+=**/node_modules
+set wildignore+=**/dist
+set wildignore+=**/static
+set wildignore+=*.so
+set wildignore+=*.sw*
+set wildignore+=*.zip
+
 set wildmode=longest,list,full
 set wildmenu
 
@@ -41,3 +54,9 @@ map , <leader>
 map <c-p> :FZF <enter>
 
 map <leader>n :NERDTree <enter>
+map <leader>a <Plug>(easymotion-s)
+map <leader>s <Plug>(easymotion-s2)
+
+" grepper
+let g:grepper = {}
+let g:grepper.ag = { 'grepperg': 'git grep -nI' }
