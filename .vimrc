@@ -7,21 +7,24 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'sheerun/vim-polyglot'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
 Plug 'mhinz/vim-signify'
 Plug 'easymotion/vim-easymotion'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-notes'
 Plug 'mhinz/vim-grepper'
+Plug 'ahw/vim-pbcopy'
+
+" NOTE: go to where this plugin was installed '~/.vim/plugged/command-t' and
+" run 'make rake'
+Plug 'wincent/command-t'
 
 call plug#end()            " required
 
 filetype plugin indent on    " required
 
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
 set expandtab
 set number
 
@@ -50,8 +53,8 @@ autocmd BufWritePre * :%s/\s\+$//e
 " custom mappings
 map , <leader>
 
-" ctrl p to FZF
-map <c-p> :FZF <enter>
+" ctrl p to CommandT
+map <c-p> :CommandT <enter>
 
 map <leader>n :NERDTree <enter>
 map <leader>a <Plug>(easymotion-s)
@@ -60,3 +63,6 @@ map <leader>s <Plug>(easymotion-s2)
 " grepper
 let g:grepper = {}
 let g:grepper.ag = { 'grepperg': 'git grep -nI' }
+"
+" copy selected text to clipboard
+let g:vim_pbcopy_local_cmd = "pbcopy"
