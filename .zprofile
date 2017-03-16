@@ -2,6 +2,7 @@
 alias cdc='cd ~/Documents/work/purecloud/cobrowse'
 alias cdp='cd ~/Documents/home/projects/private'
 alias cdo='cd ~/Documents/home/projects/open-source'
+alias cdg='cd ~/Documents/home/projects/golang'
 alias killn='killall node'
 
 alias kblm='kb-el-switcher "Mechanical Keyboard"'
