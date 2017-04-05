@@ -27,6 +27,8 @@ alias m='less'
 
 alias weather='./scripts/weather.sh'
 
+alias sleep='osascript -e "tell application \"Finder\" to sleep"'
+
 set -o ignoreeof
 
 # nvm use default
