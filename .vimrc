@@ -14,6 +14,7 @@ Plug 'xolox/vim-misc'
 Plug 'xolox/vim-notes'
 Plug 'mhinz/vim-grepper'
 Plug 'ahw/vim-pbcopy'
+Plug 'scrooloose/nerdcommenter'
 
 " NOTE: go to where this plugin was installed '~/.vim/plugged/command-t' and
 " run 'make rake'
