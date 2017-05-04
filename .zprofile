@@ -25,7 +25,7 @@ alias adb='/usr/local/opt/android-sdk/platform-tools/adb'
 alias mp='markdown-preview'
 alias m='less'
 
-alias weather='./scripts/weather.sh'
+alias weather="~/scripts/weather.sh"
 
 alias sleep='osascript -e "tell application \"Finder\" to sleep"'
 
