@@ -15,6 +15,7 @@ Plug 'xolox/vim-notes'
 Plug 'mhinz/vim-grepper'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
+Plug 'terryma/vim-multiple-cursors'
 
 " NOTE: go to where this plugin was installed '~/.vim/plugged/command-t' and
 " run 'make rake'
@@ -65,7 +66,10 @@ map <leader>s <Plug>(easymotion-s2)
 
 " grepper
 let g:grepper = {}
-let g:grepper.ag = { 'grepperg': 'git grep -nI' }
+
+" NOTE: remember to install ag
+let g:grepper.ag = { 'grepprg': 'ag --vimgrep' }
+
 "
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = "pbcopy"
