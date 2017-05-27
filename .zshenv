@@ -4,9 +4,9 @@ export NVM_DIR="/Users/charlieduong/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 export GOPATH=/Users/charlieduong/Documents/home/projects/golang
+export CARGOPATH=~/.cargo
 export ENVIRONMENT=dev
 export PC_PLATFORM_PROPERTY_FILE=~/purecloud/service.properties
-
 
 export ANDROID_HOME=/usr/local/opt/android-sdk
 
@@ -28,4 +28,5 @@ export FZF_DEFAULT_COMMAND='
 
 PATH=/Users/charlieduong/.nvm/versions/node/v6.9.1/bin:$PATH
 PATH=$GOPATH/bin:$PATH
+PATH=$CARGOPATH/.bin:$PATH
 export PATH
