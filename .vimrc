@@ -12,6 +12,8 @@ Plug 'mhinz/vim-grepper'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
 Plug 'terryma/vim-multiple-cursors'
+Plug 'joshdick/onedark.vim'
+Plug 'vim-airline/vim-airline'
 
 " NOTE: go to where this plugin was installed '~/.vim/plugged/command-t' and
 " run 'make rake'
@@ -33,8 +35,11 @@ set number
 set nocompatible
 
 filetype off
-colo delek
+colo onedark
 syntax on
+
+set cursorline
+
 set backspace=indent,eol,start
 
 let g:ctrlp_working_path_mode='r'

@@ -1,4 +1,5 @@
 # aliases
+alias cdw='cd ~/Documents/home/projects/open-source/windbreaker-io'
 alias cdc='cd ~/Documents/work/purecloud/cobrowse'
 alias cdp='cd ~/Documents/home/projects/private'
 alias cdo='cd ~/Documents/home/projects/open-source'
