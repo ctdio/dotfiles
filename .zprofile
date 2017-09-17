@@ -30,6 +30,8 @@ alias weather="~/scripts/weather.sh"
 
 alias sleep='osascript -e "tell application \"Finder\" to sleep"'
 
+alias loadnvm='source ~/.nvm/nvm.sh'
+
 set -o ignoreeof
 
 # nvm use default

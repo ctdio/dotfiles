@@ -1,8 +1,5 @@
 # zsh exports
 
-export NVM_DIR="/Users/charlieduong/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
 export GOPATH=/Users/charlieduong/Documents/home/projects/golang
 export CARGOPATH=~/.cargo
 export ENVIRONMENT=dev
