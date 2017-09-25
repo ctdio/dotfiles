@@ -32,6 +32,9 @@ alias sleep='osascript -e "tell application \"Finder\" to sleep"'
 
 alias loadnvm='source ~/.nvm/nvm.sh'
 
+alias nt='npm test'
+alias ns='npm start'
+
 set -o ignoreeof
 
 # nvm use default
