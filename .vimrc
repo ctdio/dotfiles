@@ -61,6 +61,7 @@ set wildmode=longest,list,full
 set wildmenu
 
 let NERDTreeRespectWildIgnore = 1
+let NERDTreeShowHidden = 1
 let g:javascript_plugin_jsdoc = 1
 
 autocmd BufWritePre * :%s/\s\+$//e
