@@ -37,6 +37,8 @@ alias loadnvm='source ~/.nvm/nvm.sh'
 alias nt='npm test'
 alias ns='npm start'
 
+alias notes='pushd ~/Documents/notes; vim; popd'
+
 set -o ignoreeof
 
 # nvm use default
