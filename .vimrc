@@ -13,8 +13,9 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 
-" NOTE: go to where this plugin was installed '~/.vim/plugged/command-t' and
-" run 'make rake'
+" NOTE: go to where this plugin was installed
+" '~/.vim/plugged/command-t/ruby/command-t/ext/command-t' and
+" run 'ruby extconf.rb && make'
 Plug 'wincent/command-t'
 
 call plug#end()
