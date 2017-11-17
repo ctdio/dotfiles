@@ -50,6 +50,7 @@ set backspace=indent,eol,start
 let g:ctrlp_working_path_mode='r'
 set wildignore+=*/tmp
 set wildignore+=*/node_modules
+set wildignore+=*/elm-stuff
 set wildignore+=*/dist
 set wildignore+=*/static
 set wildignore+=*.so
