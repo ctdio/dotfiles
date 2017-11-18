@@ -12,6 +12,7 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
+Plug 'junegunn/goyo.vim'
 
 " NOTE: go to where this plugin was installed
 " '~/.vim/plugged/command-t/ruby/command-t/ext/command-t' and
@@ -30,6 +31,7 @@ set softtabstop=2
 set shiftwidth=2
 set expandtab
 set number
+set linebreak
 
 set nocompatible
 
@@ -63,6 +65,7 @@ set wildmenu
 let NERDTreeRespectWildIgnore = 1
 let NERDTreeShowHidden = 1
 let g:javascript_plugin_jsdoc = 1
+let g:javascript_plugin_flow = 1
 
 autocmd BufWritePre * :%s/\s\+$//e
 
