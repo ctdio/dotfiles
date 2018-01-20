@@ -39,13 +39,15 @@ filetype off
 
 if (has("autocmd") && !has("gui_running"))
   let s:white = { "gui": "#ABB2BF", "cterm": "145", "cterm16" : "7" }
-  autocmd ColorScheme * call onedark#set_highlight("Normal", { "fg": s:white }) " No `bg` setting
+  " No `bg` setting
+  autocmd ColorScheme * call onedark#set_highlight("Normal", { "fg": s:white })
 end
 
 colo onedark
 syntax on
 
 set cursorline
+set colorcolumn=80
 
 set backspace=indent,eol,start
 
