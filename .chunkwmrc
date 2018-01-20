@@ -1,4 +1,4 @@
-chunkc core::plugin_dir ~/.chunkwm_plugins
+chunkc core::plugin_dir /usr/local/opt/chunkwm/share/chunkwm/plugins
 
 chunkc core::load border.so
 chunkc core::load tiling.so
