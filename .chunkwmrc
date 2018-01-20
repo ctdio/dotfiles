@@ -1,5 +1,7 @@
 chunkc core::plugin_dir /usr/local/opt/chunkwm/share/chunkwm/plugins
 
+chunkc set focused_border_color 0xff0f6288
+
 chunkc core::load border.so
 chunkc core::load tiling.so
 chunkc core::load ffm.so
