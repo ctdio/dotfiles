@@ -1,3 +1,9 @@
+# helper functions
+
+lastPassCopy () {
+  lpass show --password ${1} | pbcopy
+}
+
 # aliases
 alias cdw='cd ~/Documents/home/projects/open-source/windbreaker-io'
 alias cdp='cd ~/Documents/home/projects/private'
@@ -42,3 +48,11 @@ alias notes='pushd ~/Documents/notes; vim; popd'
 set -o ignoreeof
 
 # nvm use default
+
+export PATH="$HOME/.cargo/bin:$PATH"
+
+alias okta='lpass show --password okta.com | ~/Documents/work/okta.sh'
+alias lpcp='lastPassCopy'
+
+alias lodash='lifeomic-deployment-dashboard'
+alias lodiff='lifeomic-deployment-diff lifeomic-dev lifeomic-prod'

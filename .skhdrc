@@ -1,0 +1,31 @@
+cmd - return : open -na /Applications/Alacritty.app
+
+# enter fullscreen mode for the focused container
+alt - f : chunkc tiling::window --toggle fullscreen
+
+# change focus between tiling / floating windows
+shift + alt - space : chunkc tiling::window --toggle float
+
+# change layout of desktop
+alt - e : chunkc tiling::desktop --layout bsp
+alt - s : chunkc tiling::desktop --layout monocle
+
+# change split ratio
+alt - 3 : chunkc set bsp_split_ratio 0.35
+alt - 5 : chunkc set bsp_split_ratio 0.5
+
+# change focus
+alt - h : chunkc tiling::window --focus west
+alt - j : chunkc tiling::window --focus south
+alt - k : chunkc tiling::window --focus north
+alt - l : chunkc tiling::window --focus east
+alt - p : chunkc tiling::window --focus prev
+alt - n : chunkc tiling::window --focus next
+
+# swap windows
+alt + shift - h : chunkc tiling::window --warp west
+alt + shift - j : chunkc tiling::window --warp south
+alt + shift - k : chunkc tiling::window --warp north
+alt + shift - l : chunkc tiling::window --warp east
+alt + shift - p : chunkc tiling::window --warp prev
+alt + shift - n : chunkc tiling::window --warp next

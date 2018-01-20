@@ -1,0 +1,5 @@
+chunkc core::plugin_dir ~/.chunkwm_plugins
+
+chunkc core::load border.so
+chunkc core::load tiling.so
+chunkc core::load ffm.so
