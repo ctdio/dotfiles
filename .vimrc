@@ -14,6 +14,9 @@ Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
 
+Plug 'charlieduong94/typescript-vim',  { 'branch': 'syntax-improvements' }
+" Plug 'quramy/tsuquyomi'
+
 " NOTE: go to where this plugin was installed
 " '~/.vim/plugged/command-t/ruby/command-t/ext/command-t' and
 " run 'ruby extconf.rb && make'
@@ -35,12 +38,10 @@ set linebreak
 
 set nocompatible
 
-filetype off
-
-if (has("autocmd") && !has("gui_running"))
-  let s:white = { "gui": "#ABB2BF", "cterm": "145", "cterm16" : "7" }
+if (has('autocmd') && !has('gui_running'))
+  let s:white = { 'gui': '#ABB2BF', 'cterm': '145', 'cterm16' : '7' }
   " No `bg` setting
-  autocmd ColorScheme * call onedark#set_highlight("Normal", { "fg": s:white })
+  autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
 end
 
 colo onedark
@@ -69,6 +70,9 @@ let NERDTreeShowHidden = 1
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_flow = 1
 
+" favor custom typescript syntax file over polyglot
+let g:polyglot_disabled = [ 'typescript' ]
+
 autocmd BufWritePre * :%s/\s\+$//e
 
 " custom mappings
@@ -85,8 +89,8 @@ map <leader>s <Plug>(easymotion-s2)
 " grepper
 let g:grepper = {}
 let g:grepper.ag = { 'grepperg': 'ag --vimgrep' }
-"
+
 " copy selected text to clipboard
-let g:vim_pbcopy_local_cmd = "pbcopy"
+let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 set clipboard=unnamed
