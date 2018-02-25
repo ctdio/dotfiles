@@ -30,4 +30,8 @@ for filename in $(ls -A); do
   fi
 done
 
+# install vim plugins
+echo "Installing vim plugins..."
+vim +PlugInstall +PlugUpdate +qall
+
 echo "Install complete!"
