@@ -19,6 +19,8 @@ alias kbld='kb-el-switcher "Default profile"'
 
 # when 3 finger swipe is broken
 alias wtf='killall -kill Dock'
+# when chunkwm acts up
+alias ffs='brew services restart chunkwm'
 
 alias rmswp='find . -name "*.sw*" -ok rm {} +'
 
