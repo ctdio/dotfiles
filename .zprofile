@@ -38,12 +38,12 @@ alias m='less'
 
 alias weather="~/scripts/weather.sh"
 
-alias sleep='osascript -e "tell application \"Finder\" to sleep"'
-
 alias loadnvm='source ~/.nvm/nvm.sh'
 
-alias nt='npm test'
 alias ns='npm start'
+alias nt='npm test'
+alias ys='yarn start'
+alias yt='yarn test'
 
 alias notes='pushd ~/Documents/notes; vim; popd'
 
