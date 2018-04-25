@@ -13,6 +13,7 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
+Plug 'quramy/tsuquyomi'
 
 Plug 'charlieduong94/typescript-vim',  { 'branch': 'syntax-improvements' }
 " Plug 'quramy/tsuquyomi'
@@ -67,6 +68,7 @@ set wildmenu
 
 let NERDTreeRespectWildIgnore = 1
 let NERDTreeShowHidden = 1
+
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_flow = 1
 
