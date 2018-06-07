@@ -1,7 +1,12 @@
 # helper functions
 
-lastPassCopy () {
+function lastPassCopy () {
   lpass show --password ${1} | pbcopy
+}
+
+# usage: replace <search term> <replacement> <files/dirs>
+function replace () {
+  grep -rl ${1} ${@:3} | xargs sed -i '' "s/${1}/${2}/g"
 }
 
 # aliases
