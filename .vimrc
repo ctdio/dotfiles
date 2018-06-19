@@ -96,3 +96,6 @@ let g:grepper.ag = { 'grepperg': 'ag --vimgrep' }
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 set clipboard=unnamed
+
+" Enable zsh shell
+set shell=zsh\ -l

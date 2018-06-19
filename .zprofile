@@ -63,3 +63,11 @@ alias lpcp='lastPassCopy'
 
 alias lodash='lifeomic-deployment-dashboard'
 alias lodiff='lifeomic-deployment-diff lifeomic-dev lifeomic-prod'
+
+alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
+  --format='%(HEAD) \
+  %(color:yellow)%(refname:short)%(color:reset) - \
+  %(color:red)%(objectname:short)%(color:reset) - \
+  %(contents:subject) - \
+  %(authorname) \
+  (%(color:green)%(committerdate:relative)%(color:reset))'"
