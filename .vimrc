@@ -14,6 +14,7 @@ Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
 Plug 'quramy/tsuquyomi'
+Plug 'jparise/vim-graphql'
 
 Plug 'charlieduong94/typescript-vim',  { 'branch': 'syntax-improvements' }
 " Plug 'quramy/tsuquyomi'
