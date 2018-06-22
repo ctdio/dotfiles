@@ -10,12 +10,12 @@ function replace () {
 }
 
 # aliases
-alias cdw='cd ~/Documents/home/projects/open-source/windbreaker-io'
-alias cdp='cd ~/Documents/home/projects/private'
-alias cdo='cd ~/Documents/home/projects/open-source'
-alias cdg='cd ~/Documents/home/projects/golang'
+alias cdw='cd ~/home/projects/open-source/windbreaker-io'
+alias cdp='cd ~/home/projects/private'
+alias cdo='cd ~/home/projects/open-source'
+alias cdg='cd ~/home/projects/golang'
 
-alias cdl='cd ~/Documents/work/lifeomic'
+alias cdl='cd ~/work/lifeomic'
 
 alias killn='killall node'
 
@@ -29,12 +29,12 @@ alias ffs='brew services restart chunkwm'
 
 alias rmswp='find . -name "*.sw*" -ok rm {} +'
 
-alias chromedriver='~/Documents/chromedriver'
+alias chromedriver='~/chromedriver'
 
-alias imgcat='~/Documents/scripts/imgcat.sh'
+alias imgcat='~/scripts/imgcat.sh'
 
-alias awsgen='~/Documents/scripts/awsgen.sh'
-alias pawsgen='~/Documents/scripts/personal-awsgen.sh'
+alias awsgen='~/scripts/awsgen.sh'
+alias pawsgen='~/scripts/personal-awsgen.sh'
 
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
 alias adb='/usr/local/opt/android-sdk/platform-tools/adb'
@@ -50,7 +50,7 @@ alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
 
-alias notes='pushd ~/Documents/notes; vim; popd'
+alias notes='pushd ~/notes; vim; popd'
 
 set -o ignoreeof
 
@@ -58,7 +58,7 @@ set -o ignoreeof
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
-alias okta='lpass show --password okta.com | ~/Documents/work/okta.sh'
+alias okta='lpass show --password okta.com | ~/work/okta.sh'
 alias lpcp='lastPassCopy'
 
 alias lodash='lifeomic-deployment-dashboard'

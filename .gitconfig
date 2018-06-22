@@ -3,3 +3,5 @@
   email = charlieduong94@gmail.com
 [push]
   default = current
+[includeIf "gitdir:~/work/"]
+  path = ~/work/.gitconfig
