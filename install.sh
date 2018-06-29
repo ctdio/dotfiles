@@ -5,17 +5,21 @@ echo "Installing..."
 DOTFILES_DIR="$(cd $(dirname "$BASH_SOURCE[0]") && pwd)"
 
 echo "Installing various tools..."
-brew tap crisidev/homebrew-chunkwm
 
-brew install \
-  zsh \
-  tmux \
-  koekeishiya/formulae/skhd
 
-brew install --HEAD chunkwm
+if [[ "$(uname)" != 'Darwin' ]]; then
+  brew tap crisidev/homebrew-chunkwm
 
-brew services start skhd
-brew services start chunkwm
+  brew install \
+    zsh \
+    tmux \
+    koekeishiya/formulae/skhd
+
+  brew install --HEAD chunkwm
+
+  brew services start skhd
+  brew services start chunkwm
+fi
 
 echo "Fetching antigen..."
 curl -L git.io/antigen > antigen.zsh
