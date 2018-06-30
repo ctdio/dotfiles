@@ -23,7 +23,7 @@ function installMacPrograms () {
 }
 
 function installLinuxPrograms () {
-  echo "Installing curl, zsh, tmux, yarn and neovim..."
+  echo "Installing curl, zsh, tmux, yarn, ruby, and neovim..."
 
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
@@ -35,6 +35,8 @@ function installLinuxPrograms () {
     zsh \
     tmux \
     yarn \
+    ruby \
+    ruby-dev \
     neovim
 
   sudo apt upgrade
