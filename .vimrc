@@ -46,13 +46,18 @@ set linebreak
 
 set nocompatible
 
-if (has('autocmd') && !has('gui_running'))
-  let s:white = { 'gui': '#ABB2BF', 'cterm': '145', 'cterm16' : '7' }
-  " No `bg` setting
-  autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
+if (exists('g:gui_oni'))
+  let g:loaded_airline = 1
+else
+  if (has('autocmd') && !has('gui_running'))
+    let s:white = { 'gui': '#ABB2BF', 'cterm': '145', 'cterm16' : '7' }
+    " No `bg` setting
+    autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
+  end
+
+  colo onedark
 end
 
-colo onedark
 syntax on
 
 set cursorline

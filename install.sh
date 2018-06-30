@@ -1,13 +1,8 @@
 #!/bin/bash
 
-echo "Installing..."
-
 DOTFILES_DIR="$(cd $(dirname "$BASH_SOURCE[0]") && pwd)"
 
-echo "Installing various tools..."
-
-
-if [[ "$(uname)" != 'Darwin' ]]; then
+function installMacPrograms() {
   brew tap crisidev/homebrew-chunkwm
 
   brew install \
@@ -17,25 +12,40 @@ if [[ "$(uname)" != 'Darwin' ]]; then
 
   brew install --HEAD chunkwm
 
+  brew upgrade
+
   brew services start skhd
   brew services start chunkwm
-fi
+}
 
-echo "Fetching antigen..."
-curl -L git.io/antigen > antigen.zsh
+function main () {
+  echo "Installing..."
 
-echo "Linking dotfiles..."
-# iterate through all files
-# and symlink them to home
-for filename in $(ls -A); do
-  if [ ${filename} != ".git" ]; then
-    echo "Linking ${filename} to ~/${filename}"
-    ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}
+  echo "Installing various tools..."
+
+  if [[ "$(uname)" == 'Darwin' ]]; then
+    echo "MacOS detected, installing Mac programs"
+    installMacPrograms
   fi
-done
 
-# install vim plugins
-echo "Installing vim plugins..."
-vim +PlugInstall +PlugUpdate +qall
+  echo "Fetching antigen..."
+  curl -L git.io/antigen > antigen.zsh
 
-echo "Install complete!"
+  echo "Linking dotfiles..."
+  # iterate through all files
+  # and symlink them to home
+  for filename in $(ls -A); do
+    if [ ${filename} != ".git" ]; then
+      echo "Linking ${filename} to ~/${filename}"
+      ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}
+    fi
+  done
+
+  # install vim plugins
+  echo "Installing vim plugins..."
+  vim +PlugInstall +PlugUpdate +qall
+
+  echo "Install complete!"
+}
+
+main
