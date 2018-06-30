@@ -1,15 +1,16 @@
 #!/bin/bash
 
-DOTFILES_DIR="$(cd $(dirname "$BASH_SOURCE[0]") && pwd)"
+DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 
 function installMacPrograms () {
-  echo "Installing zsh, tmux, neovim, chunkwm, and skhd..."
+  echo "Installing zsh, tmux, yarn, neovim, chunkwm, and skhd..."
 
   brew tap crisidev/homebrew-chunkwm
 
   brew install \
     zsh \
     tmux \
+    yarn \
     neovim \
     koekeishiya/formulae/skhd
 
@@ -22,34 +23,49 @@ function installMacPrograms () {
 }
 
 function installLinuxPrograms () {
-  echo "Installing zsh, tmux, and neovim..."
+  echo "Installing curl, zsh, tmux, yarn and neovim..."
 
-  apt update
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
-  apt install -y \
+  sudo apt update
+
+  sudo apt install -y \
+    curl \
     zsh \
     tmux \
+    yarn \
     neovim
 
-  apt upgrade
+  sudo apt upgrade
 }
 
 function main () {
   echo "Installing..."
 
-  local system = "${uname}"
+  local SYSTEM="$(uname)"
 
-  if [[ "$system" == 'Darwin' ]]; then
+  case ${SYSTEM} in
+  'Darwin')
     echo "MacOS detected, installing programs for Mac..."
     installMacPrograms
-  elif [[ "$system" == "Linux" ]]; then
+    ;;
+  'Linux')
     # assume Ubuntu for now
     echo "Linux detected, installing programs for Linux..."
     installLinuxPrograms
-  fi
+    ;;
+  *)
+    echo "${SYSTEM} is not supported"
+  esac
+
 
   echo "Fetching antigen..."
   curl -L git.io/antigen > antigen.zsh
+
+  echo "Installing nvm..."
+  curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+
 
   echo "Installing rustup..."
   curl https://sh.rustup.rs -sSf | sh
@@ -65,9 +81,11 @@ function main () {
   done
 
   echo "Linking oni.config.tsx to ~/.config/oni/config.tsx"
+  mkdir -p ~/.config/oni
   ln -nsf ${DOTFILES_DIR}/oni.config.tsx ~/.config/oni/config.tsx
 
   echo "Linking .vimrc to ~/.config/nvim/init.vim"
+  mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
 
   # install vim plugins
