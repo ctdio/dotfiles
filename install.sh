@@ -91,8 +91,18 @@ function main () {
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
 
   # install vim plugins
+
+  echo "Install vim plugged"
+  # vim
+  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  # neovim
+  curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
   echo "Installing vim plugins..."
   vim +PlugInstall +PlugUpdate +qall
+  nvim +PlugInstall +PlugUpdate +qall
 
   echo "Install complete!"
 }
