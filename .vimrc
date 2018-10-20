@@ -19,16 +19,14 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
+Plug 'tjvr/vim-nearley'
+Plug 'valloric/youcompleteme', { 'do': './install.py' }
+
+Plug 'quramy/vim-js-pretty-template'
+Plug 'herringtondarkholme/yats.vim'
+Plug 'posva/vim-vue'
 Plug 'quramy/tsuquyomi'
-Plug 'jparise/vim-graphql'
-
-Plug 'charlieduong94/typescript-vim',  { 'branch': 'syntax-improvements' }
-" Plug 'quramy/tsuquyomi'
-
-" NOTE: go to where this plugin was installed
-" '~/.vim/plugged/command-t/ruby/command-t/ext/command-t' and
-" run 'ruby extconf.rb && make'
-Plug 'wincent/command-t'
+Plug 'wincent/command-t', { 'do': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}
 
 call plug#end()
 
@@ -46,16 +44,24 @@ set linebreak
 
 set nocompatible
 
+
+if (!exists('g:ycm_semantic_triggers'))
+  let g:ycm_semantic_triggers = {}
+end
+
+let g:ycm_semantic_triggers['typescript'] = ['.']
+
 if (exists('g:gui_oni'))
   let g:loaded_airline = 1
 else
   if (has('autocmd') && !has('gui_running'))
     let s:white = { 'gui': '#ABB2BF', 'cterm': '145', 'cterm16' : '7' }
     " No `bg` setting
-    autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
+    " autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
   end
 
   colo onedark
+  " colo space-vim-dark
 end
 
 syntax on
