@@ -8,9 +8,11 @@ function installMacPrograms () {
   brew tap crisidev/homebrew-chunkwm
 
   brew install \
+    python2 \
     zsh \
     tmux \
     yarn \
+    cmake \
     neovim \
     koekeishiya/formulae/skhd
 

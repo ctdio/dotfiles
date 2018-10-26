@@ -10,10 +10,10 @@ function replace () {
 }
 
 # aliases
-alias cdw='cd ~/home/projects/open-source/windbreaker-io'
-alias cdp='cd ~/home/projects/private'
-alias cdo='cd ~/home/projects/open-source'
-alias cdg='cd ~/home/projects/golang'
+alias cdw='cd ~/projects/open-source/windbreaker-io'
+alias cdp='cd ~/projects/private'
+alias cdo='cd ~/projects/open-source'
+alias cdg='cd ~/projects/golang'
 
 alias cdl='cd ~/work/lifeomic'
 

@@ -26,6 +26,7 @@ Plug 'quramy/vim-js-pretty-template'
 Plug 'herringtondarkholme/yats.vim'
 Plug 'posva/vim-vue'
 Plug 'quramy/tsuquyomi'
+Plug 'shougo/vimproc.vim', {'do' : 'make'}
 Plug 'wincent/command-t', { 'do': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}
 
 call plug#end()
