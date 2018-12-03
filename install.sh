@@ -14,6 +14,7 @@ function installMacPrograms () {
     yarn \
     cmake \
     neovim \
+    bat \
     koekeishiya/formulae/skhd
 
   brew install --HEAD chunkwm

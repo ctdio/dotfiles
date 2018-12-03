@@ -39,7 +39,7 @@ alias pawsgen='~/scripts/personal-awsgen.sh'
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
 alias adb='/usr/local/opt/android-sdk/platform-tools/adb'
 alias mp='markdown-preview'
-alias m='less'
+alias m='bat'
 
 alias weather="~/scripts/weather.sh"
 
