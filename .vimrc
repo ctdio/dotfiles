@@ -22,8 +22,9 @@ Plug 'junegunn/goyo.vim'
 Plug 'tjvr/vim-nearley'
 Plug 'valloric/youcompleteme', { 'do': './install.py' }
 
-Plug 'quramy/vim-js-pretty-template'
-Plug 'herringtondarkholme/yats.vim'
+Plug 'leafgarland/typescript-vim'
+" Plug 'quramy/vim-js-pretty-template'
+" Plug 'herringtondarkholme/yats.vim'
 Plug 'posva/vim-vue'
 Plug 'quramy/tsuquyomi'
 Plug 'shougo/vimproc.vim', {'do' : 'make'}
@@ -45,6 +46,9 @@ set linebreak
 
 set nocompatible
 
+if (!exists('g:ycm_filetype_whitelist'))
+  let g:ycm_filetype_whitelist = {'*': 1}
+end
 
 if (!exists('g:ycm_semantic_triggers'))
   let g:ycm_semantic_triggers = {}
@@ -106,6 +110,8 @@ map <c-a> :Grepper <enter>
 map <leader>n :NERDTree <enter>
 map <leader>a <Plug>(easymotion-s)
 map <leader>s <Plug>(easymotion-s2)
+
+map f <Plug>(easymotion-s2)
 
 " grepper
 let g:grepper = {}
