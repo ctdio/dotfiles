@@ -106,6 +106,7 @@ function main () {
   echo "Installing vim plugins..."
   vim +PlugInstall +PlugUpdate +qall
   nvim +PlugInstall +PlugUpdate +qall
+  nvim -c ":CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker"
 
   echo "Install complete!"
 }

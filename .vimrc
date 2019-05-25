@@ -20,7 +20,10 @@ Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
 Plug 'tjvr/vim-nearley'
-Plug 'valloric/youcompleteme', { 'do': './install.py' }
+" Plug 'valloric/youcompleteme', { 'do': './install.py' }
+Plug 'elixir-editors/vim-elixir'
+
+Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
 
 Plug 'leafgarland/typescript-vim'
 " Plug 'quramy/vim-js-pretty-template'
@@ -68,6 +71,16 @@ else
   colo onedark
   " colo space-vim-dark
 end
+
+" COC config
+set hidden
+set nobackup
+set nowritebackup
+
+set cmdheight=2
+set shortmess+=c
+
+inoremap <silent><expr> <c-space> coc#refresh()
 
 syntax on
 
