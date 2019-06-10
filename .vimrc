@@ -23,7 +23,7 @@ Plug 'tjvr/vim-nearley'
 " Plug 'valloric/youcompleteme', { 'do': './install.py' }
 Plug 'elixir-editors/vim-elixir'
 
-Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
+Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}
 
 Plug 'leafgarland/typescript-vim'
 " Plug 'quramy/vim-js-pretty-template'
@@ -146,3 +146,6 @@ set clipboard=unnamed
 
 " Enable zsh shell
 set shell=zsh\ -l
+
+let g:ruby_host_prog="/home/charlie/.rbenv/versions/2.5.1/bin/neovim-ruby-host"
+

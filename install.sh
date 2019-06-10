@@ -93,6 +93,9 @@ function main () {
   mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
 
+  ln -nsf ${DOTFILES_DIR}/.i3config ~/.config/i3/config
+
+
   # install vim plugins
 
   echo "Install vim plugged"

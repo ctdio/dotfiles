@@ -1,7 +1,7 @@
 # helper functions
 
 function lastPassCopy () {
-  lpass show --password ${1} | pbcopy
+  lpass show --password ${1} | xclip -sel clip
 }
 
 # usage: replace <search term> <replacement> <files/dirs>
@@ -15,6 +15,8 @@ alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
 alias cdg='cd ~/projects/golang'
 
+alias pbcopy='xclip -selection clipboard'
+
 alias cdl='cd ~/work/lifeomic'
 
 alias killn='killall node'
@@ -22,8 +24,6 @@ alias killn='killall node'
 alias kblm='kb-el-switcher "Mechanical Keyboard"'
 alias kbld='kb-el-switcher "Default profile"'
 
-# when 3 finger swipe is broken
-alias wtf='killall -kill Dock'
 # when chunkwm acts up
 alias ffs='brew services restart chunkwm'
 
@@ -52,6 +52,8 @@ alias yt='yarn test'
 
 alias notes='pushd ~/notes; vim; popd'
 
+alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
+
 set -o ignoreeof
 
 # nvm use default
@@ -71,3 +73,20 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   %(contents:subject) - \
   %(authorname) \
   (%(color:green)%(committerdate:relative)%(color:reset))'"
+
+# python
+PATH="$HOME:/home/charlie/.local/lib/python2.7/site-packages:$PATH"
+
+# ruby
+PATH=":$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
+
+# fnm
+export PATH="$HOME/.fnm:$PATH"
+eval "`fnm env --multi`"
+
+# startup
+fnm use 8.10 --quiet
+eval "$(rbenv init -)"
+
+keychain -q id_rsa
+. ~/.keychain/`uname -n`-sh
