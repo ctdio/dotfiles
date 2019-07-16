@@ -34,7 +34,6 @@ alias chromedriver='~/chromedriver'
 alias imgcat='~/scripts/imgcat.sh'
 
 alias awsgen='~/scripts/awsgen.sh'
-alias pawsgen='~/scripts/personal-awsgen.sh'
 
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
 alias adb='/usr/local/opt/android-sdk/platform-tools/adb'
@@ -74,11 +73,22 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   %(authorname) \
   (%(color:green)%(committerdate:relative)%(color:reset))'"
 
+# make fzf respect .gitignore
+export FZF_DEFAULT_COMMAND='rg --files'
+
 # python
 PATH="$HOME:/home/charlie/.local/lib/python2.7/site-packages:$PATH"
 
 # ruby
 PATH=":$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
+
+# terraform
+PATH=":$HOME/terraform:$PATH"
+
+# flutter
+PATH=":$HOME/flutter/bin:$PATH"
+
+ANDROID_HOME=$HOME/android-sdk
 
 # fnm
 export PATH="$HOME/.fnm:$PATH"

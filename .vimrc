@@ -16,7 +16,8 @@ Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
 
-Plug 'mhinz/vim-grepper'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 Plug 'wincent/command-t', { 'do': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}
 
 Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
@@ -98,9 +99,8 @@ autocmd BufWritePre * :%s/\s\+$//e
 " custom mappings
 map , <leader>
 
-" ctrl p to CommandT
-map <c-p> :CommandT <enter>
-map <c-a> :Grepper <enter>
+map <c-p> :FZF <enter>
+map <c-a> :Rg <space>
 
 map <leader>n :Lexplore <enter>
 map <leader>a <Plug>(easymotion-s)

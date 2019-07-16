@@ -40,7 +40,10 @@ function installLinuxPrograms () {
     yarn \
     ruby \
     ruby-dev \
-    neovim
+    neovim \
+    i3wm \
+    i3blocks \
+    ripgrep
 
   sudo apt upgrade
 }
@@ -93,7 +96,11 @@ function main () {
   mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
 
+  mkdir -p ~/.config/i3
   ln -nsf ${DOTFILES_DIR}/.i3config ~/.config/i3/config
+
+  mkdir -p ~/.config/i3blocks
+  ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
 
 
   # install vim plugins
