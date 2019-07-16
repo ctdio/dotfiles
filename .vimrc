@@ -8,30 +8,23 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'editorconfig/editorconfig-vim'
 Plug 'sheerun/vim-polyglot'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'mhinz/vim-signify'
 Plug 'easymotion/vim-easymotion'
-Plug 'mhinz/vim-grepper'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
-Plug 'terryma/vim-multiple-cursors'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/goyo.vim'
-Plug 'tjvr/vim-nearley'
-" Plug 'valloric/youcompleteme', { 'do': './install.py' }
-Plug 'elixir-editors/vim-elixir'
 
-Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}
-
-Plug 'leafgarland/typescript-vim'
-" Plug 'quramy/vim-js-pretty-template'
-" Plug 'herringtondarkholme/yats.vim'
-Plug 'posva/vim-vue'
-Plug 'quramy/tsuquyomi'
-Plug 'shougo/vimproc.vim', {'do' : 'make'}
+Plug 'mhinz/vim-grepper'
 Plug 'wincent/command-t', { 'do': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}
+
+Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
+
+Plug 'tjvr/vim-nearley'
+Plug 'elixir-editors/vim-elixir'
+Plug 'leafgarland/typescript-vim'
+Plug 'posva/vim-vue'
 
 call plug#end()
 
@@ -49,28 +42,7 @@ set linebreak
 
 set nocompatible
 
-if (!exists('g:ycm_filetype_whitelist'))
-  let g:ycm_filetype_whitelist = {'*': 1}
-end
-
-if (!exists('g:ycm_semantic_triggers'))
-  let g:ycm_semantic_triggers = {}
-end
-
-let g:ycm_semantic_triggers['typescript'] = ['.']
-
-if (exists('g:gui_oni'))
-  let g:loaded_airline = 1
-else
-  if (has('autocmd') && !has('gui_running'))
-    let s:white = { 'gui': '#ABB2BF', 'cterm': '145', 'cterm16' : '7' }
-    " No `bg` setting
-    " autocmd ColorScheme * call onedark#set_highlight('Normal', { 'fg': s:white })
-  end
-
-  colo onedark
-  " colo space-vim-dark
-end
+colo onedark
 
 " COC config
 set hidden
@@ -111,8 +83,9 @@ set wildignore+=*.zip
 set wildmode=longest,list,full
 set wildmenu
 
-let NERDTreeRespectWildIgnore = 1
-let NERDTreeShowHidden = 1
+let g:netrw_liststyle = 3
+let g:netrw_banner = 0
+let g:netrw_winsize = 20
 
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_flow = 1
@@ -129,7 +102,7 @@ map , <leader>
 map <c-p> :CommandT <enter>
 map <c-a> :Grepper <enter>
 
-map <leader>n :NERDTree <enter>
+map <leader>n :Lexplore <enter>
 map <leader>a <Plug>(easymotion-s)
 map <leader>s <Plug>(easymotion-s2)
 
@@ -147,5 +120,4 @@ set clipboard=unnamed
 " Enable zsh shell
 set shell=zsh\ -l
 
-let g:ruby_host_prog="/home/charlie/.rbenv/versions/2.5.1/bin/neovim-ruby-host"
-
+let g:ruby_host_prog="/home/charlie/.rbenv/versions/2.6.0/bin/neovim-ruby-host"
