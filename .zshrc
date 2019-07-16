@@ -17,3 +17,9 @@ antigen bundle sindresorhus/pure
 
 # Tell Antigen that you're done.
 antigen apply
+
+# fnm
+export PATH=$HOME/.fnm:$PATH
+eval "`fnm env --multi`"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

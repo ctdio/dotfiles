@@ -36,7 +36,6 @@ alias imgcat='~/scripts/imgcat.sh'
 alias awsgen='~/scripts/awsgen.sh'
 
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
-alias adb='/usr/local/opt/android-sdk/platform-tools/adb'
 alias mp='markdown-preview'
 alias m='bat'
 
@@ -55,10 +54,6 @@ alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
 
 set -o ignoreeof
 
-# nvm use default
-
-export PATH="$HOME/.cargo/bin:$PATH"
-
 alias okta='lpass show --password okta.com | ~/work/okta.sh'
 alias lpcp='lastPassCopy'
 
@@ -72,27 +67,6 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   %(contents:subject) - \
   %(authorname) \
   (%(color:green)%(committerdate:relative)%(color:reset))'"
-
-# make fzf respect .gitignore
-export FZF_DEFAULT_COMMAND='rg --files'
-
-# python
-PATH="$HOME:/home/charlie/.local/lib/python2.7/site-packages:$PATH"
-
-# ruby
-PATH=":$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
-
-# terraform
-PATH=":$HOME/terraform:$PATH"
-
-# flutter
-PATH=":$HOME/flutter/bin:$PATH"
-
-ANDROID_HOME=$HOME/android-sdk
-
-# fnm
-export PATH="$HOME/.fnm:$PATH"
-eval "`fnm env --multi`"
 
 # startup
 fnm use 8.10 --quiet
