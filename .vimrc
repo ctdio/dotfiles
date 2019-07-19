@@ -24,7 +24,6 @@ Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 
 Plug 'tjvr/vim-nearley'
 Plug 'elixir-editors/vim-elixir'
-Plug 'leafgarland/typescript-vim'
 Plug 'posva/vim-vue'
 
 call plug#end()
@@ -52,15 +51,18 @@ set nowritebackup
 
 set cmdheight=2
 set shortmess+=c
+set updatetime=200
 
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+nmap <silent>gd <Plug>(coc-definition)
+nmap <silent>gy <Plug>(coc-type-definition)
+nmap <silent>gi <Plug>(coc-implementation)
+nmap <silent>gr <Plug>(coc-references)
+
+nmap <leader>ad :CocList diagnostics <enter>
 
 nmap <leader>rn <Plug>(coc-rename)
 
-nmap <leader>ac  <Plug>(coc-codeaction)
+nmap <leader>ac <Plug>(coc-codeaction)
 
 inoremap <silent><expr> <c-space> coc#refresh()
 
@@ -71,7 +73,6 @@ set colorcolumn=80
 
 set backspace=indent,eol,start
 
-let g:ctrlp_working_path_mode='r'
 set wildignore+=*/tmp
 set wildignore+=*/node_modules
 set wildignore+=*/elm-stuff
@@ -87,12 +88,13 @@ set wildmenu
 let g:netrw_liststyle = 3
 let g:netrw_banner = 0
 let g:netrw_winsize = 20
+let g:netrw_localrmdir='rm -rf'
+
+set splitbelow
+set splitright
 
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_flow = 1
-
-" favor custom typescript syntax file over polyglot
-let g:polyglot_disabled = [ 'typescript' ]
 
 autocmd BufWritePre * :%s/\s\+$//e
 

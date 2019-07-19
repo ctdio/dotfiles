@@ -1,13 +1,6 @@
-# helper functions
-
-function lastPassCopy () {
-  lpass show --password ${1} | xclip -sel clip
-}
-
-# usage: replace <search term> <replacement> <files/dirs>
-function replace () {
-  grep -rl ${1} ${@:3} | xargs sed -i '' "s/${1}/${2}/g"
-}
+if [[ "${SYSTEM}" -eq 'Linux' ]]; then
+  alias pbcopy='xclip -selection clipboard'
+fi
 
 # aliases
 alias cdw='cd ~/projects/open-source/windbreaker-io'
@@ -15,7 +8,6 @@ alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
 alias cdg='cd ~/projects/golang'
 
-alias pbcopy='xclip -selection clipboard'
 
 alias cdl='cd ~/work/lifeomic'
 
@@ -68,8 +60,25 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   %(authorname) \
   (%(color:green)%(committerdate:relative)%(color:reset))'"
 
+# helper functions
+
+function lastPassCopy () {
+  lpass show --password ${1} | pbcopy
+}
+
+# usage: replace <search term> <replacement> <files/dirs>
+function replace () {
+  grep -rl ${1} ${@:3} | xargs sed -i '' "s/${1}/${2}/g"
+}
+
+function fnvim () {
+  local file_path="$(rg --files | fzf)"
+  nvim ${file_path}
+}
+
+
 # startup
-fnm use 8.10 --quiet
+fnm use 8.12 --quiet
 eval "$(rbenv init -)"
 
 keychain -q id_rsa

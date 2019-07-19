@@ -35,6 +35,8 @@ PATH=":$HOME/flutter/bin:$PATH"
 
 # android platform tools
 PATH=":$HOME/android-sdk/platform-tools:$PATH"
+# android emulator
+PATH=":$HOME/android-sdk/emulator:$PATH"
 
 #go
 PATH="$GOPATH/bin:$PATH"
