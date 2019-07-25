@@ -18,12 +18,10 @@ Plug 'junegunn/goyo.vim'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'wincent/command-t', { 'do': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}
 
 Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 
 Plug 'tjvr/vim-nearley'
-Plug 'elixir-editors/vim-elixir'
 Plug 'posva/vim-vue'
 
 call plug#end()
