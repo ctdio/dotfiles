@@ -24,6 +24,9 @@ Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 Plug 'tjvr/vim-nearley'
 Plug 'posva/vim-vue'
 
+Plug 'scrooloose/nerdtree'
+Plug 'xuyuanp/nerdtree-git-plugin'
+
 call plug#end()
 
 " optimization: only use git for signify
@@ -102,9 +105,10 @@ map , <leader>
 map <c-p> :FZF <enter>
 map <c-a> :Rg <space>
 
-map <leader>n :Lexplore <enter>
+map <leader>n :NERDTreeToggle<CR>
 map <leader>a <Plug>(easymotion-s)
 map <leader>s <Plug>(easymotion-s2)
+
 
 map f <Plug>(easymotion-s2)
 
