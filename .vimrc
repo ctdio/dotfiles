@@ -8,6 +8,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'editorconfig/editorconfig-vim'
 Plug 'sheerun/vim-polyglot'
+Plug 'jparise/vim-graphql'
 Plug 'mhinz/vim-signify'
 Plug 'easymotion/vim-easymotion'
 Plug 'ahw/vim-pbcopy'
@@ -22,7 +23,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 
 Plug 'tjvr/vim-nearley'
-Plug 'posva/vim-vue'
 
 Plug 'scrooloose/nerdtree'
 Plug 'xuyuanp/nerdtree-git-plugin'
