@@ -23,6 +23,8 @@ PATH="$HOME/.cargo/bin:$PATH"
 
 # python
 PATH="$HOME:/home/charlie/.local/lib/python2.7/site-packages:$PATH"
+# pyenv
+PATH="/home/charlie/.pyenv/bin:$PATH"
 
 # ruby
 PATH=":$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
