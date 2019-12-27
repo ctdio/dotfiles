@@ -13,8 +13,10 @@ Plug 'mhinz/vim-signify'
 Plug 'easymotion/vim-easymotion'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
-Plug 'joshdick/onedark.vim'
+" Plug 'joshdick/onedark.vim'
+Plug 'rakr/vim-one'
 Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/goyo.vim'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -25,7 +27,9 @@ Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 Plug 'tjvr/vim-nearley'
 
 Plug 'scrooloose/nerdtree'
-Plug 'xuyuanp/nerdtree-git-plugin'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+
+Plug 'OmniSharp/omnisharp-vim'
 
 call plug#end()
 
@@ -43,7 +47,9 @@ set linebreak
 
 set nocompatible
 
-colo onedark
+" Theming
+colorscheme one
+let g:airline_theme='one'
 
 " COC config
 set hidden
