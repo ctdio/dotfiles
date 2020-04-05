@@ -50,3 +50,10 @@ export PATH
 
 # make fzf respect .gitignore
 export FZF_DEFAULT_COMMAND='rg --files'
+
+# fnm
+export PATH=$HOME/.fnm:$PATH
+eval "`fnm env --multi`"
+fnm use default --quiet
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
