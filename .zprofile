@@ -3,6 +3,8 @@ if [[ "${SYSTEM}" -eq 'Linux' ]]; then
 fi
 
 # aliases
+alias lock='i3lock -n -p default -i ~/Pictures/wallpapers/ipad.png -t'
+
 alias cdw='cd ~/projects/open-source/windbreaker-io'
 alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
@@ -40,7 +42,8 @@ alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
 
-alias notes='pushd ~/notes; vim; popd'
+alias notes='pushd ~/projects/private/notes; vim; popd'
+alias wn='vim ~/projects/private/notes/work/daily.md'
 
 alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
 
@@ -76,6 +79,10 @@ function fnvim () {
   nvim ${file_path}
 }
 
+function lostatus () {
+  lodash --service ${1:-"$(cat project.name)"}
+}
+
 
 # startup
 fnm use 8.12 --quiet
@@ -87,3 +94,5 @@ eval "$(pyenv virtualenv-init -)"
 
 keychain -q id_rsa
 . ~/.keychain/`uname -n`-sh
+
+export PATH="$HOME/.cargo/bin:$PATH"
