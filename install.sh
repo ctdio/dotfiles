@@ -2,54 +2,12 @@
 
 DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 
-function installMacPrograms () {
-  echo "Installing zsh, tmux, yarn, neovim, chunkwm, and skhd..."
-
-  brew tap crisidev/homebrew-chunkwm
-
-  brew install \
-    python2 \
-    zsh \
-    tmux \
-    yarn \
-    cmake \
-    neovim \
-    bat \
-    koekeishiya/formulae/skhd
-
-  brew install --HEAD chunkwm
-
-  brew upgrade
-
-  brew services start skhd
-  brew services start chunkwm
-}
-
-function installLinuxPrograms () {
-  echo "Installing curl, zsh, tmux, yarn, ruby, and neovim..."
-
-  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-
-  sudo apt update
-
-  sudo apt install -y \
-    curl \
-    zsh \
-    tmux \
-    yarn \
-    ruby \
-    ruby-dev \
-    neovim \
-    i3wm \
-    i3blocks \
-    ripgrep
-
-  sudo apt upgrade
-}
-
 function main () {
   echo "Installing..."
+
+  linkDotfiles
+
+  setupAsdf
 
   local SYSTEM="$(uname)"
 
@@ -67,17 +25,15 @@ function main () {
     echo "${SYSTEM} is not supported"
   esac
 
-
   echo "Fetching antigen..."
   curl -L git.io/antigen > antigen.zsh
 
-  echo "Installing nvm..."
-  curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+  setupVim
 
+  echo "Install complete!"
+}
 
-  echo "Installing rustup..."
-  curl https://sh.rustup.rs -sSf | sh
-
+function linkDotfiles () {
   echo "Linking dotfiles..."
   # iterate through all files
   # and symlink them to home
@@ -102,7 +58,53 @@ function main () {
   mkdir -p ~/.config/i3blocks
   ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
 
+}
 
+function installMacPrograms () {
+  brew tap crisidev/homebrew-chunkwm
+
+  brew install \
+    python2 \
+    zsh \
+    tmux \
+    cmake \
+    bat \
+    koekeishiya/formulae/skhd
+
+  brew install --HEAD chunkwm
+
+  brew upgrade
+
+  brew services start skhd
+  brew services start chunkwm
+}
+
+function installLinuxPrograms () {
+  sudo apt update
+
+  sudo apt install -y \
+    curl \
+    zsh \
+    tmux
+    i3wm \
+    i3blocks \
+    ripgrep
+
+  sudo apt upgrade
+}
+
+function setupAsdf () {
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.7.8
+
+  asdf plugin add nodejs
+  asdf plugin add rust
+  asdf plugin add yarn
+  asdf plugin add python
+  asdf plugin add terraform
+  asdf plugin add ruby
+}
+
+function setupVim () {
   # install vim plugins
 
   echo "Install vim plugged"
@@ -116,9 +118,7 @@ function main () {
   echo "Installing vim plugins..."
   vim +PlugInstall +PlugUpdate +qall
   nvim +PlugInstall +PlugUpdate +qall
-  nvim -c ":CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker"
-
-  echo "Install complete!"
+  nvim +CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker +qall
 }
 
 main

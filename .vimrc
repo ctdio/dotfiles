@@ -48,7 +48,7 @@ set linebreak
 set nocompatible
 
 " Theming
-colorscheme one
+" colorscheme one
 let g:airline_theme='one'
 
 " COC config

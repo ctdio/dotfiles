@@ -83,16 +83,5 @@ function lostatus () {
   lodash --service ${1:-"$(cat project.name)"}
 }
 
-
-# startup
-fnm use 8.12 --quiet
-eval "$(rbenv init -)"
-test -s "$HOME/.kiex/scripts/kiex" && source "$HOME/.kiex/scripts/kiex"
-
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
 keychain -q id_rsa
 . ~/.keychain/`uname -n`-sh
-
-export PATH="$HOME/.cargo/bin:$PATH"

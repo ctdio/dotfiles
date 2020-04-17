@@ -1,7 +1,5 @@
 # zsh exports
 
-export GOPATH=/Users/charlieduong/Documents/home/projects/golang
-export CARGOPATH=~/.cargo
 export ENVIRONMENT=dev
 
 export ANDROID_HOME=$HOME/android-sdk
@@ -17,43 +15,7 @@ export LC_ALL="en_US.UTF-8"
 
 export EDITOR=nvim
 
-PATH="$HOME/.fnm:$PATH"
-
-PATH="$HOME/.cargo/bin:$PATH"
-
-# python
-PATH="$HOME:/home/charlie/.local/lib/python2.7/site-packages:$PATH"
-# pyenv
-PATH="/home/charlie/.pyenv/bin:$PATH"
-
-# ruby
-PATH=":$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
-
-# terraform
-PATH=":$HOME/terraform:$PATH"
-
-# flutter
-PATH=":$HOME/flutter/bin:$PATH"
-
-# android platform tools
-PATH=":$HOME/android-sdk/platform-tools:$PATH"
-# android emulator
-PATH=":$HOME/android-sdk/emulator:$PATH"
-
-#go
-PATH="$GOPATH/bin:$PATH"
-
-# rust/cargo
-PATH="$CARGOPATH/.bin:$PATH"
-
 export PATH
 
 # make fzf respect .gitignore
 export FZF_DEFAULT_COMMAND='rg --files'
-
-# fnm
-export PATH=$HOME/.fnm:$PATH
-eval "`fnm env --multi`"
-fnm use default --quiet
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
