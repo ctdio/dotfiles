@@ -1,4 +1,6 @@
-if [[ "${SYSTEM}" -eq 'Linux' ]]; then
+if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
+  alias pbcopy='clip.exe'
+elif [[ "${SYSTEM}" = 'Linux' ]]; then
   alias pbcopy='xclip -selection clipboard'
 fi
 
