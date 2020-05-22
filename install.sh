@@ -48,6 +48,10 @@ function linkDotfiles () {
   mkdir -p ~/.config/oni
   ln -nsf ${DOTFILES_DIR}/oni.config.tsx ~/.config/oni/config.tsx
 
+  echo "Linking alacritty.yml to ~/.config/alacritty/alacritty.yml"
+  mkdir -p ~/.config/alacritty
+  ln -nsf ${DOTFILES_DIR}/alacritty.yml ~/.config/alacritty/alacritty.yml
+
   echo "Linking .vimrc to ~/.config/nvim/init.vim"
   mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
@@ -106,6 +110,9 @@ function setupAsdf () {
 
 function setupVim () {
   # install vim plugins
+  curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim.appimage
+  mv nvim.appimage $HOME
+  chmod u+x ~/nvim.appimage
 
   echo "Install vim plugged"
   # vim

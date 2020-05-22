@@ -6,6 +6,9 @@
 [includeIf "gitdir:~/work/"]
   path = ~/work/.gitconfig
 
+[core]
+  editor = ~/nvim.appimage
+
 [merge]
   tool = vimdiff
 [mergetool]

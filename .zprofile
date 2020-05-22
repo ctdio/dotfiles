@@ -10,8 +10,8 @@ alias lock='i3lock -n -p default -i ~/Pictures/wallpapers/ipad.png -t'
 alias cdw='cd ~/projects/open-source/windbreaker-io'
 alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
+alias cdoj='cd ~/projects/open-source/jupiterone'
 alias cdg='cd ~/projects/golang'
-
 
 alias cdl='cd ~/work/lifeomic'
 
@@ -19,6 +19,9 @@ alias killn='killall node'
 
 alias kblm='kb-el-switcher "Mechanical Keyboard"'
 alias kbld='kb-el-switcher "Default profile"'
+
+alias nvim='~/nvim.appimage'
+alias vim='nvim'
 
 # when chunkwm acts up
 alias ffs='brew services restart chunkwm'
@@ -51,7 +54,7 @@ alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
 
 set -o ignoreeof
 
-alias okta='lpass show --password okta.com | ~/work/okta.sh'
+alias okta='~/work/okta.sh'
 alias lpcp='lastPassCopy'
 
 alias lodash='lifeomic-deployment-dashboard'
@@ -71,9 +74,9 @@ function lastPassCopy () {
   lpass show --password ${1} | pbcopy
 }
 
-# usage: replace <search term> <replacement> <files/dirs>
+# usage: replace <search term>
 function replace () {
-  grep -rl ${1} ${@:3} | xargs sed -i '' "s/${1}/${2}/g"
+  rg --files | xargs sed -i "s/${1}/${2}/g"
 }
 
 function fnvim () {

@@ -14,10 +14,14 @@ Plug 'easymotion/vim-easymotion'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
 " Plug 'joshdick/onedark.vim'
+" Plug 'wadackel/vim-dogrun'
+Plug 'ntk148v/vim-horizon'
+" Plug 'challenger-deep-theme/vim', { 'as': 'challenger-deep' }
+Plug 'itchyny/lightline.vim'
+
 Plug 'rakr/vim-one'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/goyo.vim'
+Plug 'tpope/vim-fugitive'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -48,8 +52,19 @@ set linebreak
 set nocompatible
 
 " Theming
-" colorscheme one
-let g:airline_theme='one'
+execute "set t_8f=\e[38;2;%lu;%lu;%lum"
+execute "set t_8b=\e[48;2;%lu;%lu;%lum"
+set t_Co=256
+set background=dark
+let g:lightline = { 'colorscheme': 'horizon'}
+colorscheme horizon
+" colorscheme onedark
+"colorscheme dogrun
+let g:onedark_termcolors=256
+let g:onedark_terminal_italics=1
+if (has("termguicolors"))
+  set termguicolors
+endif
 
 " COC config
 set hidden
@@ -59,6 +74,8 @@ set nowritebackup
 set cmdheight=2
 set shortmess+=c
 set updatetime=200
+
+set completeopt=longest,menuone
 
 nmap <silent>gd <Plug>(coc-definition)
 nmap <silent>gy <Plug>(coc-type-definition)
@@ -72,11 +89,21 @@ nmap <leader>rn <Plug>(coc-rename)
 nmap <leader>ac <Plug>(coc-codeaction)
 
 inoremap <silent><expr> <c-space> coc#refresh()
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 
 syntax on
 
 set cursorline
 set colorcolumn=80
+highlight ColorColumn ctermbg=0 guibg=grey
 
 set backspace=indent,eol,start
 
