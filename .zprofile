@@ -5,7 +5,7 @@ elif [[ "$(uname)" = 'Linux' ]]; then
 fi
 
 # aliases
-alias lock='i3lock -n -p default -i ~/Pictures/wallpapers/ipad.png -t'
+alias lock='i3lock -i ~/Pictures/wallpapers/wp6012329-valorant-wallpapers.png -n -p default -t'
 
 alias cdw='cd ~/projects/open-source/windbreaker-io'
 alias cdp='cd ~/projects/private'
@@ -13,15 +13,17 @@ alias cdo='cd ~/projects/open-source'
 alias cdoj='cd ~/projects/open-source/jupiterone'
 alias cdg='cd ~/projects/golang'
 
-alias cdl='cd ~/work/lifeomic'
+alias cdj='cd ~/work/jupiterone'
 
 alias killn='killall node'
 
 alias kblm='kb-el-switcher "Mechanical Keyboard"'
 alias kbld='kb-el-switcher "Default profile"'
 
+alias oni='~/Onivim2-x86_64.AppImage'
 alias nvim='~/nvim.appimage'
 alias vim='nvim'
+alias wtf='~/wtfutil'
 
 # when chunkwm acts up
 alias ffs='brew services restart chunkwm'
@@ -35,7 +37,6 @@ alias imgcat='~/scripts/imgcat.sh'
 alias awsgen='~/scripts/awsgen.sh'
 
 alias octave='/usr/local/octave/3.8.0/bin/octave-3.8.0'
-alias mp='markdown-preview'
 alias m='bat'
 
 alias weather="~/scripts/weather.sh"
@@ -47,18 +48,25 @@ alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
 
-alias notes='pushd ~/projects/private/notes; vim; popd'
 alias wn='vim ~/projects/private/notes/work/daily.md'
 
 alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
 
 set -o ignoreeof
 
-alias okta='~/work/okta.sh'
+alias letmedeploy='~/work/gsuite.sh'
 alias lpcp='lastPassCopy'
 
-alias lodash='lifeomic-deployment-dashboard'
-alias lodiff='lifeomic-deployment-diff lifeomic-dev lifeomic-prod'
+alias j1deploys='npx jupiterone-deployment-dashboard'
+
+# alias notes='pushd ~/projects/private/notes; vim; popd'
+# dnote aliases
+alias n='dnote view'
+alias nv='n'
+alias ne='dnote edit'
+alias na='dnote add'
+alias nf='dnote find'
+alias nr='dnote remove'
 
 alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   --format='%(HEAD) \
@@ -69,6 +77,10 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   (%(color:green)%(committerdate:relative)%(color:reset))'"
 
 # helper functions
+
+function fixdisplays () {
+  xrandr --output DP-1-1 --size 3440x1440 && xrandr --output eDP-1-1 --off
+}
 
 function lastPassCopy () {
   lpass show --password ${1} | pbcopy
@@ -84,8 +96,12 @@ function fnvim () {
   nvim ${file_path}
 }
 
-function lostatus () {
-  lodash --service ${1:-"$(cat project.name)"}
+function j1deploystatus() {
+  j1deploys --service ${1:-"$(cat project.name)"}
+}
+
+function mp () {
+  grip --pass $(lpass show --notes grip-token) $@
 }
 
 keychain -q id_rsa

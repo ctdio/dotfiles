@@ -1,11 +1,12 @@
 # zsh exports
 
-export YARN_PATH=~/.yarn
-# ~/.asdf/installs/nodejs/12.16.2/.npm
+export YARN_PATH=~/.asdf/installs/nodejs/12.16.2/.npm
 
 export ENVIRONMENT=dev
 
 export ANDROID_HOME=$HOME/android-sdk
+
+export PATH=$PATH:$HOME/nvim.appimage
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin
@@ -20,7 +21,7 @@ export LC_NUMERIC="en_US.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-export EDITOR=nvim
+export EDITOR=~/nvim.appimage
 
 # yarn bin
 PATH="${YARN_PATH}/bin:$PATH"

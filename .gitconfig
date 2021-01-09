@@ -3,8 +3,12 @@
   email = charlieduong94@gmail.com
 [push]
   default = current
-[includeIf "gitdir:~/work/"]
-  path = ~/work/.gitconfig
+
+[includeIf "gitdir:~/work/lifeomic"]
+  path = ~/work/lifeomic/.gitconfig
+
+[includeIf "gitdir:~/work/jupiterone"]
+  path = ~/work/jupiterone/.gitconfig
 
 [core]
   editor = ~/nvim.appimage

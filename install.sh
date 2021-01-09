@@ -73,6 +73,7 @@ function installMacPrograms () {
     tmux \
     cmake \
     bat \
+    thefuck \
     koekeishiya/formulae/skhd
 
   brew install --HEAD chunkwm
@@ -92,6 +93,7 @@ function installLinuxPrograms () {
     tmux
     i3wm \
     i3blocks \
+    thefuck \
     ripgrep
 
   sudo apt upgrade
@@ -123,9 +125,9 @@ function setupVim () {
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
   echo "Installing vim plugins..."
-  vim +PlugInstall +PlugUpdate +qall
-  nvim +PlugInstall +PlugUpdate +qall
-  nvim +CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker +qall
+  # vim +PlugInstall +PlugUpdate +qall
+  ~/nvim.appimage +PlugInstall +PlugUpdate +qall
+  ~/nvim.appimage +CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker +qall
 }
 
 main

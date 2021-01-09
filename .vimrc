@@ -13,13 +13,13 @@ Plug 'mhinz/vim-signify'
 Plug 'easymotion/vim-easymotion'
 Plug 'ahw/vim-pbcopy'
 Plug 'scrooloose/nerdcommenter'
-" Plug 'joshdick/onedark.vim'
+"Plug 'joshdick/onedark.vim'
 " Plug 'wadackel/vim-dogrun'
 Plug 'ntk148v/vim-horizon'
 " Plug 'challenger-deep-theme/vim', { 'as': 'challenger-deep' }
 Plug 'itchyny/lightline.vim'
 
-Plug 'rakr/vim-one'
+" Plug 'rakr/vim-one'
 Plug 'junegunn/goyo.vim'
 Plug 'tpope/vim-fugitive'
 
@@ -55,22 +55,22 @@ set nocompatible
 execute "set t_8f=\e[38;2;%lu;%lu;%lum"
 execute "set t_8b=\e[48;2;%lu;%lu;%lum"
 set t_Co=256
-set background=dark
+" set background=dark
 let g:lightline = { 'colorscheme': 'horizon'}
 colorscheme horizon
 " colorscheme onedark
-"colorscheme dogrun
+" colorscheme dogrun
 let g:onedark_termcolors=256
 let g:onedark_terminal_italics=1
 if (has("termguicolors"))
   set termguicolors
 endif
 
-" COC config
 set hidden
 set nobackup
 set nowritebackup
 
+" COC config
 set cmdheight=2
 set shortmess+=c
 set updatetime=200
