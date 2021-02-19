@@ -7,29 +7,31 @@ endif
 call plug#begin('~/.vim/plugged')
 
 Plug 'editorconfig/editorconfig-vim'
+
 Plug 'sheerun/vim-polyglot'
 Plug 'jparise/vim-graphql'
+
+Plug 'mhinz/vim-startify'
 Plug 'mhinz/vim-signify'
+
 Plug 'easymotion/vim-easymotion'
 Plug 'ahw/vim-pbcopy'
-Plug 'scrooloose/nerdcommenter'
-"Plug 'joshdick/onedark.vim'
-" Plug 'wadackel/vim-dogrun'
+
 Plug 'ntk148v/vim-horizon'
-" Plug 'challenger-deep-theme/vim', { 'as': 'challenger-deep' }
+
 Plug 'itchyny/lightline.vim'
 
-" Plug 'rakr/vim-one'
 Plug 'junegunn/goyo.vim'
-Plug 'tpope/vim-fugitive'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
+Plug 'tpope/vim-fugitive'
 Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install() }}
 
 Plug 'tjvr/vim-nearley'
 
+Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
@@ -52,16 +54,8 @@ set linebreak
 set nocompatible
 
 " Theming
-execute "set t_8f=\e[38;2;%lu;%lu;%lum"
-execute "set t_8b=\e[48;2;%lu;%lu;%lum"
-set t_Co=256
-" set background=dark
 let g:lightline = { 'colorscheme': 'horizon'}
 colorscheme horizon
-" colorscheme onedark
-" colorscheme dogrun
-let g:onedark_termcolors=256
-let g:onedark_terminal_italics=1
 if (has("termguicolors"))
   set termguicolors
 endif
