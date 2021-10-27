@@ -105,7 +105,6 @@ set cursorline
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
-
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 let g:dap_virtual_text = v:true
@@ -146,14 +145,15 @@ let g:dap_virtual_text = v:true
   require('dapui').setup()
 
   local dap = require('dap')
-  dap.adapters.chrome = {
+  -- :DIInstall jsnode
+  dap.adapters.jsnode = {
     type = "executable",
     command = "node",
-    args = {os.getenv("HOME") .. "/.local/share/nvim/dapinstall/vscode-chrome-debug/out/src/chromeDebug.js"}
+    args = {os.getenv("HOME") .. "/.local/share/nvim/dapinstall/jsnode/vscode-node-debug2/out/src/nodeDebug.js"}
   }
   dap.configurations.typescript = {
     {
-      type = "chrome",
+      type = "node2",
       request = "attach",
       program = "${file}",
       cwd = vim.fn.getcwd(),
@@ -163,17 +163,6 @@ let g:dap_virtual_text = v:true
       webRoot = "${workspaceFolder}"
     }
   }
-  local function attach()
-    print("attaching")
-    dap.run({
-      type = 'chrome',
-      request = 'attach',
-      cwd = vim.fn.getcwd(),
-      sourceMaps = true,
-      protocol = 'inspector',
-      skipFiles = {'<node_internals>/**/*.js'},
-    })
-  end
 
   -- setup completion
   local nvim_lsp = require('lspconfig')
@@ -270,20 +259,17 @@ let g:dap_virtual_text = v:true
 EOF
 
 " custom mappings
-nnoremap , <leader>
-nnoremap <leader>n :NERDTreeToggle<CR>
-nnoremap <leader>f :NERDTreeFocus<CR>
-nnoremap <leader>s <Plug>(easymotion-s2)
-nnoremap <leader>a <Plug>(easymotion-s)
-nnoremap <leader>s <Plug>(easymotion-s2)
+map , <leader>
+map <leader>n :NERDTreeToggle<CR>
+map <leader>f :NERDTreeFind<CR>
+map <leader>s <Plug>(easymotion-s2)
+map <leader>a <Plug>(easymotion-s)
+map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
+map <leader>db :lua require('dap').toggle_breakpoint()<CR>
+map <leader>du :lua require('dapui').toggle()<CR>
 
-imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
-smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
+imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
+smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 
-nnoremap <c-p> :Telescope find_files<enter>
-nnoremap <c-a> :Telescope live_grep<enter>
-
-" custom commands
-command Dap lua require('dapui').toggle()
-command DapBreakpoint lua require('dap').toggle_breakpoint()
-command DapAttach lua require('dap').run({ type = "chrome", request="attach",address = "127.0.0.1", port=9229, localRoot = vim.fn.getcwd(), protocol="inspector" })
+map <c-p> :Telescope find_files<enter>
+map <c-a> :Telescope live_grep<enter>
