@@ -1,3 +1,7 @@
+" NOTE: this requires ripgrep and fd need to be installed
+" to have everything working correctly
+
+" setup plug
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -5,196 +9,281 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 call plug#begin('~/.vim/plugged')
+  " highlighting
+  Plug 'tjvr/vim-nearley'
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 
-Plug 'editorconfig/editorconfig-vim'
+  " autocomplete
+  Plug 'neovim/nvim-lspconfig'
+  Plug 'hrsh7th/cmp-nvim-lsp'
+  Plug 'hrsh7th/cmp-buffer'
+  Plug 'hrsh7th/cmp-path'
+  Plug 'hrsh7th/cmp-cmdline'
+  Plug 'hrsh7th/nvim-cmp'
+  Plug 'hrsh7th/vim-vsnip'
+  Plug 'hrsh7th/vim-vsnip-integ'
+  Plug 'rafamadriz/friendly-snippets'
 
-Plug 'sheerun/vim-polyglot'
-Plug 'jparise/vim-graphql'
+  " start screen
+  Plug 'mhinz/vim-startify'
+  Plug 'famiu/feline.nvim'
 
-Plug 'mhinz/vim-startify'
-Plug 'mhinz/vim-signify'
+  " colorscheme
+  Plug 'bluz71/vim-nightfly-guicolors'
+  Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
+  Plug 'mangeshrex/uwu.vim'
+  Plug 'pocco81/catppuccino.nvim'
+  Plug 'Mofiqul/vscode.nvim'
 
-Plug 'easymotion/vim-easymotion'
-Plug 'ahw/vim-pbcopy'
-Plug 'scrooloose/nerdcommenter'
-Plug 'ntk148v/vim-horizon'
-Plug 'itchyny/lightline.vim'
+  " writing
+  Plug 'junegunn/goyo.vim'
 
-Plug 'junegunn/goyo.vim'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-surround'
+  " note taking
+  Plug 'vimwiki/vimwiki'
 
-Plug 'jiangmiao/auto-pairs'
+  " git integration
+  Plug 'mhinz/vim-signify'
+  Plug 'tpope/vim-fugitive'
 
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
+  " text editing
+  Plug 'tpope/vim-surround'
+  Plug 'scrooloose/nerdcommenter'
+  Plug 'editorconfig/editorconfig-vim'
 
-Plug 'tjvr/vim-nearley'
+  " search/nav
+  Plug 'nvim-lua/plenary.nvim'
+  Plug 'nvim-telescope/telescope.nvim'
+  Plug 'nvim-telescope/telescope-dap.nvim'
+  Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+  Plug 'easymotion/vim-easymotion'
+  Plug 'kyazdani42/nvim-web-devicons' " for file icons
+  Plug 'preservim/nerdtree'
+  Plug 'xuyuanp/nerdtree-git-plugin'
 
-Plug 'scrooloose/nerdcommenter'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
+  " utils
+  Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
+  Plug 'prettier/vim-prettier', { 'do': 'npm install' }
+  Plug 'ahw/vim-pbcopy'
+  Plug 'vim-test/vim-test'
+  Plug 'tpope/vim-dispatch'
 
-Plug 'prettier/vim-prettier', { 'do': 'npm install' }
-
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-compe'
-
+  " debugging
+  Plug 'mfussenegger/nvim-dap'
+  Plug 'rcarriga/nvim-dap-ui'
+  Plug 'Pocco81/DAPInstall.nvim'
+  Plug 'theHamsta/nvim-dap-virtual-text'
 call plug#end()
 
 " optimization: only use git for signify
 let g:signify_vcs_list = [ 'git' ]
 
-filetype plugin indent on
+autocmd BufWritePre * :%s/\s\+$//e
 
+filetype plugin indent on
+set expandtab
 set tabstop=2
 set softtabstop=2
 set shiftwidth=2
-set expandtab
 set number
 set linebreak
-
 set nocompatible
-
-" Theming
-let g:lightline = { 'colorscheme': 'horizon'}
-colorscheme horizon
-if (has("termguicolors"))
-  set termguicolors
-endif
-
 set hidden
 set nobackup
 set nowritebackup
-
 set clipboard=unnamed
+set backspace=indent,eol,start
+set splitbelow " horizontal splits go below
+set splitright " vertical splits go to the right
 
+" Theming
+if (has("termguicolors"))
+  set termguicolors
+endif
+colorscheme catppuccino
 syntax on
-
 set cursorline
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
-set backspace=indent,eol,start
-
-set wildignore+=*/tmp
-set wildignore+=*/node_modules
-set wildignore+=*/elm-stuff
-set wildignore+=*/dist
-set wildignore+=*/static
-set wildignore+=*.so
-set wildignore+=*.sw*
-set wildignore+=*.zip
-
-set wildmode=longest,list,full
-set wildmenu
-
-let g:netrw_liststyle = 3
-let g:netrw_banner = 0
-let g:netrw_winsize = 20
-let g:netrw_localrmdir='rm -rf'
-
-set splitbelow
-set splitright
-
-let g:javascript_plugin_jsdoc = 1
-let g:javascript_plugin_flow = 1
-
-autocmd BufWritePre * :%s/\s\+$//e
-
-" custom mappings
-map , <leader>
-
-map <c-p> :FZF <enter>
-map <c-a> :Rg <space>
-
-map <leader>n :NERDTreeToggle<CR>
-map <leader>a <Plug>(easymotion-s)
-map <leader>s <Plug>(easymotion-s2)
-
-map f <Plug>(easymotion-s2)
-
-" grepper
-let g:grepper = {}
-let g:grepper.ag = { 'grepperg': 'ag --vimgrep' }
 
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
+let g:dap_virtual_text = v:true
 
-" setup completion
 :lua << EOF
-local nvim_lsp = require('lspconfig')
+  -- setup feline
+  require('feline').setup()
 
--- Use an on_attach function to only map the following keys
--- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+  -- setup treesitter
+  require('nvim-treesitter.configs').setup {
+    ensure_installed = "maintained",
+    highlight = {
+      enable = true,
+      -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+      -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+      -- Using this option may slow down your editor, and you may see some duplicate highlights.
+      -- Instead of true it can also be a list of languages
+      additional_vim_regex_highlighting = false,
+    },
+  }
 
-  --Enable completion triggered by <c-x><c-o>
-  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  -- setup telescope
+  local telescope_actions = require('telescope.actions')
+  require('telescope').setup{
+    defaults = {
+      mappings = {
+        i = {
+          ["<C-k>"] = telescope_actions.move_selection_previous,
+          ["<C-j>"] = telescope_actions.move_selection_next
+        }
+      }
+    }
+  }
+  require('telescope').load_extension('fzf')
+  require('telescope').load_extension('dap')
 
-  -- Mappings.
-  local opts = { noremap=true, silent=true }
+  -- setup dap
+  require('dapui').setup()
 
-  -- See `:help vim.lsp.*` for documentation on any of the below functions
-  buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-  buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-  buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-  buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-  buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-  buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-  buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-  buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
-  buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-  buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
-  buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
-  buf_set_keymap("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+  local dap = require('dap')
+  dap.adapters.chrome = {
+    type = "executable",
+    command = "node",
+    args = {os.getenv("HOME") .. "/.local/share/nvim/dapinstall/vscode-chrome-debug/out/src/chromeDebug.js"}
+  }
+  dap.configurations.typescript = {
+    {
+      type = "chrome",
+      request = "attach",
+      program = "${file}",
+      cwd = vim.fn.getcwd(),
+      sourceMaps = true,
+      protocol = "inspector",
+      port = 9229,
+      webRoot = "${workspaceFolder}"
+    }
+  }
+  local function attach()
+    print("attaching")
+    dap.run({
+      type = 'chrome',
+      request = 'attach',
+      cwd = vim.fn.getcwd(),
+      sourceMaps = true,
+      protocol = 'inspector',
+      skipFiles = {'<node_internals>/**/*.js'},
+    })
+  end
 
-local compe = require('compe')
-compe.setup {
-  enabled = true;
-  autocomplete = true;
-  debug = false;
-  min_length = 1;
-  preselect = 'enable';
-  throttle_time = 80;
-  source_timeout = 200;
-  incomplete_delay = 400;
-  max_abbr_width = 100;
-  max_kind_width = 100;
-  max_menu_width = 100;
-  documentation = true;
+  -- setup completion
+  local nvim_lsp = require('lspconfig')
 
-  source = {
-    path = true;
-    buffer = true;
-    calc = true;
-    nvim_lsp = true;
-    nvim_lua = true;
-    vsnip = true;
-    ultisnips = true;
-  };
-}
+  -- Use an on_attach function to only map the following keys
+  -- after the language server attaches to the current buffer
+  local on_attach = function(client, bufnr)
+    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
-end
+    --Enable completion triggered by <c-x><c-o>
+    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
--- Use a loop to conveniently call 'setup' on multiple servers and
--- map buffer local keybindings when the language server attaches
-local servers = { "tsserver" }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup { on_attach = on_attach }
-end
+    -- Mappings.
+    local opts = { noremap=true, silent=true }
+
+    -- See `:help vim.lsp.*` for documentation on any of the below functions
+    buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+    buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
+    buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
+    buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+    buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+    buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+    buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+    buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+    buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+    -- buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+    buf_set_keymap('n', 'gr', '<cmd>Telescope lsp_references<CR>', opts)
+    buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+    buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+    buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+    buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+    buf_set_keymap("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+  end
+
+  -- Setup nvim-cmp with recommended setup
+  local cmp = require('cmp')
+
+  cmp.setup({
+    snippet = {
+      expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      end,
+    },
+    mapping = {
+      ['<C-d>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
+      ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
+      ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
+      -- ['<C-y>'] = cmp.config.disable, -- If you want to remove the default `<C-y>` mapping, You can specify `cmp.config.disable` value.
+      ['<C-e>'] = cmp.mapping({
+        i = cmp.mapping.abort(),
+        c = cmp.mapping.close(),
+      }),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    },
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'vsnip' }, -- For vsnip users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Use buffer source for `/`.
+  cmp.setup.cmdline('/', {
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':'.
+  cmp.setup.cmdline(':', {
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+
+  -- Setup lspconfig.
+  local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+
+  -- Use a loop to conveniently call 'setup' on multiple servers and
+  -- map buffer local keybindings when the language server attaches
+  local servers = { "tsserver" }
+  for _, lsp in ipairs(servers) do
+    nvim_lsp[lsp].setup {
+      on_attach = on_attach,
+      capabilities = capabilities
+    }
+  end
 EOF
 
+" custom mappings
+nnoremap , <leader>
+nnoremap <leader>n :NERDTreeToggle<CR>
+nnoremap <leader>f :NERDTreeFocus<CR>
+nnoremap <leader>s <Plug>(easymotion-s2)
+nnoremap <leader>a <Plug>(easymotion-s)
+nnoremap <leader>s <Plug>(easymotion-s2)
 
-" Enable zsh shell
-set shell=zsh\ -l
+imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
+smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
 
-let g:ruby_host_prog="/home/charlie/.rbenv/versions/2.6.0/bin/neovim-ruby-host"
+nnoremap <c-p> :Telescope find_files<enter>
+nnoremap <c-a> :Telescope live_grep<enter>
+
+" custom commands
+command Dap lua require('dapui').toggle()
+command DapBreakpoint lua require('dap').toggle_breakpoint()
+command DapAttach lua require('dap').run({ type = "chrome", request="attach",address = "127.0.0.1", port=9229, localRoot = vim.fn.getcwd(), protocol="inspector" })
