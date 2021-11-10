@@ -55,7 +55,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'nvim-telescope/telescope-dap.nvim'
   Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-  Plug 'easymotion/vim-easymotion'
+  Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'preservim/nerdtree'
   Plug 'xuyuanp/nerdtree-git-plugin'
@@ -66,6 +66,10 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'vim-test/vim-test'
   Plug 'tpope/vim-dispatch'
+  Plug 'David-Kunz/jester'
+  Plug 'jbyuki/venn.nvim'
+  Plug 'tyru/open-browser.vim'
+  Plug 'tyru/open-browser-github.vim'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
@@ -73,6 +77,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'Pocco81/DAPInstall.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
 call plug#end()
+
+" use zsh shell
+set shell=zsh\ -l
 
 " optimization: only use git for signify
 let g:signify_vcs_list = [ 'git' ]
@@ -107,11 +114,13 @@ highlight ColorColumn ctermbg=0 guibg=grey
 
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
-let g:dap_virtual_text = v:true
 
 :lua << EOF
   -- setup feline
   require('feline').setup()
+
+  -- setup hop
+  require('hop').setup()
 
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
@@ -163,6 +172,8 @@ let g:dap_virtual_text = v:true
       webRoot = "${workspaceFolder}"
     }
   }
+
+  require('nvim-dap-virtual-text').setup()
 
   -- setup completion
   local nvim_lsp = require('lspconfig')
@@ -262,11 +273,13 @@ EOF
 map , <leader>
 map <leader>n :NERDTreeToggle<CR>
 map <leader>f :NERDTreeFind<CR>
-map <leader>s <Plug>(easymotion-s2)
-map <leader>a <Plug>(easymotion-s)
+map <leader>a :HopChar1<CR>
+map <leader>s :HopChar2<CR>
 map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
 map <leader>du :lua require('dapui').toggle()<CR>
+
+map <leader>t :lua require("jester").run({ cmd = "npx jest -t '$result' -- $file"})<CR>
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
