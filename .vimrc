@@ -32,7 +32,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'bluz71/vim-nightfly-guicolors'
   Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
   Plug 'mangeshrex/uwu.vim'
-  Plug 'pocco81/catppuccino.nvim'
+  " Plug 'pocco81/catppuccino.nvim'
+  Plug 'catppuccin/nvim'
   Plug 'Mofiqul/vscode.nvim'
 
   " writing
@@ -54,7 +55,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'nvim-telescope/telescope-dap.nvim'
-  Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+  Plug 'nvim-telescope/telescope-fzy-native.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'preservim/nerdtree'
@@ -106,7 +107,6 @@ set splitright " vertical splits go to the right
 if (has("termguicolors"))
   set termguicolors
 endif
-colorscheme catppuccino
 syntax on
 set cursorline
 set colorcolumn=80
@@ -116,6 +116,10 @@ highlight ColorColumn ctermbg=0 guibg=grey
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 :lua << EOF
+  -- setup theme
+  require("catppuccin").setup()
+  -- vim.cmd[[colorscheme catppuccin]]
+
   -- setup feline
   require('feline').setup()
 
@@ -147,7 +151,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       }
     }
   }
-  require('telescope').load_extension('fzf')
+  require('telescope').load_extension('fzy_native')
   require('telescope').load_extension('dap')
 
   -- setup dap

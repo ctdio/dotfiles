@@ -2,6 +2,10 @@ if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
   alias pbcopy='clip.exe'
 elif [[ "$(uname)" = 'Linux' ]]; then
   alias pbcopy='xclip -selection clipboard'
+  alias nvim='~/nvim.appimage'
+
+  keychain -q id_rsa
+  . ~/.keychain/`uname -n`-sh
 fi
 
 # aliases
@@ -21,7 +25,7 @@ alias kblm='kb-el-switcher "Mechanical Keyboard"'
 alias kbld='kb-el-switcher "Default profile"'
 
 alias oni='~/Onivim2-x86_64.AppImage'
-alias nvim='~/nvim.appimage'
+
 alias vim='nvim'
 alias wtf='~/wtfutil'
 
@@ -103,6 +107,3 @@ function j1deploystatus() {
 function mp () {
   grip --pass $(lpass show --notes grip-token) $@
 }
-
-keychain -q id_rsa
-. ~/.keychain/`uname -n`-sh

@@ -1,0 +1,32 @@
+---
+- hosts: 127.0.0.1
+  vars:
+    base_install_packages:
+      - wget
+      - tmux
+      - htop
+      - zsh
+      - neovim
+      - sqlite
+      - wget
+      - gh
+      - yarn
+      - gpg
+      - gawk
+      - thefuck
+      - fzy
+      - pyenv
+      - readline
+      - xz
+      - openssl
+    cask_install_packages:
+      - bitwarden
+      - docker
+  connection: local
+  tasks:
+    - name: Install apps with homebrew
+      homebrew: name={{ item }} state=present
+      loop: "{{ base_install_packages }}"
+    - name: Install cask packages
+      homebrew_cask: name={{ item }} state=present
+      loop: "{{ cask_install_packages }}"
