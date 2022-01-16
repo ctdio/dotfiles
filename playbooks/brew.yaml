@@ -10,18 +10,26 @@
       - sqlite
       - wget
       - gh
+      - jq
       - yarn
       - gpg
       - gawk
       - thefuck
       - fzy
+      - fzf
       - pyenv
       - readline
       - xz
       - openssl
+      - asdf
+      - ripgrep
+      - terraform
+      - waypoint
+      - kubectl
     cask_install_packages:
       - bitwarden
       - docker
+      - amethyst
   connection: local
   tasks:
     - name: Install apps with homebrew

@@ -58,8 +58,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope-fzy-native.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
-  Plug 'preservim/nerdtree'
-  Plug 'xuyuanp/nerdtree-git-plugin'
+  Plug 'kyazdani42/nvim-tree.lua'
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
@@ -77,6 +76,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'Pocco81/DAPInstall.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
+
+  " temp until treesitter performance improves
+  Plug 'elixir-editors/vim-elixir'
 call plug#end()
 
 " use zsh shell
@@ -88,6 +90,8 @@ let g:signify_vcs_list = [ 'git' ]
 autocmd BufWritePre * :%s/\s\+$//e
 
 filetype plugin indent on
+
+set noswapfile
 set expandtab
 set tabstop=2
 set softtabstop=2
@@ -118,7 +122,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 :lua << EOF
   -- setup theme
   require("catppuccin").setup()
-  -- vim.cmd[[colorscheme catppuccin]]
+  vim.cmd[[colorscheme catppuccin]]
 
   -- setup feline
   require('feline').setup()
@@ -126,9 +130,25 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
   -- setup hop
   require('hop').setup()
 
+  -- setup nvim-tree
+  require("nvim-tree").setup({
+    view = {
+      auto_resize = true,
+      mappings = {
+        list = {
+          {
+              key = "<S-a>",
+              cb = ":lua require('nvimTreeUtil').toggle_size()<CR>"
+          }
+        }
+      }
+    },
+  })
+
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
     ensure_installed = "maintained",
+    ignore_install = { "elixir" },
     highlight = {
       enable = true,
       -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
@@ -271,20 +291,39 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       capabilities = capabilities
     }
   end
+
+  -- elixirls requires some additional config
+  -- handle it separately=
+  local path_to_elixirls = vim.fn.expand("~/elixir-ls/release/language_server.sh")
+  nvim_lsp.elixirls.setup {
+    cmd = { path_to_elixirls },
+    on_attach = on_attach,
+    capabilities = capabilities,
+    settings = {
+      elixirLS = {
+        dialyzerEnabled = false,
+        fetchDeps = false
+      }
+    }
+  }
 EOF
 
 " custom mappings
 map , <leader>
-map <leader>n :NERDTreeToggle<CR>
-map <leader>f :NERDTreeFind<CR>
+map <leader>n :NvimTreeToggle<CR>
+map <leader>f :NvimTreeFindFile<CR>
 map <leader>a :HopChar1<CR>
 map <leader>s :HopChar2<CR>
+map f :HopChar1<CR>
+map <S>f :HopChar2<CR>
 map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
 map <leader>du :lua require('dapui').toggle()<CR>
 
+
 map <leader>t :lua require("jester").run({ cmd = "npx jest -t '$result' -- $file"})<CR>
 
+imap <C-c> <Esc>
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 

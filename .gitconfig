@@ -11,7 +11,7 @@
   path = ~/work/jupiterone/.gitconfig
 
 [core]
-  editor = ~/nvim.appimage
+  editor = nvim
 
 [merge]
   tool = vimdiff

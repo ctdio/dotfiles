@@ -1,10 +1,5 @@
 autoload -Uz compinit && compinit
 
-# added by travis gem
-[ -f /home/charlie/.travis/travis.sh ] && source /home/charlie/.travis/travis.sh
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 # hack to get better colors in tmux
 alias tmux='TERM=screen-256color tmux'
 
@@ -32,7 +27,17 @@ antigen theme af-magic
 # Tell Antigen that you're done.
 antigen apply
 
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv init -)"
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/charlieduong/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc'; fi
+
+
+# added by travis gem
+[ -f /home/charlie/.travis/travis.sh ] && source /home/charlie/.travis/travis.sh
+
+# install fzf keybindings
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
