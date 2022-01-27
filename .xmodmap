@@ -4,5 +4,8 @@ clear control
 keycode 66 = Control_L
 add control = Control_L Control_R
 
-! Invert mouse
-! pointer = 1 2 3 5 4 6 7 8 9 10 11 12
+keycode 133 = Mode_switch
+keysym h = h H Left
+keysym j = j J Down
+keysym k = k K Up
+keysym l = l L Right

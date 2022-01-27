@@ -23,6 +23,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/vim-vsnip'
   Plug 'hrsh7th/vim-vsnip-integ'
   Plug 'rafamadriz/friendly-snippets'
+  Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
 
   " start screen
   Plug 'mhinz/vim-startify'
@@ -52,12 +53,15 @@ call plug#begin('~/.vim/plugged')
 
   " search/nav
   Plug 'nvim-lua/plenary.nvim'
+  Plug 'tami5/sqlite.lua'
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'nvim-telescope/telescope-dap.nvim'
-  Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+  Plug 'nvim-telescope/telescope-smart-history.nvim'
+  Plug 'nvim-telescope/telescope-fzy-native.nvim'
   Plug 'phaazon/hop.nvim'
+  Plug 'sidebar-nvim/sidebar.nvim'
+  Plug 'kyazdani42/nvim-tree.lua'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
-  Plug 'preservim/nerdtree'
   Plug 'xuyuanp/nerdtree-git-plugin'
 
   " utils
@@ -102,6 +106,8 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
+set noswapfile
+
 " Theming
 if (has("termguicolors"))
   set termguicolors
@@ -122,6 +128,27 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
   -- setup hop
   require('hop').setup()
 
+  -- setup nvim-tree
+  local nvim_tree_callback = require('nvim-tree.config').nvim_tree_callback
+
+  require('nvim-tree').setup({
+    view = {
+      width = 40,
+      mappings = {
+        list = {
+          { key = 's', cb = nvim_tree_callback('vsplit') },
+          { key = 'i', cb = nvim_tree_callback('split') },
+          { key = '<S-a>', cb = ':lua require("nvimTreeUtil").toggle_size()<CR>' }
+        }
+      }
+    }
+  })
+
+  require('sidebar-nvim').setup({
+    open = false,
+    side = 'right'
+  })
+
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
     ensure_installed = "maintained",
@@ -131,7 +158,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
       -- Using this option may slow down your editor, and you may see some duplicate highlights.
       -- Instead of true it can also be a list of languages
-      additional_vim_regex_highlighting = false,
+      additional_vim_regex_highlighting = {"kotlin"},
     },
   }
 
@@ -147,7 +174,8 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       }
     }
   }
-  require('telescope').load_extension('fzf')
+
+  require('telescope').load_extension('fzy_native')
   require('telescope').load_extension('dap')
 
   -- setup dap
@@ -233,6 +261,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
+      { name = 'cmp_tabnine' },
       { name = 'vsnip' }, -- For vsnip users.
     }, {
       { name = 'buffer' },
@@ -255,12 +284,25 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
     })
   })
 
+  local tabnine = require('cmp_tabnine.config')
+  tabnine:setup({
+    max_lines = 1000;
+    max_num_results = 20;
+    sort = true;
+    run_on_every_keystroke = true;
+    snippet_placeholder = '..';
+    ignored_file_types = { -- default is not to ignore
+      -- uncomment to ignore in lua:
+      -- lua = true
+    };
+  })
+
   -- Setup lspconfig.
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches
-  local servers = { "tsserver" }
+  local servers = { "tsserver", "terraformls" }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup {
       on_attach = on_attach,
@@ -271,10 +313,14 @@ EOF
 
 " custom mappings
 map , <leader>
-map <leader>n :NERDTreeToggle<CR>
-map <leader>f :NERDTreeFind<CR>
+" map <leader>n :NERDTreeToggle<CR>
+" map <leader>f :NERDTreeFind<CR>
+map <leader>n :NvimTreeToggle<CR>
+map <leader>f :NvimTreeFindFile<CR>
+map f :HopChar1<CR>
+map r :HopChar2<CR>
 map <leader>a :HopChar1<CR>
-map <leader>s :HopChar2<CR>
+map <leader>s :lua require('sidebar-nvim').toggle()<CR>
 map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
 map <leader>du :lua require('dapui').toggle()<CR>
@@ -284,5 +330,6 @@ map <leader>t :lua require("jester").run({ cmd = "npx jest -t '$result' -- $file
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 
-map <c-p> :Telescope find_files<enter>
-map <c-a> :Telescope live_grep<enter>
+map <C-p> :Telescope find_files<enter>
+map <C-a> :Telescope live_grep<enter>
+map <C-c> <esc>

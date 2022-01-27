@@ -4,14 +4,11 @@
 [push]
   default = current
 
-[includeIf "gitdir:~/work/lifeomic"]
-  path = ~/work/lifeomic/.gitconfig
-
-[includeIf "gitdir:~/work/jupiterone"]
-  path = ~/work/jupiterone/.gitconfig
+[includeIf "gitdir:~/work/jupiterone/"]
+  path = ~/.gitconfig-work
 
 [core]
-  editor = ~/nvim.appimage
+  editor = ~/nvim-0.5.appimage
 
 [merge]
   tool = vimdiff
@@ -19,3 +16,15 @@
   prompt = true
 [mergetool "vimdiff"]
   cmd = nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+
+[pager]
+  diff = delta
+  show = delta
+  log = delta
+  reflog = delta
+
+[interactive]
+  diffFilter = delta --color-only
+
+[delta]
+  side-by-side = true

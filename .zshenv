@@ -1,6 +1,7 @@
 # zsh exports
 
 export YARN_PATH=~/.asdf/installs/nodejs/12.16.2/.npm
+export GOPATH=~/work/jupiterone/go
 
 export ENVIRONMENT=dev
 
@@ -11,6 +12,9 @@ export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$HOME/.cargo/bin
+export PATH=$PATH:$GOPATH
 
 export LANG="en_US.UTF-8"
 export LC_COLLATE="en_US.UTF-8"

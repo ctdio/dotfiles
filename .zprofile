@@ -1,6 +1,6 @@
 if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
   alias pbcopy='clip.exe'
-elif [[ "$(uname)" = 'Linux' ]]; then
+elif [[ "$(uname)" -eq 'Linux' ]]; then
   alias pbcopy='xclip -selection clipboard'
 fi
 
@@ -48,8 +48,6 @@ alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
 
-alias wn='vim ~/projects/private/notes/work/daily.md'
-
 alias control-center='env XDG_CURRENT_DESKTOP=GNOME gnome-control-center'
 
 set -o ignoreeof
@@ -59,14 +57,7 @@ alias lpcp='lastPassCopy'
 
 alias j1deploys='npx jupiterone-deployment-dashboard'
 
-# alias notes='pushd ~/projects/private/notes; vim; popd'
-# dnote aliases
-alias n='dnote view'
-alias nv='n'
-alias ne='dnote edit'
-alias na='dnote add'
-alias nf='dnote find'
-alias nr='dnote remove'
+alias notes='pushd ~/obsidian; vim; popd'
 
 alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   --format='%(HEAD) \
@@ -79,8 +70,9 @@ alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
 # helper functions
 
 function fixdisplays () {
-  xrandr --output DP-1-1 --size 3440x1440 && xrandr --output eDP-1-1 --off
+  xrandr --output DP-1-1 --size 3440x1440 --rate 144.0 && xrandr --output eDP-1-1 --off
 }
+
 
 function lastPassCopy () {
   lpass show --password ${1} | pbcopy
@@ -101,7 +93,11 @@ function j1deploystatus() {
 }
 
 function mp () {
-  grip --pass $(lpass show --notes grip-token) $@
+  grip --pass $(bw get item "b947eb22-d8ab-4be2-9c0c-acd10155bc01" | jq ".notes") $@
+}
+
+function tz () {
+  TZ_LIST="US/Central;US/Mountain;US/Pacific;UTC" ~/util/tz
 }
 
 keychain -q id_rsa

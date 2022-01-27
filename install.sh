@@ -14,12 +14,12 @@ function main () {
   case ${SYSTEM} in
   'Darwin')
     echo "MacOS detected, installing programs for Mac..."
-    installMacPrograms
+    #installMacPrograms
     ;;
   'Linux')
     # assume Ubuntu for now
     echo "Linux detected, installing programs for Linux..."
-    installLinuxPrograms
+    # installLinuxPrograms
     ;;
   *)
     echo "${SYSTEM} is not supported"
@@ -56,6 +56,9 @@ function linkDotfiles () {
   mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
 
+  mkdir -p ~/.config/nvim/lua
+  ln -nsf ${DOTFILES_DIR}/lua ~/.config/nvim/lua
+
   mkdir -p ~/.config/i3
   ln -nsf ${DOTFILES_DIR}/.i3config ~/.config/i3/config
 
@@ -74,6 +77,7 @@ function installMacPrograms () {
     cmake \
     bat \
     thefuck \
+    hstr \
     koekeishiya/formulae/skhd
 
   brew install --HEAD chunkwm
@@ -85,6 +89,7 @@ function installMacPrograms () {
 }
 
 function installLinuxPrograms () {
+  sudo add-apt-repository ppa:ultradvorka/ppa
   sudo apt update
 
   sudo apt install -y \
@@ -94,6 +99,7 @@ function installLinuxPrograms () {
     i3wm \
     i3blocks \
     thefuck \
+    hstr \
     ripgrep
 
   sudo apt upgrade
@@ -111,8 +117,7 @@ function setupAsdf () {
 }
 
 function setupVim () {
-  # install vim plugins
-  curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim.appimage
+  curl -LO https://github.com/neovim/neovim/releases/download/v0.5.1/nvim.appimage
   mv nvim.appimage $HOME
   chmod u+x ~/nvim.appimage
 
@@ -123,11 +128,6 @@ function setupVim () {
   # neovim
   curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-  echo "Installing vim plugins..."
-  # vim +PlugInstall +PlugUpdate +qall
-  ~/nvim.appimage +PlugInstall +PlugUpdate +qall
-  ~/nvim.appimage +CocInstall coc-json coc-tsserver coc-html coc-python coc-jest coc-sh coc-tslint-plugin coc-eslint coc-docker +qall
 }
 
 main

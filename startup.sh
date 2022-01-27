@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # set key repeat
-xset r rate 220 60
+xset r rate 300 25
