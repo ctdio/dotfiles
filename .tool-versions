@@ -1,4 +1,4 @@
-# nodejs 12.18.3 # https://github.com/asdf-vm/asdf-nodejs
+nodejs 16.15.0 # https://github.com/asdf-vm/asdf-nodejs
 # yarn 1.22.4 # https://github.com/twuni/asdf-yarn
 golang 1.17.5 # https://github.com/kennyp/asdf-golang
 rust 1.57.0 # https://github.com/asdf-community/asdf-rust

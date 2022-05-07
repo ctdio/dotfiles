@@ -78,7 +78,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'theHamsta/nvim-dap-virtual-text'
 
   " temp until treesitter performance improves
-  Plug 'elixir-editors/vim-elixir'
+  " Plug 'elixir-editors/vim-elixir'
 call plug#end()
 
 " use zsh shell
@@ -147,8 +147,24 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
-    ensure_installed = "maintained",
-    ignore_install = { "elixir" },
+    ensure_installed = {
+      "rust",
+      "kotlin",
+      "go",
+      "gomod",
+      "elixir",
+      "gleam",
+      "jsdoc",
+      "javascript",
+      "typescript",
+      "python",
+      "lua",
+      "json",
+      "graphql",
+      "yaml",
+      "hcl",
+      "toml"
+    },
     highlight = {
       enable = true,
       -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
@@ -294,7 +310,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 
   -- elixirls requires some additional config
   -- handle it separately=
-  local path_to_elixirls = vim.fn.expand("~/elixir-ls/release/language_server.sh")
+  local path_to_elixirls = vim.fn.expand("~/lsp/elixir-ls/release/language_server.sh")
   nvim_lsp.elixirls.setup {
     cmd = { path_to_elixirls },
     on_attach = on_attach,
