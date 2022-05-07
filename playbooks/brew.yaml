@@ -2,6 +2,8 @@
 - hosts: 127.0.0.1
   vars:
     base_install_packages:
+      - readline
+      - gcc
       - wget
       - tmux
       - htop
@@ -21,15 +23,17 @@
       - readline
       - xz
       - openssl
+      - sqlite3
+      - zlib
       - asdf
       - ripgrep
       - terraform
       - waypoint
       - kubectl
+      - awscli
     cask_install_packages:
       - bitwarden
       - docker
-      - amethyst
   connection: local
   tasks:
     - name: Install apps with homebrew

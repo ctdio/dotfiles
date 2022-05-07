@@ -34,6 +34,6 @@ function linkDotfiles () {
 
   mkdir -p ~/.config/i3blocks
   ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
+  ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
 }
-
 main

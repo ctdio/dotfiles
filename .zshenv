@@ -22,8 +22,6 @@ export LC_NUMERIC="en_US.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-export EDITOR=~/nvim.appimage
-
 # yarn bin
 PATH="${YARN_PATH}/bin:$PATH"
 
@@ -50,3 +48,10 @@ else
     export PYTHONPATH='/opt/homebrew/Cellar/pdm/1.12.0/libexec/lib/python3.10/site-packages/pdm/pep582'
 fi
 export OPENBLAS=$(/opt/homebrew/bin/brew --prefix openblas)
+
+# editor
+if [[ "$(uname)" = 'Linux' ]]; then
+  export EDITOR=~/nvim.appimage
+else
+  export EDITOR=nvim
+fi

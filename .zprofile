@@ -107,3 +107,4 @@ function j1deploystatus() {
 function mp () {
   grip --pass $(lpass show --notes grip-token) $@
 }
+eval "$(/opt/homebrew/bin/brew shellenv)"
