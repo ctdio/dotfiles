@@ -32,6 +32,7 @@
       - kubectl
       - awscli
       - glow
+      - ffmpeg
     cask_install_packages:
       - bitwarden
       - docker
