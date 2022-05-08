@@ -63,14 +63,7 @@ alias lpcp='lastPassCopy'
 
 alias j1deploys='npx jupiterone-deployment-dashboard'
 
-# alias notes='pushd ~/projects/private/notes; vim; popd'
-# dnote aliases
-alias n='dnote view'
-alias nv='n'
-alias ne='dnote edit'
-alias na='dnote add'
-alias nf='dnote find'
-alias nr='dnote remove'
+alias notes='pushd ~/obsidian; nvim; popd'
 
 alias git-recent="git for-each-ref --sort=committerdate refs/heads/ \
   --format='%(HEAD) \

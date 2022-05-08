@@ -23,6 +23,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/vim-vsnip'
   Plug 'hrsh7th/vim-vsnip-integ'
   Plug 'rafamadriz/friendly-snippets'
+  Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
 
   " start screen
   Plug 'mhinz/vim-startify'
@@ -281,6 +282,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
+      { name = 'cmp_tabnine' },
       { name = 'vsnip' }, -- For vsnip users.
     }, {
       { name = 'buffer' },

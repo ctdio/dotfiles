@@ -5,4 +5,5 @@ rust 1.57.0 # https://github.com/asdf-community/asdf-rust
 python 3.9.11 # https://github.com/danhper/asdf-python
 erlang 24.1.7 # https://github.com/asdf-vm/asdf-erlang
 elixir 1.13.0-otp-24 # https://github.com/asdf-vm/asdf-elixir
+# gleam 0.21.0 # https://github.com/asdf-community/asdf-gleam
 # waypoint 0.6.2

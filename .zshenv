@@ -55,3 +55,4 @@ if [[ "$(uname)" = 'Linux' ]]; then
 else
   export EDITOR=nvim
 fi
+. "$HOME/.cargo/env"
