@@ -273,12 +273,56 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       ['<C-d>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
       ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
       ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
-      -- ['<C-y>'] = cmp.config.disable, -- If you want to remove the default `<C-y>` mapping, You can specify `cmp.config.disable` value.
       ['<C-e>'] = cmp.mapping({
         i = cmp.mapping.abort(),
         c = cmp.mapping.close(),
       }),
       ['<CR>'] = cmp.mapping.confirm({ select = true }),
+      ['<C-n>'] = cmp.mapping({
+        c = function()
+          if cmp.visible() then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            vim.api.nvim_feedkeys(t('<Down>'), 'n', true)
+          end
+        end,
+        i = function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            fallback()
+          end
+        end
+      }),
+      ['<C-p>'] = cmp.mapping({
+        c = function()
+          if cmp.visible() then
+            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            vim.api.nvim_feedkeys(t('<Up>'), 'n', true)
+          end
+        end,
+        i = function(fallback)
+          if cmp.visible() then
+            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            fallback()
+          end
+        end
+      }),
+      ["<Tab>"] = cmp.mapping(function(fallback)
+        -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
+        if cmp.visible() then
+          local entry = cmp.get_selected_entry()
+          if not entry then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            cmp.confirm()
+          end
+        else
+          fallback()
+        end
+      end, {"i","s","c",}),
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
