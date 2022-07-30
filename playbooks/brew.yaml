@@ -33,6 +33,7 @@
       - awscli
       - glow
       - ffmpeg
+      - libpq
     cask_install_packages:
       - bitwarden
       - docker

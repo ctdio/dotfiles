@@ -74,8 +74,14 @@ call plug#begin('~/.vim/plugged')
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
+
+  Plug 'mfussenegger/nvim-dap-python'
+  Plug 'leoluz/nvim-dap-go'
+  Plug 'mxsdev/nvim-dap-vscode-js'
+  Plug 'microsoft/vscode-js-debug' { 'do': 'npm install --legacy-peer-deps && npm run compile' }
+
   Plug 'rcarriga/nvim-dap-ui'
-  Plug 'Pocco81/DAPInstall.nvim'
+  Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
 
   " temp until treesitter performance improves
@@ -203,22 +209,32 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
   require('dapui').setup()
 
   local dap = require('dap')
-  -- :DIInstall jsnode
-  dap.adapters.jsnode = {
-    type = "executable",
-    command = "node",
-    args = {os.getenv("HOME") .. "/.local/share/nvim/dapinstall/jsnode/vscode-node-debug2/out/src/nodeDebug.js"}
-  }
+  require('dap-go').setup()
+  require('dap-python').setup()
+  require('dap-python').setup()
+  require("dap-vscode-js").setup({
+    adapters = {
+      'pwa-node',
+      'pwa-chrome',
+      'node-terminal',
+      'pwa-extensionHost'
+    },
+  })
+
   dap.configurations.typescript = {
     {
-      type = "node2",
-      request = "attach",
+      type = "pwa-node",
+      request = "launch",
+      name = "Launch file",
       program = "${file}",
-      cwd = vim.fn.getcwd(),
-      sourceMaps = true,
-      protocol = "inspector",
-      port = 9229,
-      webRoot = "${workspaceFolder}"
+      cwd = "${workspaceFolder}",
+    },
+    {
+      type = "pwa-node",
+      request = "attach",
+      name = "Attach",
+      processId = require'dap.utils'.pick_process,
+      cwd = "${workspaceFolder}",
     }
   }
 
@@ -404,8 +420,13 @@ map <leader>a :HopChar1<CR>
 map <leader>s :HopChar2<CR>
 map f :HopChar1<CR>
 map <S>f :HopChar2<CR>
-map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
+
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
+map <leader>dc :lua require('dap').continue()<CR>
+map <leader>dsv :lua require('dap').step_over()<CR>
+map <leader>dsi :lua require('dap').step_into()<CR>
+map <leader>dso :lua require('dap').step_out()<CR>
+
 map <leader>du :lua require('dapui').toggle()<CR>
 
 
