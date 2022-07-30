@@ -263,6 +263,34 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
   -- Setup nvim-cmp with recommended setup
   local cmp = require('cmp')
 
+  local select_next_item_or_confirm = function(fallback)
+    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
+    if cmp.visible() then
+      local entry = cmp.get_selected_entry()
+      if not entry then
+        cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+      else
+        cmp.confirm()
+      end
+    else
+      fallback()
+    end
+  end
+
+  local confirm_item = function(fallback)
+    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
+    if cmp.visible() then
+      local entry = cmp.get_selected_entry()
+      if entry then
+        cmp.confirm()
+      else
+        fallback()
+      end
+    else
+      fallback()
+    end
+  end
+
   cmp.setup({
     snippet = {
       expand = function(args)
@@ -277,7 +305,6 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
         i = cmp.mapping.abort(),
         c = cmp.mapping.close(),
       }),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }),
       ['<C-n>'] = cmp.mapping({
         c = function()
           if cmp.visible() then
@@ -310,24 +337,15 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
           end
         end
       }),
-      ["<Tab>"] = cmp.mapping(function(fallback)
-        -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
-        if cmp.visible() then
-          local entry = cmp.get_selected_entry()
-          if not entry then
-            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-          else
-            cmp.confirm()
-          end
-        else
-          fallback()
-        end
-      end, {"i","s","c",}),
+      ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, {"i","s","c",}),
+      ['<CR>'] = cmp.mapping(confirm_item, {"i","s","c",}),
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
+      { name = 'dap' },
       { name = 'cmp_tabnine' },
       { name = 'vsnip' }, -- For vsnip users.
+      { name = 'emoji' },
     }, {
       { name = 'buffer' },
     })
