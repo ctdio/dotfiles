@@ -28,12 +28,5 @@ function linkDotfiles () {
   mkdir -p ~/.config/nvim
   ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
   ln -nsf ${DOTFILES_DIR}/lua/ ~/.config/nvim/lua
-
-  mkdir -p ~/.config/i3
-  ln -nsf ${DOTFILES_DIR}/.i3config ~/.config/i3/config
-
-  mkdir -p ~/.config/i3blocks
-  ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
-  ln -nsf ${DOTFILES_DIR}/.i3blocks.conf ~/.config/i3blocks/config
 }
 main
