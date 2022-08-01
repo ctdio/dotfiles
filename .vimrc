@@ -20,8 +20,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/cmp-path'
   Plug 'hrsh7th/cmp-cmdline'
   Plug 'hrsh7th/nvim-cmp'
-  Plug 'hrsh7th/vim-vsnip'
-  Plug 'hrsh7th/vim-vsnip-integ'
+  Plug 'hrsh7th/cmp-vsnip'
+  Plug 'hrsh7th/cmp-emoji'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
 
@@ -33,8 +33,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'bluz71/vim-nightfly-guicolors'
   Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
   Plug 'mangeshrex/uwu.vim'
-  Plug 'pocco81/catppuccino.nvim'
+  Plug 'catppuccin/nvim', {'as': 'catppuccin'}
   Plug 'Mofiqul/vscode.nvim'
+  Plug 'marko-cerovac/material.nvim'
 
   " writing
   Plug 'junegunn/goyo.vim'
@@ -70,15 +71,24 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'vim-test/vim-test'
   Plug 'tpope/vim-dispatch'
-  Plug 'David-Kunz/jester'
   Plug 'jbyuki/venn.nvim'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
+  Plug 'sindrets/diffview.nvim'
+  Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
+
+  Plug 'tpope/vim-repeat'
+
+  Plug 'antoinemadec/FixCursorHold.nvim'
+  Plug 'nvim-neotest/neotest'
+  Plug 'haydenmeade/neotest-jest'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
+  Plug 'mfussenegger/nvim-dap-python'
+  Plug 'leoluz/nvim-dap-go'
+  Plug 'mxsdev/nvim-dap-vscode-js'
   Plug 'rcarriga/nvim-dap-ui'
-  Plug 'Pocco81/DAPInstall.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
 call plug#end()
 
@@ -106,13 +116,17 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
+set foldmethod=marker
+set foldmarker=region,endregion
+set foldlevelstart=99
+
 set noswapfile
 
 " Theming
 if (has("termguicolors"))
   set termguicolors
 endif
-colorscheme catppuccino
+let g:material_style = "lighter" " material is used for light theme
 syntax on
 set cursorline
 set colorcolumn=80
@@ -122,8 +136,21 @@ highlight ColorColumn ctermbg=0 guibg=grey
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 :lua << EOF
+  require("catppuccin").setup({
+    integration = {
+      nvimtree = {
+        enabled = true,
+        show_root = true, -- makes the root folder not transparent
+        transparent_panel = false, -- make the panel transparent
+      }
+    }
+  })
+  vim.cmd[[colorscheme catppuccin]]
+
   -- setup feline
-  require('feline').setup()
+  require("feline").setup({
+    -- components = require('catppuccin.core.integrations.feline'),
+  })
 
   -- setup hop
   require('hop').setup()
@@ -144,6 +171,8 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
     }
   })
 
+  require('diffview').setup()
+
   require('sidebar-nvim').setup({
     open = false,
     side = 'right'
@@ -151,7 +180,24 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
-    ensure_installed = "maintained",
+    ensure_installed = {
+      "rust",
+      "kotlin",
+      "go",
+      "gomod",
+      "elixir",
+      "gleam",
+      "jsdoc",
+      "javascript",
+      "typescript",
+      "python",
+      "lua",
+      "json",
+      "graphql",
+      "yaml",
+      "hcl",
+      "toml"
+    },
     highlight = {
       enable = true,
       -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
@@ -178,30 +224,52 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
   require('telescope').load_extension('fzy_native')
   require('telescope').load_extension('dap')
 
-  -- setup dap
-  require('dapui').setup()
-
   local dap = require('dap')
-  -- :DIInstall jsnode
-  dap.adapters.jsnode = {
-    type = "executable",
-    command = "node",
-    args = {os.getenv("HOME") .. "/.local/share/nvim/dapinstall/jsnode/vscode-node-debug2/out/src/nodeDebug.js"}
-  }
-  dap.configurations.typescript = {
+
+  require('dap-go').setup()
+  require('dap-python').setup()
+  require('dap-python').setup()
+  require("dap-vscode-js").setup({
+    adapters = {
+      'pwa-node',
+      'pwa-chrome',
+      'node-terminal',
+      'pwa-extensionHost'
+    },
+  })
+
+  local nodejs_dap_config = {
     {
-      type = "node2",
-      request = "attach",
+      type = "pwa-node",
+      request = "launch",
+      name = "Launch file",
       program = "${file}",
-      cwd = vim.fn.getcwd(),
-      sourceMaps = true,
-      protocol = "inspector",
-      port = 9229,
-      webRoot = "${workspaceFolder}"
+      cwd = "${workspaceFolder}",
+    },
+    {
+      type = "pwa-node",
+      request = "attach",
+      name = "Attach",
+      processId = require'dap.utils'.pick_process,
+      cwd = "${workspaceFolder}",
     }
   }
 
+  dap.configurations.typescript = nodejs_dap_config
+  dap.configurations.javascript = nodejs_dap_config
+
   require('nvim-dap-virtual-text').setup()
+
+  -- setup dapui
+  require('dapui').setup()
+
+  require('neotest').setup({
+    adapters = {
+      require('neotest-jest')({
+        jestCommand = "yarn jest --"
+      })
+    }
+  })
 
   -- setup completion
   local nvim_lsp = require('lspconfig')
@@ -241,6 +309,33 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 
   -- Setup nvim-cmp with recommended setup
   local cmp = require('cmp')
+  local select_next_item_or_confirm = function(fallback)
+    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
+    if cmp.visible() then
+      local entry = cmp.get_selected_entry()
+      if not entry then
+        cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+      else
+        cmp.confirm()
+      end
+    else
+      fallback()
+    end
+  end
+
+  local confirm_item = function(fallback)
+    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
+    if cmp.visible() then
+      local entry = cmp.get_selected_entry()
+      if entry then
+        cmp.confirm()
+      else
+        fallback()
+      end
+    else
+      fallback()
+    end
+  end
 
   cmp.setup({
     snippet = {
@@ -252,17 +347,51 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       ['<C-d>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
       ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
       ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
-      -- ['<C-y>'] = cmp.config.disable, -- If you want to remove the default `<C-y>` mapping, You can specify `cmp.config.disable` value.
       ['<C-e>'] = cmp.mapping({
         i = cmp.mapping.abort(),
         c = cmp.mapping.close(),
       }),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }),
+      ['<C-n>'] = cmp.mapping({
+        c = function()
+          if cmp.visible() then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            vim.api.nvim_feedkeys(t('<Down>'), 'n', true)
+          end
+        end,
+        i = function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            fallback()
+          end
+        end
+      }),
+      ['<C-p>'] = cmp.mapping({
+        c = function()
+          if cmp.visible() then
+            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            vim.api.nvim_feedkeys(t('<Up>'), 'n', true)
+          end
+        end,
+        i = function(fallback)
+          if cmp.visible() then
+            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+          else
+            fallback()
+          end
+        end
+      }),
+      ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, {"i","s","c",}),
+      ['<CR>'] = cmp.mapping(confirm_item, {"i","s","c",}),
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
+      { name = 'dap' },
       { name = 'cmp_tabnine' },
       { name = 'vsnip' }, -- For vsnip users.
+      { name = 'emoji' },
     }, {
       { name = 'buffer' },
     })
@@ -309,23 +438,38 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       capabilities = capabilities
     }
   end
+
+  local path_to_kotlin_ls = vim.fn.expand('~/kotlin-language-server/server/build/install/server/bin/kotlin-language-server')
+  nvim_lsp.kotlin_language_server.setup {
+    cmd = { path_to_kotlin_ls },
+    on_attach = on_attach,
+    capabilities = capabilities
+  }
 EOF
 
 " custom mappings
 map , <leader>
-" map <leader>n :NERDTreeToggle<CR>
-" map <leader>f :NERDTreeFind<CR>
 map <leader>n :NvimTreeToggle<CR>
 map <leader>f :NvimTreeFindFile<CR>
 map f :HopChar1<CR>
 map r :HopChar2<CR>
 map <leader>a :HopChar1<CR>
 map <leader>s :lua require('sidebar-nvim').toggle()<CR>
-map <leader>da :lua require('debugHelper').attach_to_nodejs_inspector()<CR>
+map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
+map <leader>dc :lua require('dap').continue()<CR>
+map <leader>dsv :lua require('dap').step_over()<CR>
+map <leader>dsi :lua require('dap').step_into()<CR>
+map <leader>dso :lua require('dap').step_out()<CR>
+
 map <leader>du :lua require('dapui').toggle()<CR>
 
-map <leader>t :lua require("jester").run({ cmd = "npx jest -t '$result' -- $file"})<CR>
+map <leader>td :lua require("neotest").run.run({strategy = "dap"})<CR>
+map <leader>tt :lua require("neotest").run.run()<CR>
+map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>
+map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
+map <leader>ts :lua require("neotest").summary.toggle()<CR>
+
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
@@ -333,3 +477,6 @@ smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>
 map <C-c> <esc>
+
+command Light :rightbelow colo material
+command Dark :rightbelow colo catppuccino
