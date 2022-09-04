@@ -78,7 +78,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'mfussenegger/nvim-dap-python'
   Plug 'leoluz/nvim-dap-go'
   Plug 'mxsdev/nvim-dap-vscode-js'
-  Plug 'microsoft/vscode-js-debug' { 'do': 'npm install --legacy-peer-deps && npm run compile' }
 
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'Pocco81/dap-buddy.nvim'
@@ -95,6 +94,7 @@ set shell=zsh\ -l
 let g:signify_vcs_list = [ 'git' ]
 
 autocmd BufWritePre * :%s/\s\+$//e
+autocmd BufRead,BufEnter *.astro set filetype=astro
 
 filetype plugin indent on
 
@@ -178,7 +178,8 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
       "graphql",
       "yaml",
       "hcl",
-      "toml"
+      "toml",
+      "astro"
     },
     highlight = {
       enable = true,
@@ -388,7 +389,7 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
 
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches
-  local servers = { "tsserver", "rust_analyzer" }
+  local servers = { "tsserver", "astro", "rust_analyzer" }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup {
       on_attach = on_attach,
