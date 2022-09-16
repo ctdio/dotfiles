@@ -83,6 +83,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-neotest/neotest'
   Plug 'haydenmeade/neotest-jest'
 
+  Plug 'pwntester/octo.nvim'
+
   " debugging
   Plug 'mfussenegger/nvim-dap'
   Plug 'mfussenegger/nvim-dap-python'
@@ -271,6 +273,8 @@ let g:vim_pbcopy_local_cmd = 'pbcopy'
     }
   })
 
+  require('octo').setup()
+
   -- setup completion
   local nvim_lsp = require('lspconfig')
 
@@ -451,8 +455,7 @@ EOF
 map , <leader>
 map <leader>n :NvimTreeToggle<CR>
 map <leader>f :NvimTreeFindFile<CR>
-map f :HopChar1<CR>
-map r :HopChar2<CR>
+map <leader>b :Telescope buffers<cr>
 map <leader>a :HopChar1<CR>
 map <leader>s :lua require('sidebar-nvim').toggle()<CR>
 map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
@@ -473,6 +476,8 @@ map <leader>ts :lua require("neotest").summary.toggle()<CR>
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
+
+map <S-F> :HopChar1<CR>
 
 map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>

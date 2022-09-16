@@ -8,8 +8,8 @@ local function toggle_size ()
     nvimTree.resize('98%')
   end
 
-  nvimTree.close()
-  nvimTree.open()
+  nvimTree.toggle()
+  nvimTree.toggle()
 
   is_toggled = not is_toggled
 end

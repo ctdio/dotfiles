@@ -34,3 +34,5 @@ export PATH
 
 # make fzf respect .gitignore
 export FZF_DEFAULT_COMMAND='rg --files'
+
+export NODE_OPTIONS='--max-old-space-size=4096'

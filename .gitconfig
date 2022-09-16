@@ -3,12 +3,13 @@
   email = charlieduong94@gmail.com
 [push]
   default = current
+	autoSetupRemote = true
 
 [includeIf "gitdir:~/work/jupiterone/"]
   path = ~/.gitconfig-work
 
 [core]
-  editor = ~/nvim-0.5.appimage
+  editor = ~/nvim.appimage
 
 [merge]
   tool = vimdiff

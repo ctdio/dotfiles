@@ -55,7 +55,7 @@ set -o ignoreeof
 alias letmedeploy='~/work/gsuite.sh'
 alias lpcp='lastPassCopy'
 
-alias j1deploys='npx jupiterone-deployment-dashboard'
+alias j1deploys='AWS_PROFILE=jupiterone-infra npx jupiterone-deployment-dashboard'
 
 alias notes='pushd ~/obsidian; vim; popd'
 
@@ -102,3 +102,5 @@ function tz () {
 
 keychain -q id_rsa
 . ~/.keychain/`uname -n`-sh
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

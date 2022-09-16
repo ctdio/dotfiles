@@ -1,6 +1,6 @@
-nodejs 14.18.1
+nodejs 14.19.3
 yarn 1.22.4
-terraform 0.12.24
+terraform 1.1.9
 python 3.8.2
 rust 1.56.0
 kotlin 1.6.10
