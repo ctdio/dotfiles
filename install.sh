@@ -5,7 +5,7 @@ DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 function main () {
   echo "Installing..."
 
-  linkDotfiles
+  link_dotfiles
 
   echo "Fetching antigen..."
   curl -L git.io/antigen > antigen.zsh
@@ -13,7 +13,7 @@ function main () {
   echo "Install complete!"
 }
 
-function linkDotfiles () {
+function link_dotfiles () {
   echo "Linking dotfiles..."
   # iterate through all files
   # and symlink them to home
@@ -24,10 +24,8 @@ function linkDotfiles () {
     fi
   done
 
-  echo "Linking .vimrc to ~/.config/nvim/init.vim"
+  echo "Linking nvim to ~/.config/nvim"
   ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
-  # ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
-  # ln -nsf ${DOTFILES_DIR}/lua/ ~/.config/nvim/lua
 }
 
 main
