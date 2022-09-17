@@ -25,8 +25,9 @@ function linkDotfiles () {
   done
 
   echo "Linking .vimrc to ~/.config/nvim/init.vim"
-  mkdir -p ~/.config/nvim
-  ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
-  ln -nsf ${DOTFILES_DIR}/lua/ ~/.config/nvim/lua
+  ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
+  # ln -nsf ${DOTFILES_DIR}/.vimrc ~/.config/nvim/init.vim
+  # ln -nsf ${DOTFILES_DIR}/lua/ ~/.config/nvim/lua
 }
+
 main
