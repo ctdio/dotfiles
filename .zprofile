@@ -1,10 +1,3 @@
-if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
-  alias pbcopy='clip.exe'
-elif [[ "$(uname)" = 'Linux' ]]; then
-  alias pbcopy='xclip -selection clipboard'
-  alias nvim='~/nvim.appimage'
-fi
-
 alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
 alias cdj='cd ~/work/jupiterone'

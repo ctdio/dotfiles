@@ -4,6 +4,7 @@ autoload -Uz compinit && compinit
 alias tmux='TERM=screen-256color tmux'
 
 source ~/antigen.zsh
+. $HOME/.asdf/asdf.sh
 
 # Load the oh-my-zsh's library.
 antigen use oh-my-zsh
@@ -26,9 +27,6 @@ antigen theme af-magic
 
 # Tell Antigen that you're done.
 antigen apply
-
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-
 
 # added by travis gem
 [ -f /home/charlie/.travis/travis.sh ] && source /home/charlie/.travis/travis.sh

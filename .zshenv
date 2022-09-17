@@ -26,12 +26,15 @@ export LC_ALL="en_US.UTF-8"
 # make fzf respect .gitignore
 export FZF_DEFAULT_COMMAND='rg --files'
 
+if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
+  alias pbcopy='clip.exe'
+elif [[ "$(uname)" = 'Linux' ]]; then
+  alias pbcopy='xclip -selection clipboard'
+fi
 
-# editor
 if [[ "$(uname)" = 'Linux' ]]; then
   export EDITOR=~/nvim.appimage
+  alias nvim='~/nvim.appimage'
 else
   export EDITOR=nvim
 fi
-
-. "$HOME/.cargo/env"
