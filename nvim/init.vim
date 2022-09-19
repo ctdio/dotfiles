@@ -11,11 +11,10 @@ endif
 call plug#begin('~/.vim/plugged')
   " highlighting
   Plug 'tjvr/vim-nearley'
-
   " Updating the parsers on treesitter update is recommended
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
-  " autocomplete
+  " completion
   Plug 'neovim/nvim-lspconfig'
   Plug 'hrsh7th/cmp-nvim-lsp'
   Plug 'hrsh7th/cmp-buffer'
@@ -35,21 +34,18 @@ call plug#begin('~/.vim/plugged')
   Plug 'bluz71/vim-nightfly-guicolors'
   Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
   Plug 'mangeshrex/uwu.vim'
-  " Plug 'pocco81/catppuccino.nvim'
   Plug 'catppuccin/nvim'
   Plug 'Mofiqul/vscode.nvim'
 
   " writing
   Plug 'junegunn/goyo.vim'
 
-  " note taking
-  Plug 'vimwiki/vimwiki'
-
   " git integration
   Plug 'mhinz/vim-signify'
   Plug 'tpope/vim-fugitive'
 
   " text editing
+  Plug 'danilamihailov/beacon.nvim'
   Plug 'tpope/vim-surround'
   Plug 'scrooloose/nerdcommenter'
   Plug 'editorconfig/editorconfig-vim'
@@ -69,14 +65,12 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'vim-test/vim-test'
   Plug 'tpope/vim-dispatch'
-  Plug 'David-Kunz/jester'
   Plug 'jbyuki/venn.nvim'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
-
   Plug 'mfussenegger/nvim-dap-python'
   Plug 'leoluz/nvim-dap-go'
   Plug 'mxsdev/nvim-dap-vscode-js'
@@ -84,6 +78,18 @@ call plug#begin('~/.vim/plugged')
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
+  Plug 'folke/trouble.nvim'
+  Plug 'rcarriga/nvim-notify'
+
+  " testing
+  Plug 'antoinemadec/FixCursorHold.nvim'
+  Plug 'nvim-neotest/neotest'
+  Plug 'nvim-neotest/neotest-go'
+  Plug 'nvim-neotest/neotest-python'
+  Plug 'haydenmeade/neotest-jest'
+  Plug 'marilari88/neotest-vitest'
+  Plug 'rouge8/neotest-rust'
+  Plug 'jfpedroza/neotest-elixir'
 
   " temp until treesitter performance improves
   " Plug 'elixir-editors/vim-elixir'
@@ -95,6 +101,7 @@ call plug#end()
   require('config.syntax').setup()
   require('config.navigation').setup()
   require('config.debug').setup()
+  require('config.test').setup()
   require('config.completion').setup()
 EOF
 

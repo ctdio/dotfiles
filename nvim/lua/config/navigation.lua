@@ -5,7 +5,6 @@ local function setup ()
   -- setup nvim-tree for file nav
   require("nvim-tree").setup({
     view = {
-      auto_resize = true,
       mappings = {
         list = {
           {

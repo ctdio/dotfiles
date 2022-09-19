@@ -33,6 +33,9 @@ local function setup ()
   }
 
   require('nvim-dap-virtual-text').setup()
+
+  -- setup rcarriga/nvim-notify
+  vim.notify = require('notify')
 end
 
 return {
