@@ -134,6 +134,14 @@ set cursorline
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
+" latte (light)
+" frappe
+" macchiato
+" mocha (dark)
+let g:catppuccin_flavour = "mocha"
+
+colorscheme catppuccin
+
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 
@@ -169,5 +177,6 @@ map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>
 map <C-c> <esc>
 
-command Light :rightbelow colo material
-command Dark :rightbelow colo catppuccino
+command Light :Catppuccin latte
+command Dark :Catppuccin mocha
+
