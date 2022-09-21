@@ -68,6 +68,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'jbyuki/venn.nvim'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
+  Plug 'pwntester/octo.nvim'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
@@ -177,8 +178,6 @@ map <leader>ts :lua require("neotest").summary.toggle()<CR>
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
-
-map <S-F> :HopChar1<CR>
 
 map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>

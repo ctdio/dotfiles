@@ -1,3 +1,5 @@
+set -o ignoreeof
+
 alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
 alias cdj='cd ~/work/jupiterone'
@@ -20,12 +22,21 @@ alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
 
-set -o ignoreeof
-
 alias notes='pushd ~/obsidian; nvim; popd'
 
-
 # helper functions
+
+function fgd() {
+  preview="git diff $@ --color=always {1}"
+  git diff $@ --name-only | fzf -m --ansi --preview ${preview}
+}
+
+function fgco() {
+  preview='git log --color=always {1}'
+  branch_desc=$(git branch -vv | fzf -m --ansi --preview ${preview})
+  branch="$(echo "${branch_desc}" | awk '{print $1}')"
+  git checkout ${branch}
+}
 
 function j1deploys () {
   npx jupiterone-deployment-dashboard
@@ -36,7 +47,12 @@ function j1deploystatus() {
 }
 
 function fixdisplays () {
-  xrandr --output DP-1-1 --size 3440x1440 && xrandr --output eDP-1-1 --off
+  display_id=$(xrandr | grep "^DP" | grep " connected " | awk '{print $1}')
+  echo "Making \"${display_id}\" the primary display..."
+  xrandr --output ${display_id} --size 3440x1440
+  echo "Turning off laptop screen..."
+  xrandr --output eDP-1 --off
+  echo "Done."
 }
 
 function lastPassCopy () {

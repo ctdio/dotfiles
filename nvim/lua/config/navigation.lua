@@ -26,7 +26,7 @@ local function setup ()
 
   -- setup telescope
   local telescope_actions = require('telescope.actions')
-  require('telescope').setup{
+  require('telescope').setup({
     defaults = {
       mappings = {
         i = {
@@ -35,9 +35,11 @@ local function setup ()
         }
       }
     }
-  }
+  })
   require('telescope').load_extension('fzy_native')
   require('telescope').load_extension('dap')
+
+  require('octo').setup()
 end
 
 return {

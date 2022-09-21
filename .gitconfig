@@ -1,21 +1,22 @@
 [user]
   name = Charlie Duong
   email = charlieduong94@gmail.com
+
 [push]
   default = current
-
-[includeIf "gitdir:~/work/lifeomic"]
-  path = ~/work/lifeomic/.gitconfig
-
-[includeIf "gitdir:~/work/jupiterone"]
-  path = ~/work/jupiterone/.gitconfig
+  autoSetupRemote = true
 
 [core]
   editor = nvim
 
 [merge]
   tool = vimdiff
+
 [mergetool]
   prompt = true
+
 [mergetool "vimdiff"]
   cmd = nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+
+[includeIf "gitdir:~/work/jupiterone/"]
+  path = ~/work/jupiterone/.gitconfig
