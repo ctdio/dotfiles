@@ -61,7 +61,7 @@ call plug#begin('~/.vim/plugged')
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
-  Plug 'prettier/vim-prettier', { 'do': 'npm install' }
+  Plug 'sbdchd/neoformat'
   Plug 'ahw/vim-pbcopy'
   Plug 'vim-test/vim-test'
   Plug 'tpope/vim-dispatch'
@@ -112,6 +112,9 @@ set shell=zsh\ -l
 " optimization: only use git for signify
 let g:signify_vcs_list = [ 'git' ]
 
+" use project-local prettier
+let g:neoformat_try_node_exe = 1
+
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 
@@ -160,6 +163,7 @@ map <leader>f :NvimTreeFindFile<CR>
 map <leader>b :Telescope buffers<cr>
 map <leader>a :HopChar1<CR>
 map <leader>s :lua require('sidebar-nvim').toggle()<CR>
+map <leader>p :Neoformat<CR>
 map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
 map <leader>dc :lua require('dap').continue()<CR>
@@ -169,6 +173,7 @@ map <leader>dso :lua require('dap').step_out()<CR>
 
 map <leader>du :lua require('dapui').toggle()<CR>
 
+map <leader>ta :lua require("neotest").run.attach()<CR>
 map <leader>td :lua require("neotest").run.run({strategy = "dap"})<CR>
 map <leader>tt :lua require("neotest").run.run()<CR>
 map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>

@@ -25,6 +25,16 @@ alias yt='yarn test'
 alias notes='pushd ~/obsidian; nvim; popd'
 
 # helper functions
+function fcd () {
+  directories=$(ls -d */)
+  chosen_directory=$(echo "${directories}" | fzf)
+
+  if type z &> /dev/null; then
+    z ${chosen_directory}
+  else
+    cd ${chosen_directory}
+  fi
+}
 
 function fgd() {
   preview="git diff $@ --color=always {1}"
@@ -33,7 +43,7 @@ function fgd() {
 
 function fgco() {
   preview='git log --color=always {1}'
-  branch_desc=$(git branch -vv | fzf -m --ansi --preview ${preview})
+  branch_desc=$(git branch $@ -vv | fzf -m --ansi --preview ${preview})
   branch="$(echo "${branch_desc}" | awk '{print $1}')"
   git checkout ${branch}
 }

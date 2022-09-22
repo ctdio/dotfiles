@@ -39,3 +39,7 @@ if [ -f '/Users/charlieduong/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ch
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc'; fi
+
+if type zoxide &> /dev/null; then
+  eval "$(zoxide init zsh)"
+fi
