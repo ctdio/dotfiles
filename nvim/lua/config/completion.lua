@@ -69,6 +69,10 @@ local function setup()
     end
   end
 
+  local replace_termcodes = function(str)
+      return vim.api.nvim_replace_termcodes(str, true, true, true)
+  end
+
   cmp.setup({
     snippet = {
       expand = function(args)
@@ -88,7 +92,7 @@ local function setup()
           if cmp.visible() then
             cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
           else
-            vim.api.nvim_feedkeys(t('<Down>'), 'n', true)
+            vim.api.nvim_feedkeys(replace_termcodes('<Down>'), 'n', true)
           end
         end,
         i = function(fallback)
@@ -104,7 +108,7 @@ local function setup()
           if cmp.visible() then
             cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
           else
-            vim.api.nvim_feedkeys(t('<Up>'), 'n', true)
+            vim.api.nvim_feedkeys(replace_termcodes('<Up>'), 'n', true)
           end
         end,
         i = function(fallback)
