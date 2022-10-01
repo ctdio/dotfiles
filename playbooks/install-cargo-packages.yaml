@@ -1,11 +1,11 @@
 ---
-- hosts: 127.0.0.1
+- hosts: localhost
+  connection: local
   vars:
     packages:
       - bat
       - zoxide
       - ripgrep
-  connection: local
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"

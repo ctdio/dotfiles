@@ -41,15 +41,18 @@ function install_fzf_git () {
 
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    apt install ansible
+    sudo apt install ansible
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
   fi
+
+  ansible-galaxy collection install community.general
 }
 
 function install_asdf () {
   if [ ! -d ~/.asdf ]; then
     git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
+    . $HOME/.asdf/asdf.sh
   else
     echo "asdf is already installed. Skipping."
   fi

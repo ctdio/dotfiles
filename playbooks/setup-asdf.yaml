@@ -1,5 +1,5 @@
 ---
-- hosts: 127.0.0.1
+- hosts: localhost
   vars:
     home_dir: "'{{ lookup('env', 'HOME') }}'"
     plugins:

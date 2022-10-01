@@ -1,12 +1,11 @@
-
 ---
-- hosts: 127.0.0.1
+- hosts: localhost
+  connection: local
   vars:
     packages:
       - typescript-language-server
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
-    connection: local
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"
