@@ -1,0 +1,13 @@
+
+---
+- hosts: 127.0.0.1
+  vars:
+    packages:
+      - typescript-language-server
+      - "@astrojs/language-server"
+      - "@astrojs/ts-plugin"
+    connection: local
+  tasks:
+    - name: Installing npm packages
+      loop: "{{ packages }}"
+      ansible.builtin.shell: "npm i -g {{ item }}"

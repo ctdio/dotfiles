@@ -12,6 +12,8 @@ function main () {
   install_ansible
   run_ansible_playbooks
 
+  asdf reshim
+
   echo "Install complete!"
 }
 
@@ -54,10 +56,14 @@ function install_asdf () {
 }
 
 function run_ansible_playbooks () {
+  if [[ "$(uname)" = 'Darwin' ]]; then
+    ansible-playbook ./playbooks/install-brew-packages.yaml
+  fi
+
   ansible-playbook ./playbooks/setup-asdf.yaml
-  ansible-playbook ./playbooks/install-brew-packages.yaml
   ansible-playbook ./playbooks/install-cargo-packages.yaml
   ansible-playbook ./playbooks/install-golang-packages.yaml
+  ansible-playbook ./playbooks/install-npm-packages.yaml
 }
 
 function link_dotfiles () {
