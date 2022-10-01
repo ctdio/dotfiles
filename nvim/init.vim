@@ -39,6 +39,7 @@ call plug#begin('~/.vim/plugged')
 
   " writing
   Plug 'junegunn/goyo.vim'
+  Plug 'junegunn/limelight.vim'
 
   " git integration
   Plug 'mhinz/vim-signify'
@@ -187,6 +188,8 @@ map <leader>tt :lua require("neotest").run.run()<CR>
 map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>
 map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
 map <leader>ts :lua require("neotest").summary.toggle()<CR>
+
+map <leader>l :Limelight!!<CR>
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
