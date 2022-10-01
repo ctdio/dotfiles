@@ -1,7 +1,7 @@
 ---
 - hosts: 127.0.0.1
   vars:
-    base_install_packages:
+    packages:
       - readline
       - gcc
       - wget
@@ -18,30 +18,23 @@
       - gawk
       - thefuck
       - fzy
-      - fzf
       - pyenv
       - readline
       - xz
       - openssl
       - sqlite3
       - zlib
-      - asdf
-      - ripgrep
-      - terraform
-      - waypoint
-      - kubectl
       - awscli
-      - glow
       - ffmpeg
       - libpq
-    cask_install_packages:
+    casks:
       - bitwarden
       - docker
   connection: local
   tasks:
     - name: Install apps with homebrew
       homebrew: name={{ item }} state=present
-      loop: "{{ base_install_packages }}"
+      loop: "{{ packages }}"
     - name: Install cask packages
       homebrew_cask: name={{ item }} state=present
-      loop: "{{ cask_install_packages }}"
+      loop: "{{ casks }}"

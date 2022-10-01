@@ -33,9 +33,13 @@ antigen apply
 
 # install fzf keybindings
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# enable fzf-git
+[ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/charlieduong/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/path.zsh.inc'; fi
+if [ -f '/Users/charlieduong/google-cloud-sdk/path.zsh.inc' ]; then
+  . '/Users/charlieduong/google-cloud-sdk/path.zsh.inc';
+fi
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc'; fi
@@ -43,3 +47,4 @@ if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then . '/Us
 if type zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"
 fi
+

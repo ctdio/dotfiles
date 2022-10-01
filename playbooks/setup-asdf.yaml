@@ -1,0 +1,74 @@
+---
+- hosts: 127.0.0.1
+  vars:
+    home_dir: "'{{ lookup('env', 'HOME') }}'"
+    plugins:
+      - plugin: nodejs
+        repo: https://github.com/asdf-vm/asdf-nodejs
+      - plugin: yarn
+        repo: https://github.com/twuni/asdf-yarn
+      - plugin: pnpm
+        repo: https://github.com/jonathanmorley/asdf-pnpm
+      - plugin: deno
+        repo: https://github.com/asdf-community/asdf-deno
+      - plugin: rust
+        repo: https://github.com/asdf-community/asdf-rust
+      - plugin: python
+        repo: https://github.com/asdf-community/asdf-python
+      - plugin: golang
+        repo: https://github.com/kennyp/asdf-golang
+      - plugin: erlang
+        repo: https://github.com/asdf-vm/asdf-erlang
+      - plugin: elixir
+        repo: https://github.com/asdf-vm/asdf-elixir
+      - plugin: gleam
+        repo: https://github.com/asdf-community/asdf-gleam
+      - plugin: bazel
+        repo: https://github.com/mrinalwadhwa/asdf-bazel
+      - plugin: bazel
+        repo: https://github.com/mrinalwadhwa/asdf-bazel
+      - plugin: waypoint
+        repo: https://github.com/asdf-community/asdf-hashicorp
+      - plugin: terraform
+        repo: https://github.com/asdf-community/asdf-hashicorp
+      - plugin: kubectl
+        repo: https://github.com/asdf-community/asdf-kubectl
+      - plugin: minikube
+        repo: https://github.com/alvarobp/asdf-minikube
+  connection: local
+  tasks:
+    - name: Install asdf plugins
+      loop: "{{ plugins }}"
+      register: add_result
+      ansible.builtin.shell: >
+        asdf plugin add {{ item.plugin }} {{ item.repo }}
+      failed_when: add_result.rc != 0 and add_result.rc != 2
+    - name: Execute plugin result
+      register: installed_plugins
+      ansible.builtin.shell: >
+        asdf plugin list
+    - name: Added plugins
+      debug:
+        msg: "{{installed_plugins.stdout.split('\n')}}"
+    - name: Added plugins
+      debug:
+        var: ansible_env.HOME
+    - name: Added plugins
+      debug:
+        var: ansible_env.HOME
+    - name: Get tool versions
+      register: tool_versions
+      ansible.builtin.shell: >
+        cd "{{ansible_env.HOME}}";
+        cat .tool-versions
+    - name: Tool versions
+      debug:
+        msg: "{{tool_versions.stdout.split('\n')}}"
+    - name: Execute asdf install
+      register: asdf_install_result
+      ansible.builtin.shell: >
+        cd "{{ansible_env.HOME}}";
+        asdf install
+    - name: Install result
+      debug:
+        msg: "{{asdf_install_result.stdout.split('\n')}}"

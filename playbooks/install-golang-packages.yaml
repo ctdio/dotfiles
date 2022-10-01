@@ -1,0 +1,14 @@
+
+---
+- hosts: 127.0.0.1
+  vars:
+    package_repos:
+      - golang.org/x/tools/gopls@latest
+      - github.com/charmbracelet/glow@latest
+  connection: local
+  tasks:
+    - name: Installing golang packages
+      loop: "{{ package_repos }}"
+      ansible.builtin.shell: >
+        go install {{ item }}
+
