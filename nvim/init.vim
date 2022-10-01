@@ -70,6 +70,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'tyru/open-browser-github.vim'
   Plug 'pwntester/octo.nvim'
 
+  Plug 'kevinhwang91/promise-async'
+  Plug 'kevinhwang91/nvim-ufo'
+
   " debugging
   Plug 'mfussenegger/nvim-dap'
   Plug 'mfussenegger/nvim-dap-python'
@@ -119,6 +122,11 @@ autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 
 filetype plugin indent on
+
+set foldenable
+set foldcolumn=1
+set foldlevel=99
+set foldlevelstart=99
 
 set noswapfile
 set expandtab
@@ -179,7 +187,6 @@ map <leader>tt :lua require("neotest").run.run()<CR>
 map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>
 map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
 map <leader>ts :lua require("neotest").summary.toggle()<CR>
-
 
 imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
 smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'

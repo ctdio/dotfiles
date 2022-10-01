@@ -150,9 +150,15 @@ local function setup()
   })
 
   -- Setup lspconfig.
-  local capabilities = require('cmp_nvim_lsp').update_capabilities(
-    vim.lsp.protocol.make_client_capabilities()
-  )
+
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+  capabilities.textDocument.foldingRange = {
+    dynamicRegistration = false,
+    lineFoldingOnly = true
+  }
+
+  capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches

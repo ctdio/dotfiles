@@ -40,6 +40,8 @@ local function setup ()
   require('telescope').load_extension('dap')
 
   require('octo').setup()
+
+  require('ufo').setup()
 end
 
 return {
