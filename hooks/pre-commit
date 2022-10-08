@@ -1,6 +1,17 @@
-set -e
+#!/bin/bash
 
-echo "Applying stylua styling..."
-stylua .
-git add nvim
+echo "Searching for lua files to format..."
+STAGED_LUA_FILES=$(
+  git --no-pager diff --staged --name-only | grep '.lua$'
+)
+
+if [[ ! -z ${STAGED_LUA_FILES} ]]; then
+  echo "Found lua files to format. Formatting the following files:"
+  echo "${STAGED_LUA_FILES}"
+  stylua ${STAGED_LUA_FILES}
+  git add ${STAGED_LUA_FILES}
+  echo "Done formatting."
+else
+  echo "No lua files to format."
+fi
 
