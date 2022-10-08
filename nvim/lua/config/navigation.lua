@@ -24,6 +24,15 @@ local function setup ()
     },
   })
 
+  -- setup bufferline for nicer tabs
+  require('bufferline').setup({
+    options = {
+      separator_style = "slant",
+      diagnostics = "nvim_lsp",
+      mode = "tabs",
+    }
+  })
+
   -- setup telescope
   local telescope_actions = require('telescope.actions')
   require('telescope').setup({
@@ -40,6 +49,7 @@ local function setup ()
   require('telescope').load_extension('dap')
   require('telescope-tabs').setup()
 
+  -- setup ufo for folding
   require('ufo').setup()
 end
 

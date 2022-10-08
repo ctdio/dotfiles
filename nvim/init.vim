@@ -58,6 +58,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua'
+  Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
@@ -138,9 +139,7 @@ set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
 " Theming
-if (has("termguicolors"))
-  set termguicolors
-endif
+set termguicolors
 syntax on
 set cursorline
 set colorcolumn=80
