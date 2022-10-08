@@ -36,6 +36,8 @@ local function setup ()
 
   -- setup rcarriga/nvim-notify
   vim.notify = require('notify')
+
+  require('trouble').setup()
 end
 
 return {

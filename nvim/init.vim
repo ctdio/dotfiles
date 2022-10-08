@@ -38,9 +38,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'junegunn/limelight.vim'
 
   " git integration
+  Plug 'tpope/vim-fugitive'
   Plug 'pwntester/octo.nvim'
   Plug 'lewis6991/gitsigns.nvim'
-  Plug 'tpope/vim-fugitive'
   Plug 'sindrets/diffview.nvim'
 
   " text editing
@@ -63,12 +63,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
   Plug 'sbdchd/neoformat'
   Plug 'ahw/vim-pbcopy'
-  Plug 'vim-test/vim-test'
-  Plug 'tpope/vim-dispatch'
-  Plug 'jbyuki/venn.nvim'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
-
   Plug 'kevinhwang91/promise-async'
   Plug 'kevinhwang91/nvim-ufo'
 
