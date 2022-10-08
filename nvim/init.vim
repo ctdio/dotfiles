@@ -1,4 +1,4 @@
-" NOTE: this requires ripgrep and fd need to be installed
+" NOTE: this requires ripgrep and fd need to be installedj
 " to have everything working correctly
 
 " setup plug
@@ -31,19 +31,17 @@ call plug#begin('~/.vim/plugged')
   Plug 'famiu/feline.nvim'
 
   " colorscheme
-  Plug 'bluz71/vim-nightfly-guicolors'
-  Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
-  Plug 'mangeshrex/uwu.vim'
   Plug 'catppuccin/nvim'
-  Plug 'Mofiqul/vscode.nvim'
 
   " writing
   Plug 'junegunn/goyo.vim'
   Plug 'junegunn/limelight.vim'
 
   " git integration
-  Plug 'mhinz/vim-signify'
+  Plug 'pwntester/octo.nvim'
+  Plug 'lewis6991/gitsigns.nvim'
   Plug 'tpope/vim-fugitive'
+  Plug 'sindrets/diffview.nvim'
 
   " text editing
   Plug 'danilamihailov/beacon.nvim'
@@ -55,7 +53,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'nvim-telescope/telescope-dap.nvim'
-  Plug 'nvim-telescope/telescope-fzy-native.nvim'
+  Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+  Plug 'LukasPietzschmann/telescope-tabs'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua'
@@ -69,7 +68,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'jbyuki/venn.nvim'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
-  Plug 'pwntester/octo.nvim'
 
   Plug 'kevinhwang91/promise-async'
   Plug 'kevinhwang91/nvim-ufo'
@@ -107,6 +105,7 @@ call plug#end()
   require('config.navigation').setup()
   require('config.debug').setup()
   require('config.test').setup()
+  require('config.git').setup()
   require('config.completion').setup()
 EOF
 
@@ -166,10 +165,12 @@ colorscheme catppuccin
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 " custom mappings
+" NOTE: completion mappings live in ./lua/config/completion.lua
 map , <leader>
 map <leader>n :NvimTreeToggle<CR>
 map <leader>f :NvimTreeFindFile<CR>
-map <leader>b :Telescope buffers<cr>
+map <leader>b :Telescope buffers<CR>
+map <leader>g :Telescope telescope-tabs list_tabs<CR>
 map <leader>a :HopChar1<CR>
 map <leader>s :lua require('sidebar-nvim').toggle()<CR>
 map <leader>p :Neoformat<CR>

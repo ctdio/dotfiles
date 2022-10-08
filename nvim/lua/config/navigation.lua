@@ -34,12 +34,11 @@ local function setup ()
           ["<C-j>"] = telescope_actions.move_selection_next
         }
       }
-    }
+    },
   })
-  require('telescope').load_extension('fzy_native')
+  require('telescope').load_extension('fzf')
   require('telescope').load_extension('dap')
-
-  require('octo').setup()
+  require('telescope-tabs').setup()
 
   require('ufo').setup()
 end
