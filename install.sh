@@ -6,7 +6,7 @@ function main () {
   echo "Installing..."
 
   link_dotfiles
-
+  link_git_hooks
   install_antigen
   install_fzf_git
   install_asdf
@@ -22,6 +22,38 @@ function main () {
   asdf reshim
 
   echo "Install complete!"
+}
+
+function link_dotfiles () {
+  echo "Linking dotfiles..."
+  # iterate through all files
+  # and symlink them to home
+  for filename in $(ls -A ${DOTFILES_DIR}); do
+    if [[ ${filename} != ".git" && ${filename} == .* ]]; then
+      echo "Linking ${filename} to ~/${filename}"
+      ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}
+    fi
+  done
+
+  echo "Linking nvim to ~/.config/nvim"
+  ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
+
+  echo "Linking startup.sh to ~/startup.sh"
+  ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
+}
+
+function link_git_hooks() {
+  echo "Linking git hooks..."
+
+  local source_dir=${DOTFILES_DIR}/hooks
+  local destination_dir=${DOTFILES_DIR}/.git/hooks
+
+  for filename in $(ls -A ${source_dir}); do
+    local source_file_path=${source_dir}/${filename}
+    local destination_file_path=${destination_dir}/${filename}
+    echo "Linking ${source_file_path} to ${destination_file_path}"
+    ln -nsf ${source_file_path} ${destination_file_path}
+  done
 }
 
 function install_antigen () {
@@ -49,6 +81,16 @@ function install_fzf_git () {
   fi
 }
 
+function install_asdf () {
+  if [[ ! -d ~/.asdf ]]; then
+    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
+    . ${HOME}/.asdf/asdf.sh
+  else
+    echo "asdf is already installed. Skipping."
+  fi
+}
+
+
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
     sudo apt install ansible
@@ -57,15 +99,6 @@ function install_ansible () {
   fi
 
   ansible-galaxy collection install community.general
-}
-
-function install_asdf () {
-  if [[ ! -d ~/.asdf ]]; then
-    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
-    . ${HOME}/.asdf/asdf.sh
-  else
-    echo "asdf is already installed. Skipping."
-  fi
 }
 
 function install_ninja () {
@@ -104,24 +137,6 @@ function run_ansible_playbooks () {
   ansible-playbook ./playbooks/install-cargo-packages.yaml
   ansible-playbook ./playbooks/install-golang-packages.yaml
   ansible-playbook ./playbooks/install-npm-packages.yaml
-}
-
-function link_dotfiles () {
-  echo "Linking dotfiles..."
-  # iterate through all files
-  # and symlink them to home
-  for filename in $(ls -A ${DOTFILES_DIR}); do
-    if [[ ${filename} != ".git" && ${filename} == .* ]]; then
-      echo "Linking ${filename} to ~/${filename}"
-      ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}
-    fi
-  done
-
-  echo "Linking nvim to ~/.config/nvim"
-  ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
-
-  echo "Linking startup.sh to ~/startup.sh"
-  ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
 }
 
 main
