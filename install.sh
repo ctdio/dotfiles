@@ -25,21 +25,24 @@ function main () {
 }
 
 function install_antigen () {
-  echo "Fetching antigen..."
-  curl -L git.io/antigen > ~/antigen.zsh
+  echo "Installing antigen..."
+  if [[ ! -f ~/antigen.zsh ]]; then
+    curl -L git.io/antigen > ~/antigen.zsh
+  else
+    echo "antigen is already installed. Skipping."
+  fi
 }
 
 function install_fzf_git () {
   echo "Installing fzf"
-  if [ ! -d ~/.fzf ]; then
+  if [[ ! -d ~/.fzf ]]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
   else
     echo "fzf is already installed. Skipping."
   fi
 
-  if [ ! -d ~/.fzf-git.sh ]; then
-    echo "Installing fzf-git"
+  if [[ ! -d ~/.fzf-git.sh ]]; then echo "Installing fzf-git"
     git clone https://github.com/junegunn/fzf-git.sh ~/.fzf-git.sh
   else
     echo "fzf-git.sh is already installed. Skipping."
@@ -57,7 +60,7 @@ function install_ansible () {
 }
 
 function install_asdf () {
-  if [ ! -d ~/.asdf ]; then
+  if [[ ! -d ~/.asdf ]]; then
     git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
     . ${HOME}/.asdf/asdf.sh
   else
@@ -74,7 +77,7 @@ function install_ninja () {
 }
 
 function install_lua_language_server () {
-  if [ ! -f ~/.lua-language-server/bin/lua-language-server ]; then
+  if [[ ! -f ~/.lua-language-server/bin/lua-language-server ]]; then
     echo "Installing lua-language-server"
     git clone --depth=1 \
       https://github.com/sumneko/lua-language-server \
