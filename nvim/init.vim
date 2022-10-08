@@ -112,9 +112,6 @@ EOF
 " use zsh shell
 set shell=zsh\ -l
 
-" optimization: only use git for signify
-let g:signify_vcs_list = [ 'git' ]
-
 " use project-local prettier
 let g:neoformat_try_node_exe = 1
 
@@ -180,7 +177,6 @@ map <leader>dc :lua require('dap').continue()<CR>
 map <leader>dsv :lua require('dap').step_over()<CR>
 map <leader>dsi :lua require('dap').step_into()<CR>
 map <leader>dso :lua require('dap').step_out()<CR>
-
 map <leader>du :lua require('dapui').toggle()<CR>
 
 map <leader>ta :lua require("neotest").run.attach()<CR>
