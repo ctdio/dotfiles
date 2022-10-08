@@ -48,4 +48,4 @@ if type zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"
 fi
 
-alias luamake=~.lua-language-server/3rd/luamake/luamake
+alias luamake=~/.lua-language-server/3rd/luamake/luamake

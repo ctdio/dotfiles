@@ -6,6 +6,7 @@
       - bat
       - zoxide
       - ripgrep
+      - stylua
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"
