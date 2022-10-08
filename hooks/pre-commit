@@ -1,3 +1,6 @@
 set -e
 
+echo "Applying stylua styling..."
 stylua .
+git add nvim
+
