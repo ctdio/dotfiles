@@ -7,6 +7,7 @@ function main () {
 
   link_dotfiles
 
+  install_antigen
   install_fzf_git
   install_asdf
   install_ansible
@@ -23,7 +24,7 @@ function main () {
   echo "Install complete!"
 }
 
-function fetch_antigen () {
+function install_antigen () {
   echo "Fetching antigen..."
   curl -L git.io/antigen > ~/antigen.zsh
 }
