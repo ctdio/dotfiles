@@ -1,4 +1,4 @@
-local function setup ()
+local function setup()
   -- setup dap
   require('dapui').setup()
 
@@ -27,7 +27,7 @@ local function setup ()
       type = "pwa-node",
       request = "attach",
       name = "Attach",
-      processId = require'dap.utils'.pick_process,
+      processId = require 'dap.utils'.pick_process,
       cwd = "${workspaceFolder}",
     }
   }

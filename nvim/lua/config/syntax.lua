@@ -1,4 +1,4 @@
-local function setup ()
+local function setup()
   -- setup treesitter
   require('nvim-treesitter.configs').setup {
     ensure_installed = {

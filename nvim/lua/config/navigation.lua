@@ -1,4 +1,4 @@
-local function setup ()
+local function setup()
   -- setup hop for movement
   require('hop').setup()
 
@@ -8,16 +8,16 @@ local function setup ()
       mappings = {
         list = {
           {
-              key = "<S-a>",
-              cb = ":lua require('nvimTreeUtil').toggle_size()<CR>"
+            key = "<S-a>",
+            cb = ":lua require('nvimTreeUtil').toggle_size()<CR>"
           },
           {
-              key = "i",
-              action = "split"
+            key = "i",
+            action = "split"
           },
           {
-              key = "s",
-              action = "vsplit"
+            key = "s",
+            action = "vsplit"
           }
         }
       }

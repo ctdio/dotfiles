@@ -2,14 +2,14 @@ local function setup()
   local nvim_lsp = require('lspconfig')
 
 
-  local opts = { noremap=true, silent=true }
+  local opts = { noremap = true, silent = true }
   -- See `:help vim.diagnostic.*` for documentation on any of the below functions
   vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
   vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
   vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
   -- vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
   vim.keymap.set('n', '<space>q', "<CMD>TroubleToggle document_diagnostics<CR>", opts)
-  vim.keymap.set("n", "<space>f", vim.lsp.buf.formatting, opts)
+  vim.keymap.set("n", "<space>f", vim.lsp.buf.format, opts)
 
   -- Use an on_attach function to only map the following keys
   -- after the language server attaches to the current buffer
@@ -17,6 +17,7 @@ local function setup()
     local function buf_set_keymap(...)
       vim.api.nvim_buf_set_keymap(bufnr, ...)
     end
+
     local function buf_set_option(...)
       vim.api.nvim_buf_set_option(bufnr, ...)
     end
@@ -25,7 +26,7 @@ local function setup()
     buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
     -- Mappings.
-    local bufopts = { noremap=true, silent=true, buffer=bufnr }
+    local bufopts = { noremap = true, silent = true, buffer = bufnr }
 
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
@@ -78,7 +79,7 @@ local function setup()
   end
 
   local replace_termcodes = function(str)
-      return vim.api.nvim_replace_termcodes(str, true, true, true)
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
   end
 
   cmp.setup({
@@ -127,8 +128,8 @@ local function setup()
           end
         end
       }),
-      ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, {"i","s","c",}),
-      ['<CR>'] = cmp.mapping(confirm_item, {"i","s","c",}),
+      ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, { "i", "s", "c", }),
+      ['<CR>'] = cmp.mapping(confirm_item, { "i", "s", "c", }),
     },
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
@@ -170,13 +171,35 @@ local function setup()
 
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches
-  local servers = { "tsserver", "astro", "rust_analyzer", "gopls" }
+  local servers = { "tsserver", "astro", "rust_analyzer", "gopls", "sumneko_lua" }
   for _, lsp in ipairs(servers) do
-    nvim_lsp[lsp].setup {
+    nvim_lsp[lsp].setup({
       on_attach = on_attach,
       capabilities = capabilities
-    }
+    })
   end
+
+  -- sumneko_lua requires some additional config
+  nvim_lsp.sumneko_lua.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    settings = {
+      Lua = {
+        runtime = {
+          -- neovim uses LuaJIT
+          version = 'LuaJIT',
+        },
+        workspace = {
+          -- Make the server aware of Neovim runtime files
+          library = vim.api.nvim_get_runtime_file("", true),
+        },
+        diagnostics = {
+          -- Get the language server to recognize the `vim` global
+          globals = { 'vim' }
+        }
+      }
+    }
+  })
 
   -- elixirls requires some additional config
   -- handle it separately=

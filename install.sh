@@ -2,6 +2,8 @@
 
 DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 
+echo $DOTFILES_DIR
+
 function main () {
   echo "Installing..."
 
@@ -10,7 +12,13 @@ function main () {
   install_fzf_git
   install_asdf
   install_ansible
-  run_ansible_playbooks
+
+  # most language servers will be installed via playbooks
+  #run_ansible_playbooks
+
+  # lua language server requires a little more work
+  install_ninja
+  install_lua_language_server
 
   asdf reshim
 
@@ -58,6 +66,33 @@ function install_asdf () {
   fi
 }
 
+function install_ninja () {
+  if [[ "$(uname)" = 'Linux' ]]; then
+    sudo apt install ninja-build
+  elif [[ "$(uname)" = 'Darwin' ]]; then
+    brew install ninja
+  fi
+}
+
+function install_lua_language_server () {
+  if [ ! -f ~/.lua-language-server/bin/lua-language-server ]; then
+    echo "Installing lua-language-server"
+    git clone --depth=1 \
+      https://github.com/sumneko/lua-language-server \
+      ~/.lua-language-server
+    cd ~/.lua-language-server
+
+    git submodule update --depth 1 --init --recursive
+
+    cd 3rd/luamake
+    ./compile/install.sh
+    cd ../..
+    ./3rd/luamake/luamake rebuild
+  else
+    echo "lua-language-server is already installed"
+  fi
+}
+
 function run_ansible_playbooks () {
   if [[ "$(uname)" = 'Darwin' ]]; then
     ansible-playbook ./playbooks/install-brew-packages.yaml
@@ -73,7 +108,7 @@ function link_dotfiles () {
   echo "Linking dotfiles..."
   # iterate through all files
   # and symlink them to home
-  for filename in $(ls -A); do
+  for filename in $(ls -A ${DOTFILES_DIR}); do
     if [ ${filename} != ".git" ]; then
       echo "Linking ${filename} to ~/${filename}"
       ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}

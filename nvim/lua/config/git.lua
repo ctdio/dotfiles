@@ -1,4 +1,4 @@
-local function setup ()
+local function setup()
   require('octo').setup()
   require('gitsigns').setup()
 end

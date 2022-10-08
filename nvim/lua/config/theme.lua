@@ -1,7 +1,7 @@
-local function setup ()
+local function setup()
   -- setup theme
   require("catppuccin").setup()
-  vim.cmd[[colorscheme catppuccin]]
+  vim.cmd [[colorscheme catppuccin]]
 
   -- setup feline
   require('feline').setup()

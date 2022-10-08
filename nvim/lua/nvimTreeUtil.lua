@@ -2,7 +2,7 @@ local nvimTree = require("nvim-tree")
 
 local is_toggled = false
 
-local function toggle_size ()
+local function toggle_size()
   if is_toggled then
     nvimTree.resize(30)
   else
