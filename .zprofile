@@ -26,8 +26,8 @@ alias notes='pushd ~/obsidian; nvim; popd'
 
 # helper functions
 function fcd () {
-  directories=$(ls -d */)
-  chosen_directory=$(echo "${directories}" | fzf)
+  local directories=$(ls -d */)
+  local chosen_directory=$(echo "${directories}" | fzf)
 
   if type z &> /dev/null; then
     z ${chosen_directory}
@@ -37,14 +37,14 @@ function fcd () {
 }
 
 function fgd() {
-  preview="git diff $@ --color=always {1}"
+  local preview="git diff $@ --color=always {1}"
   git diff $@ --name-only | fzf -m --ansi --preview ${preview}
 }
 
 function fgco() {
-  preview='git log --color=always {1}'
-  branch_desc=$(git branch $@ -vv | fzf -m --ansi --preview ${preview})
-  branch="$(echo "${branch_desc}" | awk '{print $1}')"
+  local preview='git log --color=always {1}'
+  local branch_desc=$(git branch $@ -vv | fzf -m --ansi --preview ${preview})
+  local branch="$(echo "${branch_desc}" | awk '{print $1}')"
   git checkout ${branch}
 }
 
@@ -57,7 +57,7 @@ function j1deploystatus() {
 }
 
 function fixdisplays () {
-  display_id=$(xrandr | grep "^DP" | grep " connected " | awk '{print $1}')
+  local display_id=$(xrandr | grep "^DP" | grep " connected " | awk '{print $1}')
   echo "Making \"${display_id}\" the primary display..."
   xrandr --output ${display_id} --size 3440x1440
   echo "Turning off laptop screen..."
