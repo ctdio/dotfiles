@@ -108,7 +108,7 @@ function link_dotfiles () {
   # iterate through all files
   # and symlink them to home
   for filename in $(ls -A ${DOTFILES_DIR}); do
-    if [ ${filename} != ".git" ]; then
+    if [[ ${filename} != ".git" && ${filename} == .* ]]; then
       echo "Linking ${filename} to ~/${filename}"
       ln -nsf ${DOTFILES_DIR}/${filename} ~/${filename}
     fi
@@ -116,6 +116,9 @@ function link_dotfiles () {
 
   echo "Linking nvim to ~/.config/nvim"
   ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
+
+  echo "Linking startup.sh to ~/startup.sh"
+  ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
 }
 
 main
