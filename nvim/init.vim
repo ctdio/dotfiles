@@ -1,13 +1,18 @@
 " NOTE: this requires ripgrep and fd need to be installedj
 " to have everything working correctly
 
-" setup plug
+" ╭──────────────────────────────────────────────────────────╮
+" │                  Auto install vim-plug                   │
+" ╰──────────────────────────────────────────────────────────╯
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
+" ╭──────────────────────────────────────────────────────────╮
+" │                     Install Plugins                      │
+" ╰──────────────────────────────────────────────────────────╯
 call plug#begin('~/.vim/plugged')
   " highlighting
   Plug 'tjvr/vim-nearley'
@@ -48,6 +53,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tpope/vim-surround'
   Plug 'scrooloose/nerdcommenter'
   Plug 'editorconfig/editorconfig-vim'
+  Plug 'LudoPinelli/comment-box.nvim'
 
   " search/nav
   Plug 'nvim-lua/plenary.nvim'
@@ -90,33 +96,25 @@ call plug#begin('~/.vim/plugged')
   Plug 'marilari88/neotest-vitest'
   Plug 'rouge8/neotest-rust'
   Plug 'jfpedroza/neotest-elixir'
-
-  " temp until treesitter performance improves
-  " Plug 'elixir-editors/vim-elixir'
 call plug#end()
 
-" Setup all plugins
-:lua << EOF
-  require('config.theme').setup()
-  require('config.syntax').setup()
-  require('config.navigation').setup()
-  require('config.debug').setup()
-  require('config.test').setup()
-  require('config.git').setup()
-  require('config.completion').setup()
-EOF
-
-" use zsh shell
-set shell=zsh\ -l
-
+" ╭──────────────────────────────────────────────────────────╮
+" │                     Set vim options                      │
+" ╰──────────────────────────────────────────────────────────╯
 " use project-local prettier
 let g:neoformat_try_node_exe = 1
+" copy selected text to clipboard
+let g:vim_pbcopy_local_cmd = 'pbcopy'
 
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 
 filetype plugin indent on
 
+" use zsh shell
+set shell=zsh\ -l
+
+" enable folding
 set foldenable
 set foldcolumn=1
 set foldlevel=99
@@ -138,12 +136,29 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
-" Theming
+" Prepare config for theming
 set termguicolors
 syntax on
 set cursorline
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
+
+" ╭──────────────────────────────────────────────────────────╮
+" │                      Setup plugins                       │
+" ╰──────────────────────────────────────────────────────────╯
+:lua << EOF
+  require('config.theme').setup()
+  require('config.syntax').setup()
+  require('config.navigation').setup()
+  require('config.debug').setup()
+  require('config.test').setup()
+  require('config.git').setup()
+  require('config.completion').setup()
+EOF
+
+" ╭──────────────────────────────────────────────────────────╮
+" │                       Setup theme                        │
+" ╰──────────────────────────────────────────────────────────╯
 
 " latte (light)
 " frappe
@@ -151,12 +166,11 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " mocha (dark)
 let g:catppuccin_flavour = "mocha"
 
-colorscheme catppuccin
+" colorscheme catppuccin
 
-" copy selected text to clipboard
-let g:vim_pbcopy_local_cmd = 'pbcopy'
-
-" custom mappings
+" ╭──────────────────────────────────────────────────────────╮
+" │                Configure custom mappings                 │
+" ╰──────────────────────────────────────────────────────────╯
 " NOTE: completion mappings live in ./lua/config/completion.lua
 map , <leader>
 map <leader>n :NvimTreeToggle<CR>
@@ -190,6 +204,8 @@ map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>
 map <C-c> <esc>
 
+" ╭──────────────────────────────────────────────────────────╮
+" │                Configure custom commands                 │
+" ╰──────────────────────────────────────────────────────────╯
 command Light :Catppuccin latte
 command Dark :Catppuccin mocha
-
