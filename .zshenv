@@ -2,15 +2,15 @@
 
 export ENVIRONMENT=dev
 
-export ANDROID_HOME=$HOME/android-sdk
+export ANDROID_HOME=${HOME}/android-sdk
 
-export PATH=$PATH:/opt/homebrew/bin
-export PATH=$PATH:$HOME/.cargo/bin
-export PATH=$PATH:$HOME/.lua-language-server/bin
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/tools
-export PATH=$PATH:$ANDROID_HOME/tools/bin
-export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=${PATH}:/opt/homebrew/bin
+export PATH=${PATH}:${HOME}/.cargo/bin
+export PATH=${PATH}:${HOME}/.lua-language-server/bin
+export PATH=${PATH}:${ANDROID_HOME}/emulator
+export PATH=${PATH}:${ANDROID_HOME}/tools
+export PATH=${PATH}:${ANDROID_HOME}/tools/bin
+export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 
 # libpq
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc

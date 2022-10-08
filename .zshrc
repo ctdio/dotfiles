@@ -4,7 +4,7 @@ autoload -Uz compinit && compinit
 alias tmux='TERM=screen-256color tmux'
 
 source ~/antigen.zsh
-. $HOME/.asdf/asdf.sh
+. ${HOME}/.asdf/asdf.sh
 
 # Load the oh-my-zsh's library.
 antigen use oh-my-zsh

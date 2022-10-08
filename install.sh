@@ -2,8 +2,6 @@
 
 DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 
-echo $DOTFILES_DIR
-
 function main () {
   echo "Installing..."
 
@@ -60,7 +58,7 @@ function install_ansible () {
 function install_asdf () {
   if [ ! -d ~/.asdf ]; then
     git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
-    . $HOME/.asdf/asdf.sh
+    . ${HOME}/.asdf/asdf.sh
   else
     echo "asdf is already installed. Skipping."
   fi
