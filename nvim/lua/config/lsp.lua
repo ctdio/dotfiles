@@ -1,4 +1,7 @@
 local function setup()
+  -- configure trouble for prettier diagnostics
+  require("trouble").setup()
+
   local nvim_lsp = require("lspconfig")
 
   local opts = { noremap = true, silent = true }
@@ -180,8 +183,6 @@ local function setup()
       { name = "cmdline" },
     }),
   })
-
-  -- Setup lspconfig.
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()
 

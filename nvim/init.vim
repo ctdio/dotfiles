@@ -19,7 +19,7 @@ call plug#begin('~/.vim/plugged')
   " Updating the parsers on treesitter update is recommended
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
-  " completion
+  " lsp/completion
   Plug 'neovim/nvim-lspconfig'
   Plug 'hrsh7th/cmp-nvim-lsp'
   Plug 'hrsh7th/cmp-buffer'
@@ -30,10 +30,11 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/vim-vsnip-integ'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
+  Plug 'folke/trouble.nvim'
 
   " start screen
   Plug 'mhinz/vim-startify'
-  Plug 'famiu/feline.nvim'
+  Plug 'feline-nvim/feline.nvim'
 
   " colorscheme
   Plug 'catppuccin/nvim'
@@ -84,7 +85,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
-  Plug 'folke/trouble.nvim'
   Plug 'rcarriga/nvim-notify'
 
   " testing
@@ -154,7 +154,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
   require('config.debug').setup()
   require('config.test').setup()
   require('config.git').setup()
-  require('config.completion').setup()
+  require('config.lsp').setup()
 EOF
 
 " ╭──────────────────────────────────────────────────────────╮

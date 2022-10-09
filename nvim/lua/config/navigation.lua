@@ -1,6 +1,15 @@
 local function setup()
+  -- setup rcarriga/nvim-notify
+  vim.notify = require("notify")
+
   -- setup hop for movement
   require("hop").setup()
+
+  -- setup ufo for folding
+  require("ufo").setup()
+
+  -- setup feline
+  require("feline").setup()
 
   -- setup nvim-tree for file nav
   require("nvim-tree").setup({
@@ -48,9 +57,6 @@ local function setup()
   require("telescope").load_extension("fzf")
   require("telescope").load_extension("dap")
   require("telescope-tabs").setup()
-
-  -- setup ufo for folding
-  require("ufo").setup()
 end
 
 return {
