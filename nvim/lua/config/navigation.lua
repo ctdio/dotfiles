@@ -10,6 +10,7 @@ local function setup()
 
   -- setup feline
   require("feline").setup()
+  require("feline").winbar.setup()
 
   -- setup nvim-tree for file nav
   require("nvim-tree").setup({
