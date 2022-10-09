@@ -135,6 +135,7 @@ set clipboard=unnamed
 set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
+set spelllang=en_us
 
 " Prepare config for theming
 set termguicolors
@@ -177,8 +178,9 @@ map <leader>n :NvimTreeToggle<CR>
 map <leader>f :NvimTreeFindFile<CR>
 map <leader>b :Telescope buffers<CR>
 map <leader>g :Telescope telescope-tabs list_tabs<CR>
+map <leader>z :Telescope spell_suggest<CR>
 map <leader>a :HopChar1<CR>
-map <leader>s :lua require('sidebar-nvim').toggle()<CR>
+map <leader>s :lua require('spell-check-util').toggle_spell_check()<CR>
 map <leader>p :Neoformat<CR>
 map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
