@@ -9,7 +9,7 @@ local function setup()
         list = {
           {
             key = "<S-a>",
-            cb = ":lua require('nvimTreeUtil').toggle_size()<CR>",
+            cb = require("nvim-tree-util").toggle_size,
           },
           {
             key = "i",
