@@ -2,11 +2,12 @@ local function setup()
   -- setup rcarriga/nvim-notify
   vim.notify = require("notify")
 
+  -- setup autosession
+  require("auto-session").setup()
+  require("session-lens").setup()
+
   -- setup hop for movement
   require("hop").setup()
-
-  -- setup ufo for folding
-  require("ufo").setup()
 
   -- setup feline
   require("feline").setup()
@@ -40,6 +41,7 @@ local function setup()
       separator_style = "slant",
       diagnostics = "nvim_lsp",
       mode = "tabs",
+      always_show_bufferline = false,
     },
   })
 
@@ -57,6 +59,7 @@ local function setup()
   })
   require("telescope").load_extension("fzf")
   require("telescope").load_extension("dap")
+  require("telescope").load_extension("session-lens")
   require("telescope-tabs").setup()
 end
 

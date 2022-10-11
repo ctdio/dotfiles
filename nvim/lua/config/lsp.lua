@@ -17,6 +17,12 @@ local function setup()
     "<CMD>TroubleToggle document_diagnostics<CR>",
     opts
   )
+  vim.keymap.set(
+    "n",
+    "<space>Q",
+    "<CMD>TroubleToggle workspace_diagnostics<CR>",
+    opts
+  )
   vim.keymap.set("n", "<space>f", vim.lsp.buf.format, opts)
 
   -- Use an on_attach function to only map the following keys

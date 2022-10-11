@@ -40,7 +40,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'catppuccin/nvim'
 
   " writing
-  Plug 'junegunn/goyo.vim'
+  Plug 'folke/zen-mode.nvim'
   Plug 'junegunn/limelight.vim'
 
   " git integration
@@ -52,9 +52,12 @@ call plug#begin('~/.vim/plugged')
   " text editing
   Plug 'danilamihailov/beacon.nvim'
   Plug 'tpope/vim-surround'
+  Plug 'tpope/vim-repeat'
   Plug 'scrooloose/nerdcommenter'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
+  Plug 'kevinhwang91/nvim-ufo'
+  Plug 'sbdchd/neoformat'
 
   " search/nav
   Plug 'nvim-lua/plenary.nvim'
@@ -69,12 +72,15 @@ call plug#begin('~/.vim/plugged')
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
-  Plug 'sbdchd/neoformat'
+  Plug 'ellisonleao/glow.nvim'
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
   Plug 'kevinhwang91/promise-async'
-  Plug 'kevinhwang91/nvim-ufo'
+
+  "" session
+  Plug 'rmagatti/auto-session'
+  Plug 'rmagatti/session-lens'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
@@ -148,6 +154,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " │                      Setup plugins                       │
 " ╰──────────────────────────────────────────────────────────╯
 :lua << EOF
+  require('config.edit').setup()
   require('config.theme').setup()
   require('config.syntax').setup()
   require('config.navigation').setup()
