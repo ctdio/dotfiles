@@ -24,6 +24,10 @@ alias yt='yarn test'
 
 alias notes='pushd ~/obsidian; nvim; popd'
 
+if ! command -v nvim &> /dev/null; then
+  alias nvim="~/nvim.appimage"
+fi
+
 # helper functions
 function fcd () {
   local directories=$(ls -d */)

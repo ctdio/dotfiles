@@ -7,7 +7,7 @@
   autoSetupRemote = true
 
 [core]
-  editor = nvim || ~/nvim.appimage
+  editor = nvim
 
 [merge]
   tool = vimdiff
