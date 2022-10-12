@@ -182,13 +182,17 @@ let g:catppuccin_flavour = "mocha"
 " NOTE: completion mappings live in ./lua/config/completion.lua
 map , <leader>
 map <leader>n :NvimTreeToggle<CR>
-map <leader>f :NvimTreeFindFile<CR>
+map <leader>m :NvimTreeFindFile<CR>
+
+map <leader>f :HopChar1<CR>
+
 map <leader>b :Telescope buffers<CR>
 map <leader>g :Telescope telescope-tabs list_tabs<CR>
 map <leader>z :Telescope spell_suggest<CR>
-map <leader>a :HopChar1<CR>
 map <leader>s :lua require('spell-check-util').toggle_spell_check()<CR>
+
 map <leader>p :Neoformat<CR>
+
 map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
 map <leader>db :lua require('dap').toggle_breakpoint()<CR>
 map <leader>dc :lua require('dap').continue()<CR>

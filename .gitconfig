@@ -6,9 +6,6 @@
   default = current
   autoSetupRemote = true
 
-[core]
-  editor = nvim
-
 [merge]
   tool = vimdiff
 

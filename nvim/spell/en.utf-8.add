@@ -1,2 +1,10 @@
 config
 jupiter
+Kinesis
+persister
+https
+#ithub
+jupiterone
+github/!
+github
+DynamoDB
