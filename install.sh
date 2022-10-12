@@ -112,7 +112,9 @@ function install_ninja () {
 function install_lua_language_server () {
   if [[ ! -f ~/.lua-language-server/bin/lua-language-server ]]; then
     echo "Installing lua-language-server"
-    git clone --depth=1 \
+    git clone \
+      --depth=1 \
+      --branch 3.5.6 \
       https://github.com/sumneko/lua-language-server \
       ~/.lua-language-server
     cd ~/.lua-language-server
