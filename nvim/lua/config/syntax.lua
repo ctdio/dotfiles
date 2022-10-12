@@ -20,8 +20,7 @@ local function setup()
       "toml",
       "astro",
       "markdown",
-      "proto",
-      "vim",
+      "proto"
     },
     highlight = {
       enable = true,
