@@ -4,6 +4,7 @@
   vars:
     package_repos:
       - golang.org/x/tools/gopls@latest
+      - github.com/hashicorp/terraform-ls@latest
       - github.com/charmbracelet/glow@latest
   tasks:
     - name: Installing golang packages
