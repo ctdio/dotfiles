@@ -6,6 +6,7 @@
       - golang.org/x/tools/gopls@latest
       - github.com/hashicorp/terraform-ls@latest
       - github.com/charmbracelet/glow@latest
+      - github.com/tomnomnom/gron@latest
   tasks:
     - name: Installing golang packages
       loop: "{{ package_repos }}"
