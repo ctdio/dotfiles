@@ -78,6 +78,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
+  Plug 'simrat39/symbols-outline.nvim'
 
   "" session
   Plug 'rmagatti/auto-session'
