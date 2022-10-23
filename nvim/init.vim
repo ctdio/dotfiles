@@ -26,11 +26,11 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/cmp-path'
   Plug 'hrsh7th/cmp-cmdline'
   Plug 'hrsh7th/nvim-cmp'
-  Plug 'hrsh7th/vim-vsnip'
-  Plug 'hrsh7th/vim-vsnip-integ'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
   Plug 'folke/trouble.nvim'
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*'}
+  Plug 'saadparwaiz1/cmp_luasnip'
 
   " start screen
   Plug 'mhinz/vim-startify'
@@ -56,6 +56,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'scrooloose/nerdcommenter'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
+  Plug 'kevinhwang91/promise-async'
   Plug 'kevinhwang91/nvim-ufo'
   Plug 'sbdchd/neoformat'
 
@@ -65,6 +66,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope-dap.nvim'
   Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
   Plug 'LukasPietzschmann/telescope-tabs'
+  Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua'
@@ -76,7 +78,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
-  Plug 'kevinhwang91/promise-async'
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -123,8 +124,9 @@ set shell=zsh\ -l
 " enable folding
 set foldenable
 set foldcolumn=1
-set foldlevel=99
-set foldlevelstart=99
+set foldmethod=manual
+set foldlevel=200
+set foldlevelstart=200
 
 set noswapfile
 set expandtab
@@ -211,15 +213,17 @@ map <leader>ts :lua require("neotest").summary.toggle()<CR>
 
 map <leader>l :Limelight!!<CR>
 
-imap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
-smap <expr> <C-i> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-i>'
-
 map <C-p> :Telescope find_files<enter>
 map <C-a> :Telescope live_grep<enter>
 map <C-c> <esc>
+
+" Expand
+imap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
+smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom commands                 │
 " ╰──────────────────────────────────────────────────────────╯
 command Light :Catppuccin latte
 command Dark :Catppuccin mocha
+command Snip :Telescope luasnip

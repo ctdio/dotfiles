@@ -109,7 +109,7 @@ local function setup()
   cmp.setup({
     snippet = {
       expand = function(args)
-        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+        require("luasnip").lsp_expand(args.body)
       end,
     },
     mapping = {
@@ -167,7 +167,7 @@ local function setup()
       { name = "nvim_lsp" },
       { name = "dap" },
       { name = "cmp_tabnine" },
-      { name = "vsnip" }, -- For vsnip users.
+      { name = "luasnip" },
       { name = "emoji" },
     }, {
       { name = "buffer" },

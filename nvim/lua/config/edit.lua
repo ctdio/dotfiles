@@ -7,6 +7,15 @@ local function setup()
 
   -- setup glow for markdown
   require("glow").setup()
+
+  -- friendly snippets
+  require("luasnip.loaders.from_vscode").lazy_load()
+
+  require("luasnip.loaders.from_vscode").load({
+    paths = "~/.config/nvim/snippets",
+  })
+
+  require("luasnip").filetype_extend("typescript", { "javascript" })
 end
 
 return {
