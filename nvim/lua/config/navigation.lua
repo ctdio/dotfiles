@@ -64,7 +64,11 @@ local function setup()
   require("telescope").load_extension("luasnip")
   require("telescope-tabs").setup()
 
-  require("symbols-outline").setup()
+  require("symbols-outline").setup({
+    keymaps = {
+      close = { "q" },
+    },
+  })
 end
 
 return {
