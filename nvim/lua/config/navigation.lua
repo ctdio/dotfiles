@@ -3,7 +3,7 @@ local function setup()
   vim.notify = require("notify")
 
   -- setup autosession
-  require("auto-session").setup()
+  require("auto-session").setup({})
   require("session-lens").setup()
 
   -- setup hop for movement
