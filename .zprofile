@@ -21,6 +21,7 @@ alias ns='npm start'
 alias nt='npm test'
 alias ys='yarn start'
 alias yt='yarn test'
+alias ungron='gron --ungron'
 
 alias notes='pushd ~/obsidian; nvim; popd'
 
