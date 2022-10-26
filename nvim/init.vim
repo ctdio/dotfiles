@@ -29,7 +29,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'rafamadriz/friendly-snippets'
   Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
   Plug 'folke/trouble.nvim'
-  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*'}
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*'}
   Plug 'saadparwaiz1/cmp_luasnip'
 
   " start screen
@@ -70,7 +70,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua'
-  Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+  Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
