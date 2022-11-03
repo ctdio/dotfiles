@@ -62,6 +62,8 @@ local function setup()
   require("telescope").load_extension("dap")
   require("telescope").load_extension("session-lens")
   require("telescope").load_extension("luasnip")
+  require("telescope").load_extension("live_grep_args")
+
   require("telescope-tabs").setup()
 
   require("symbols-outline").setup({

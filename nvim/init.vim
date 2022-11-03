@@ -65,6 +65,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'nvim-telescope/telescope-dap.nvim'
   Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+  Plug 'nvim-telescope/telescope-live-grep-args.nvim'
   Plug 'LukasPietzschmann/telescope-tabs'
   Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'phaazon/hop.nvim'
@@ -215,7 +216,7 @@ map <leader>ts :lua require("neotest").summary.toggle()<CR>
 map <leader>l :Limelight!!<CR>
 
 map <C-p> :Telescope find_files<enter>
-map <C-a> :Telescope live_grep<enter>
+map <C-a> :lua require('telescope').extensions.live_grep_args.live_grep_args()<enter>
 map <C-c> <esc>
 
 " Expand
