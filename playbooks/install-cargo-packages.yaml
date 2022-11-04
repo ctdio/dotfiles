@@ -6,6 +6,7 @@
       - bat
       - zoxide
       - ripgrep
+      - fd-find
       - stylua
       - xsv
   tasks:
