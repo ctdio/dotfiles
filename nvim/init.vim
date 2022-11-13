@@ -187,6 +187,7 @@ let g:catppuccin_flavour = "mocha"
 map , <leader>
 map <leader>nn :NvimTreeToggle<CR>
 map <leader>nf :NvimTreeFindFile<CR>
+map <leader>ns :lua require('notify').dismiss()<CR>
 
 map <leader>f :HopChar1<CR>
 
