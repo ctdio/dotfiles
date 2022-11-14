@@ -209,7 +209,6 @@ setup_lsp = function()
   -- map buffer local keybindings when the language server attaches
   local servers = {
     "tsserver",
-    "denols",
     "astro",
     "rust_analyzer",
     "gopls",
@@ -222,6 +221,13 @@ setup_lsp = function()
       capabilities = capabilities,
     })
   end
+
+  -- tweak denols config to avoid conflict with nodejs projects
+  nvim_lsp.denols.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
+  })
 
   -- sumneko_lua requires some additional config
   nvim_lsp.sumneko_lua.setup({
