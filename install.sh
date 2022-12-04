@@ -134,13 +134,24 @@ function install_lua_language_server () {
 
 function install_rust_analyzer () {
   if [[ ! -f ~/.local/bin/rust-analyzer ]]; then
-    if [[ "$(uname)" = 'Linux' ]]; then
-      echo "Installing rust-analyzer"
-      mkdir -p ~/.local/bin
-      curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz \
-        | gunzip -c - > ~/.local/bin/rust-analyzer
-      chmod +x ~/.local/bin/rust-analyzer
-    fi
+    echo "Installing rust-analyzer"
+    local file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+
+    case "$(uname)" in
+      Linux)
+        file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+        ;;
+      Darwin)
+        file='rust-analyzer-aarch64-apple-darwin.gz'
+        ;;
+    esac
+
+    local download_path="https://github.com/rust-lang/rust-analyzer/releases/latest/download/${file}"
+
+    mkdir -p ~/.local/bin
+    curl -L ${download_path} \
+      | gunzip -c - > ~/.local/bin/rust-analyzer
+    chmod +x ~/.local/bin/rust-analyzer
   else
     echo "rust-analyzer is already installed"
   fi
