@@ -66,12 +66,14 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope-dap.nvim'
   Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
   Plug 'nvim-telescope/telescope-live-grep-args.nvim'
+  Plug 'nvim-telescope/telescope-smart-history.nvim'
   Plug 'LukasPietzschmann/telescope-tabs'
   Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua'
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
+  Plug 'kkharji/sqlite.lua'
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
@@ -132,8 +134,8 @@ set foldlevelstart=200
 
 set noswapfile
 set expandtab
-set tabstop=2
-set softtabstop=2
+set tabstop=4
+set softtabstop=4
 set shiftwidth=2
 set number
 set linebreak

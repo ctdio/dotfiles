@@ -48,21 +48,30 @@ local function setup()
 
   -- setup telescope
   local telescope_actions = require("telescope.actions")
+  local telescope_smart_history_path =
+    "~/.local/share/nvim/databases/telescope_history.sqlite3"
+
   require("telescope").setup({
     defaults = {
+      history = {
+        path = telescope_smart_history_path,
+        limit = 100,
+      },
       mappings = {
         i = {
-          ["<C-k>"] = telescope_actions.move_selection_previous,
-          ["<C-j>"] = telescope_actions.move_selection_next,
+          ["<C-Down>"] = require("telescope.actions").cycle_history_next,
+          ["<C-Up>"] = require("telescope.actions").cycle_history_prev,
         },
       },
     },
   })
+
   require("telescope").load_extension("fzf")
   require("telescope").load_extension("dap")
   require("telescope").load_extension("session-lens")
   require("telescope").load_extension("luasnip")
   require("telescope").load_extension("live_grep_args")
+  require("telescope").load_extension("smart_history")
 
   require("telescope-tabs").setup()
 

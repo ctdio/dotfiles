@@ -18,6 +18,8 @@ function main () {
   # lua language server requires a little more work
   install_ninja
   install_lua_language_server
+  # same with rust language server (rust-analyzer)
+  install_rust_analyzer
 
   asdf reshim
 
@@ -127,6 +129,20 @@ function install_lua_language_server () {
     ./3rd/luamake/luamake rebuild
   else
     echo "lua-language-server is already installed"
+  fi
+}
+
+function install_rust_analyzer () {
+  if [[ ! -f ~/.local/bin/rust-analyzer ]]; then
+    if [[ "$(uname)" = 'Linux' ]]; then
+      echo "Installing rust-analyzer"
+      mkdir -p ~/.local/bin
+      curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz \
+        | gunzip -c - > ~/.local/bin/rust-analyzer
+      chmod +x ~/.local/bin/rust-analyzer
+    fi
+  else
+    echo "rust-analyzer is already installed"
   fi
 }
 

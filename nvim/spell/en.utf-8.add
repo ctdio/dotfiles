@@ -8,3 +8,8 @@ jupiterone
 github/!
 github
 DynamoDB
+dev
+#ncaughtException
+j1dev
+uncaughtException
+unhandledRejection
