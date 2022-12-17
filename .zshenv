@@ -4,6 +4,7 @@ export ENVIRONMENT=dev
 
 export ANDROID_HOME=${HOME}/android-sdk
 
+export PATH=${PATH}:${HOME}/.local/bin
 export PATH=${PATH}:/opt/homebrew/bin
 export PATH=${PATH}:${HOME}/.cargo/bin
 export PATH=${PATH}:${HOME}/.lua-language-server/bin

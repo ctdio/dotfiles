@@ -12,7 +12,7 @@
       - plugin: deno
         repo: https://github.com/asdf-community/asdf-deno
       - plugin: rust
-        repo: https://github.com/asdf-community/asdf-rust
+        repo: https://github.com/code-lever/asdf-rust
       - plugin: python
         repo: https://github.com/asdf-community/asdf-python
       - plugin: golang
