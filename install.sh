@@ -13,7 +13,7 @@ function main () {
   install_ansible
 
   # most language servers will be installed via playbooks
-  #run_ansible_playbooks
+  run_ansible_playbooks
 
   # lua language server requires a little more work
   install_ninja
