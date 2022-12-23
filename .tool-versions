@@ -13,4 +13,4 @@ waypoint 0.10.0 # https://github.com/asdf-community/asdf-hashicorp
 terraform 1.2.0 # https://github.com/asdf-community/asdf-hashicorp
 kubectl 1.25.2 # https://github.com/asdf-community/asdf-kubectl
 minikube 1.27.0 #https://github.com/alvarobp/asdf-minikube
-
+pdm 2.3.3 # https://github.com/1oglop1/asdf-pdm
