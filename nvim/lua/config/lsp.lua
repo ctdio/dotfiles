@@ -210,6 +210,7 @@ setup_lsp = function()
   local servers = {
     "tsserver",
     "astro",
+    "bashls",
     "rust_analyzer",
     "gopls",
     "sumneko_lua",

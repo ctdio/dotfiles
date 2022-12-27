@@ -4,6 +4,7 @@
   vars:
     packages:
       - typescript-language-server
+      - bash-language-server
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
   tasks:
