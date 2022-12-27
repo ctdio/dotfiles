@@ -82,6 +82,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
   Plug 'simrat39/symbols-outline.nvim'
+  Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -116,6 +117,20 @@ call plug#end()
 let g:neoformat_try_node_exe = 1
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
+let g:firenvim_config = {
+  \ 'globalSettings': {
+    \ 'alt': 'all',
+  \  },
+  \ 'localSettings': {
+    \ '.*': {
+      \ 'cmdline': 'neovim',
+      \ 'content': 'text',
+      \ 'priority': 0,
+      \ 'selector': 'textarea',
+      \ 'takeover': 'never',
+    \ },
+  \ }
+\ }
 
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
