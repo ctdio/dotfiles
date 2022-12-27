@@ -66,6 +66,12 @@ function fixdisplays () {
   echo "Done."
 }
 
+function fixdisplayshome () {
+  xrandr --output eDP-1 --off
+  echo "Done."
+}
+
+
 function lastPassCopy () {
   lpass show --password ${1} | pbcopy
 }
