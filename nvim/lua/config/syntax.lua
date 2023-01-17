@@ -20,7 +20,7 @@ local function setup()
       "toml",
       "astro",
       "markdown",
-      "proto"
+      "proto",
     },
     highlight = {
       enable = true,
@@ -29,6 +29,12 @@ local function setup()
       -- Using this option may slow down your editor, and you may see some duplicate highlights.
       -- Instead of true it can also be a list of languages
       additional_vim_regex_highlighting = false,
+    },
+  })
+
+  vim.filetype.add({
+    extension = {
+      tf = "hcl",
     },
   })
 end
