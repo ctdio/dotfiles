@@ -35,6 +35,12 @@
         repo: https://github.com/alvarobp/asdf-minikube
       - plugin: pdm
         repo: https://github.com/1oglop1/asdf-pdm.git
+      - plugin: java
+        repo: https://github.com/halcyon/asdf-java
+      - plugin: scala
+        repo: https://github.com/asdf-community/asdf-scala.git
+      - plugin: gradle
+        repo: https://github.com/rfrancis/asdf-gradle.git
   connection: local
   tasks:
     - name: Install asdf plugins

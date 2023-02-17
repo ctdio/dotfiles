@@ -230,8 +230,8 @@ setup_lsp = function()
     root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
   })
 
-  -- sumneko_lua requires some additional config
-  nvim_lsp.sumneko_lua.setup({
+  -- lua_ls requires some additional config
+  nvim_lsp.lua_ls.setup({
     on_attach = on_attach,
     capabilities = capabilities,
     settings = {

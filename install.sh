@@ -117,7 +117,7 @@ function install_lua_language_server () {
     git clone \
       --depth=1 \
       --branch 3.5.6 \
-      https://github.com/sumneko/lua-language-server \
+      https://github.com/luals/lua-language-server \
       ~/.lua-language-server
     cd ~/.lua-language-server
 

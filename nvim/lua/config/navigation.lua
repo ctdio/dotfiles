@@ -9,9 +9,8 @@ local function setup()
   -- setup hop for movement
   require("hop").setup()
 
-  -- setup feline
-  require("feline").setup()
-  require("feline").winbar.setup()
+  -- setup status line
+  require("lualine").setup()
 
   -- setup nvim-tree for file nav
   require("nvim-tree").setup({

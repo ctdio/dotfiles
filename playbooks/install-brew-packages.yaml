@@ -28,6 +28,8 @@
       - awscli
       - ffmpeg
       - libpq
+      - koekeishiya/formulae/yabai
+      - koekeishiya/formulae/skhd
     casks:
       - bitwarden
       - docker

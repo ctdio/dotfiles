@@ -85,3 +85,5 @@ function fnvim () {
   local file_path="$(rg --files | fzf)"
   nvim ${file_path}
 }
+
+eval "$(/opt/homebrew/bin/brew shellenv)"

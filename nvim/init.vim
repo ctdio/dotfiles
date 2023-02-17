@@ -34,7 +34,10 @@ call plug#begin('~/.vim/plugged')
 
   " start screen
   Plug 'mhinz/vim-startify'
-  Plug 'feline-nvim/feline.nvim'
+
+  " statusline
+  " Plug 'feline-nvim/feline.nvim'
+  Plug 'nvim-lualine/lualine.nvim'
 
   " colorscheme
   Plug 'catppuccin/nvim'
