@@ -20,6 +20,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
   " lsp/completion
+  Plug 'folke/neodev.nvim'
   Plug 'neovim/nvim-lspconfig'
   Plug 'hrsh7th/cmp-nvim-lsp'
   Plug 'hrsh7th/cmp-buffer'
@@ -225,7 +226,7 @@ map <leader>dc :lua require('dap').continue()<CR>
 map <leader>dsv :lua require('dap').step_over()<CR>
 map <leader>dsi :lua require('dap').step_into()<CR>
 map <leader>dso :lua require('dap').step_out()<CR>
-map <leader>du :lua require('dapui').toggle()<CR>
+map <leader>du :lua require('dapui').toggle({ reset = true })<CR>
 
 map <leader>ta :lua require("neotest").run.attach()<CR>
 map <leader>td :lua require("neotest").run.run({strategy = "dap"})<CR>

@@ -10,6 +10,14 @@ local function setup()
 end
 
 setup_cmp_completion = function()
+  -- Set up neodev
+  require("neodev").setup({
+    library = {
+      plugins = { "nvim-dap-ui" },
+      types = true,
+    },
+  })
+
   -- Setup nvim-cmp with recommended setup
   local cmp = require("cmp")
 
@@ -214,7 +222,6 @@ setup_lsp = function()
     "rust_analyzer",
     "gopls",
     "sumneko_lua",
-    "terraformls",
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({
@@ -222,6 +229,12 @@ setup_lsp = function()
       capabilities = capabilities,
     })
   end
+
+  nvim_lsp.terraformls.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "terraform", "terraform-vars", "hcl" },
+  })
 
   -- tweak denols config to avoid conflict with nodejs projects
   nvim_lsp.denols.setup({

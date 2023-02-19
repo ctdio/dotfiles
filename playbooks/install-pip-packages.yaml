@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    packages:
+      - visidata
+  tasks:
+    - name: Installing python packages
+      loop: "{{ packages }}"
+      ansible.builtin.shell: "pip install {{ item }}"
+
