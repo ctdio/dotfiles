@@ -4,6 +4,7 @@
   vars:
     packages:
       - visidata
+      - thefuck
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"
