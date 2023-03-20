@@ -31,6 +31,8 @@
         repo: https://github.com/asdf-community/asdf-hashicorp
       - plugin: kubectl
         repo: https://github.com/asdf-community/asdf-kubectl
+      - plugin: helm
+        repo: https://github.com/Antiarchitect/asdf-helm
       - plugin: minikube
         repo: https://github.com/alvarobp/asdf-minikube
       - plugin: pdm
