@@ -1,4 +1,4 @@
-nodejs 16.17.0 # https://github.com/asdf-vm/asdf-nodejs
+nodejs 18.16.0 # https://github.com/asdf-vm/asdf-nodejs
 yarn 1.22.4 # https://github.com/twuni/asdf-yarn
 pnpm 7.12.2 # https://github.com/jonathanmorley/asdf-pnpm
 deno 1.25.3 # https://github.com/asdf-community/asdf-deno
@@ -10,7 +10,7 @@ erlang 25.0.4 # https://github.com/asdf-vm/asdf-erlang
 gleam 0.22.1 # https://github.com/asdf-community/asdf-gleam
 bazel 5.3.0 # https://github.com/mrinalwadhwa/asdf-bazel
 waypoint 0.10.0 # https://github.com/asdf-community/asdf-hashicorp
-terraform 1.2.0 # https://github.com/asdf-community/asdf-hashicorp
+terraform 1.4.4 # https://github.com/asdf-community/asdf-hashicorp
 helm 3.11.2 # https://github.com/Antiarchitect/asdf-helm
 kubectl 1.25.2 # https://github.com/asdf-community/asdf-kubectl
 minikube 1.27.0 #https://github.com/alvarobp/asdf-minikube
