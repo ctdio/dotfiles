@@ -7,6 +7,7 @@
       - bash-language-server
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
+      - "@withgraphite/graphite-cli"
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"

@@ -5,6 +5,7 @@
     packages:
       - visidata
       - thefuck
+      - python-lsp-server
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"

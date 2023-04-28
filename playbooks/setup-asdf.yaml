@@ -15,6 +15,8 @@
         repo: https://github.com/code-lever/asdf-rust
       - plugin: python
         repo: https://github.com/asdf-community/asdf-python
+      - plugin: poetry
+        repo: https://github.com/asdf-community/asdf-poetry
       - plugin: golang
         repo: https://github.com/kennyp/asdf-golang
       - plugin: erlang
@@ -33,6 +35,10 @@
         repo: https://github.com/asdf-community/asdf-kubectl
       - plugin: helm
         repo: https://github.com/Antiarchitect/asdf-helm
+      - plugin: helmfile
+        repo: https://github.com/feniix/asdf-helmfile
+      - plugin: eksctl
+        repo: https://github.com/elementalvoid/asdf-eksctl
       - plugin: minikube
         repo: https://github.com/alvarobp/asdf-minikube
       - plugin: pdm

@@ -11,20 +11,20 @@ end
 
 setup_cmp_completion = function()
   -- set up tabnine
-  local tabnine = require('cmp_tabnine.config')
+  local tabnine = require("cmp_tabnine.config")
 
   tabnine:setup({
     max_lines = 1000,
     max_num_results = 20,
     sort = true,
     run_on_every_keystroke = true,
-    snippet_placeholder = '..',
+    snippet_placeholder = "..",
     ignored_file_types = {
       -- default is not to ignore
       -- uncomment to ignore in lua:
       -- lua = true
     },
-    show_prediction_strength = false
+    show_prediction_strength = false,
   })
 
   -- Set up neodev
@@ -239,6 +239,7 @@ setup_lsp = function()
     "rust_analyzer",
     "gopls",
     "sumneko_lua",
+    "pylsp",
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({
@@ -285,7 +286,7 @@ setup_lsp = function()
   -- elixirls requires some additional config
   -- handle it separately=
   local path_to_elixirls =
-  vim.fn.expand("~/lsp/elixir-ls/release/language_server.sh")
+    vim.fn.expand("~/lsp/elixir-ls/release/language_server.sh")
   nvim_lsp.elixirls.setup({
     cmd = { path_to_elixirls },
     on_attach = on_attach,
