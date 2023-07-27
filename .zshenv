@@ -2,6 +2,7 @@
 
 export ENVIRONMENT=dev
 
+export SPARK_HOME=${HOME}/spark
 export ANDROID_HOME=${HOME}/android-sdk
 
 export PATH=${PATH}:${HOME}/.local/bin

@@ -49,6 +49,8 @@
         repo: https://github.com/asdf-community/asdf-scala.git
       - plugin: gradle
         repo: https://github.com/rfrancis/asdf-gradle.git
+      - plugin: earthly
+        repo: https://github.com/YR-ZR0/asdf-earthly
   connection: local
   tasks:
     - name: Install asdf plugins
