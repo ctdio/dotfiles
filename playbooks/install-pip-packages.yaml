@@ -6,6 +6,7 @@
       - visidata
       - thefuck
       - python-lsp-server
+      - autopep8
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"

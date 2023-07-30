@@ -32,6 +32,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'folke/trouble.nvim'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*'}
   Plug 'saadparwaiz1/cmp_luasnip'
+  Plug 'nvimdev/lspsaga.nvim'
 
   " start screen
   Plug 'mhinz/vim-startify'
@@ -251,3 +252,6 @@ smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' 
 command Light :Catppuccin latte
 command Dark :Catppuccin mocha
 command Snip :Telescope luasnip
+command Term :Lspsaga term_toggle
+command Inc :Telescope lsp_incoming_calls
+command Out :Telescope lsp_outgoing_calls

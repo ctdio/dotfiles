@@ -20,6 +20,7 @@ local function setup()
       "toml",
       "astro",
       "markdown",
+      "markdown_inline",
       "proto",
     },
     highlight = {

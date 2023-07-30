@@ -2,11 +2,12 @@ local setup_cmp_completion
 local setup_lsp
 
 local function setup()
-  -- configure trouble for prettier diagnostics
-  require("trouble").setup()
-
   setup_cmp_completion()
   setup_lsp()
+
+  -- configure trouble for prettier diagnostics
+  require("trouble").setup()
+  require("lspsaga").setup({})
 end
 
 setup_cmp_completion = function()
@@ -195,7 +196,7 @@ setup_lsp = function()
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
-    vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
+    vim.keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", bufopts)
     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
     vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
     vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
@@ -209,16 +210,15 @@ setup_lsp = function()
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, bufopts)
     vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
-    vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
-    vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
-
-    -- buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', bufopts)
+    vim.keymap.set("n", "<space>rn", "<cmd>Lspsaga rename<CR>", bufopts)
+    vim.keymap.set("n", "<space>ca", "<cmd>Lspsaga code_action<CR>", bufopts)
     vim.keymap.set(
       "n",
       "gr",
       require("telescope.builtin").lsp_references,
       bufopts
     )
+    vim.keymap.set({"n", "t"}, "<A-d>", "<cmd>Lspsaga term_toggle<CR>", bufopts)
   end
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -238,7 +238,7 @@ setup_lsp = function()
     "bashls",
     "rust_analyzer",
     "gopls",
-    "sumneko_lua",
+    "lua_ls",
     "pylsp",
   }
   for _, lsp in ipairs(servers) do
