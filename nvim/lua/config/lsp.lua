@@ -11,22 +11,22 @@ local function setup()
 end
 
 setup_cmp_completion = function()
-  -- set up tabnine
-  local tabnine = require("cmp_tabnine.config")
-
-  tabnine:setup({
-    max_lines = 1000,
-    max_num_results = 20,
-    sort = true,
-    run_on_every_keystroke = true,
-    snippet_placeholder = "..",
-    ignored_file_types = {
-      -- default is not to ignore
-      -- uncomment to ignore in lua:
-      -- lua = true
+  require("copilot").setup({
+    suggestion = {
+      enabled = true,
+      auto_trigger = true,
+      debounce = 75,
+      keymap = {
+        accept = "<M-l>",
+        accept_word = false,
+        accept_line = false,
+        next = "<M-]>",
+        prev = "<M-[>",
+        dismiss = "<C-]>",
+      },
     },
-    show_prediction_strength = false,
   })
+  require("copilot_cmp").setup()
 
   -- Set up neodev
   require("neodev").setup({
@@ -218,7 +218,12 @@ setup_lsp = function()
       require("telescope.builtin").lsp_references,
       bufopts
     )
-    vim.keymap.set({"n", "t"}, "<A-d>", "<cmd>Lspsaga term_toggle<CR>", bufopts)
+    vim.keymap.set(
+      { "n", "t" },
+      "<A-d>",
+      "<cmd>Lspsaga term_toggle<CR>",
+      bufopts
+    )
   end
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()

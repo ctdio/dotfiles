@@ -30,13 +30,19 @@
       - libpq
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
+      - databricks
     casks:
       - bitwarden
       - docker
+    taps:
+      - databricks/tap
   tasks:
-    - name: Install apps with homebrew
-      homebrew: name={{ item }} state=present
-      loop: "{{ packages }}"
+    - name: Install taps
+      homebrew_tap: name={{ item }} state=present
+      loop: "{{ taps }}"
     - name: Install cask packages
       homebrew_cask: name={{ item }} state=present
       loop: "{{ casks }}"
+    - name: Install apps with homebrew
+      homebrew: name={{ item }} state=present
+      loop: "{{ packages }}"

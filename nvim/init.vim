@@ -28,11 +28,12 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/cmp-cmdline'
   Plug 'hrsh7th/nvim-cmp'
   Plug 'rafamadriz/friendly-snippets'
-  Plug 'tzachar/cmp-tabnine', { 'do': './install.sh' }
   Plug 'folke/trouble.nvim'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*'}
   Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'nvimdev/lspsaga.nvim'
+  Plug 'zbirenbaum/copilot.lua'
+  Plug 'zbirenbaum/copilot-cmp'
 
   " start screen
   Plug 'mhinz/vim-startify'
