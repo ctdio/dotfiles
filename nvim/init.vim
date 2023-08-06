@@ -67,6 +67,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'kevinhwang91/nvim-ufo'
   Plug 'sbdchd/neoformat'
 
+  " jupyter notebooks
+  Plug 'goerz/jupytext.vim'
+
   " search/nav
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'
@@ -143,6 +146,9 @@ autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 
 filetype plugin indent on
+
+let g:jupytext_fmt = 'py'
+
 
 " use zsh shell
 set shell=zsh\ -l

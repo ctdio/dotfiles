@@ -7,6 +7,9 @@
       - thefuck
       - python-lsp-server
       - autopep8
+      - jupytext
+      - jupyterlab
+      - dbx
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"
