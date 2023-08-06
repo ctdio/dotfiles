@@ -22,11 +22,12 @@ call plug#begin('~/.vim/plugged')
   " lsp/completion
   Plug 'folke/neodev.nvim'
   Plug 'neovim/nvim-lspconfig'
+  Plug 'hrsh7th/nvim-cmp'
   Plug 'hrsh7th/cmp-nvim-lsp'
+  Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
   Plug 'hrsh7th/cmp-buffer'
   Plug 'hrsh7th/cmp-path'
   Plug 'hrsh7th/cmp-cmdline'
-  Plug 'hrsh7th/nvim-cmp'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'folke/trouble.nvim'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*'}
@@ -152,6 +153,9 @@ set foldcolumn=1
 set foldmethod=manual
 set foldlevel=200
 set foldlevelstart=200
+
+inoremap <c-p> <nop>
+inoremap <c-n> <nop>
 
 set noswapfile
 set expandtab

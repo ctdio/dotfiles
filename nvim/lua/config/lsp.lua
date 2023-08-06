@@ -12,21 +12,15 @@ end
 
 setup_cmp_completion = function()
   require("copilot").setup({
+    panel = {
+      enabled = false,
+    },
     suggestion = {
-      enabled = true,
-      auto_trigger = true,
-      debounce = 75,
-      keymap = {
-        accept = "<M-l>",
-        accept_word = false,
-        accept_line = false,
-        next = "<M-]>",
-        prev = "<M-[>",
-        dismiss = "<C-]>",
-      },
+      enabled = false,
     },
   })
-  require("copilot_cmp").setup()
+
+  require("copilot_cmp").setup({})
 
   -- Set up neodev
   require("neodev").setup({
@@ -77,6 +71,10 @@ setup_cmp_completion = function()
         require("luasnip").lsp_expand(args.body)
       end,
     },
+    window = {
+      completion = cmp.config.window.bordered(),
+      documentation = cmp.config.window.bordered(),
+    },
     mapping = {
       ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
       ["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
@@ -104,7 +102,7 @@ setup_cmp_completion = function()
             fallback()
           end
         end,
-      }),
+      }, { "i", "c" }),
       ["<C-p>"] = cmp.mapping({
         c = function()
           if cmp.visible() then
@@ -124,19 +122,19 @@ setup_cmp_completion = function()
             fallback()
           end
         end,
-      }),
+      }, { "i", "c" }),
       ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, { "i", "s", "c" }),
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
-    sources = cmp.config.sources({
-      { name = "nvim_lsp" },
-      { name = "dap" },
-      { name = "cmp_tabnine" },
-      { name = "luasnip" },
-      { name = "emoji" },
-    }, {
-      { name = "buffer" },
-    }),
+    sources = {
+      { name = "nvim_lsp", group_index = 1 },
+      { name = "nvim_lsp_signature_help", group_index = 1 },
+      { name = "copilot", group_index = 2 },
+      { name = "buffer", group_index = 3 },
+      { name = "dap", group_index = 3 },
+      { name = "luasnip", group_index = 3 },
+      { name = "emoji", group_index = 4 },
+    },
   })
 
   -- Use buffer source for `/`.

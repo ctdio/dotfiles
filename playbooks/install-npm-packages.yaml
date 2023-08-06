@@ -8,6 +8,7 @@
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
       - "@withgraphite/graphite-cli"
+      - "@socketsecurity/cli"
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"
