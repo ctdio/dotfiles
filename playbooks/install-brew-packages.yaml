@@ -31,11 +31,15 @@
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
       - databricks
+      - sketchybar
     casks:
       - bitwarden
       - docker
+      - font-hack-nerd-font
     taps:
       - databricks/tap
+      - homebrew/cask-fonts
+      - FelixKratz/formulae
   tasks:
     - name: Install taps
       homebrew_tap: name={{ item }} state=present

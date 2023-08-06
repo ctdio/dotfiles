@@ -40,6 +40,9 @@ function link_dotfiles () {
   echo "Linking nvim to ~/.config/nvim"
   ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
 
+  echo "Linking .sketchybarrc to ~/.config/sketchybar/sketchybarrc"
+  ln -nsf ${DOTFILES_DIR}/sketchybar ~/.config/sketchybar
+
   echo "Linking startup.sh to ~/startup.sh"
   ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
 }
