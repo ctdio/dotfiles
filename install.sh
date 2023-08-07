@@ -5,6 +5,8 @@ DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 function main () {
   echo "Installing..."
 
+  update_deps
+
   link_dotfiles
   link_git_hooks
   install_antigen
@@ -12,12 +14,14 @@ function main () {
   install_asdf
   install_ansible
 
+
   # most language servers will be installed via playbooks
   run_ansible_playbooks
 
   # lua language server requires a little more work
   install_ninja
   install_lua_language_server
+
   # same with rust language server (rust-analyzer)
   install_rust_analyzer
 
@@ -96,9 +100,15 @@ function install_asdf () {
 }
 
 
+function update_deps () {
+  if [[ "$(uname)" = 'Linux' ]]; then
+    sudo apt update -y
+  fi
+}
+
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    sudo apt install ansible
+    sudo apt install ansible -y
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
   fi
@@ -108,7 +118,7 @@ function install_ansible () {
 
 function install_ninja () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    sudo apt install ninja-build
+    sudo apt install ninja-build -y
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ninja
   fi
