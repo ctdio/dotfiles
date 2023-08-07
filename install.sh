@@ -112,6 +112,7 @@ function update_deps () {
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
     sudo apt install ansible -y
+    ansible || pip install ansible
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
   fi
