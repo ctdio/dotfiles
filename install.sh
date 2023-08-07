@@ -78,7 +78,10 @@ function install_fzf_git () {
   echo "Installing fzf"
   if [[ ! -d ~/.fzf ]]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install
+    ~/.fzf/install \
+      --completion \
+      --key-bindings \
+      --no-update-rc
   else
     echo "fzf is already installed. Skipping."
   fi
