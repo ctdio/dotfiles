@@ -14,7 +14,6 @@ function main () {
   install_asdf
   install_ansible
 
-
   # most language servers will be installed via playbooks
   run_ansible_playbooks
 
@@ -26,6 +25,8 @@ function main () {
   install_rust_analyzer
 
   asdf reshim
+
+  prepare_neovim
 
   echo "Install complete!"
 }
@@ -184,6 +185,18 @@ function run_ansible_playbooks () {
   ansible-playbook ./playbooks/install-golang-packages.yaml
   ansible-playbook ./playbooks/install-npm-packages.yaml
   ansible-playbook ./playbooks/install-pip-packages.yaml
+}
+
+function prepare_neovim () {
+  if [[ "$(uname)" = 'Linux' ]]; then
+    rm -f ~/nvim.appimage
+
+    curl -L \
+      https://github.com/neovim/neovim/releases/download/stable/nvim.appimage \
+      -o ~/nvim.appimage
+
+    chmod +x ~/nvim.appimage
+  fi
 }
 
 main
