@@ -142,6 +142,8 @@ let g:firenvim_config = {
   \ }
 \ }
 
+let g:auto_session_pre_save_cmds = ["tabdo NERDTreeClose"]
+
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 

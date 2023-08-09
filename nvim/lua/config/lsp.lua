@@ -248,6 +248,7 @@ setup_lsp = function()
     nvim_lsp[lsp].setup({
       on_attach = on_attach,
       capabilities = capabilities,
+      detached = false,
     })
   end
 
