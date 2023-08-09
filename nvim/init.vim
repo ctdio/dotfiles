@@ -18,6 +18,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tjvr/vim-nearley'
   " Updating the parsers on treesitter update is recommended
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'nvim-treesitter/nvim-treesitter-textobjects'
 
   " lsp/completion
   Plug 'folke/neodev.nvim'

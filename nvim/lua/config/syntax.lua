@@ -31,6 +31,33 @@ local function setup()
       -- Instead of true it can also be a list of languages
       additional_vim_regex_highlighting = false,
     },
+    textobjects = {
+      select = {
+        enable = true,
+
+        -- Automatically jump forward to textobj, similar to targets.vim
+        lookahead = true,
+
+        keymaps = {
+          ["af"] = "@function.outer",
+          ["if"] = "@function.inner",
+          ["aF"] = "@frame.outer",
+          ["iF"] = "@frame.inner",
+          ["ab"] = "@block.outer",
+          ["ib"] = "@block.inner",
+          ["ac"] = "@call.outer",
+          ["ic"] = "@call.inner",
+          ["as"] = "@assignment.outer",
+          ["is"] = "@assignment.inner",
+          ["rs"] = "@assignment.rhs",
+          ["ls"] = "@assignment.lhs",
+          ["al"] = "@loop.outer",
+          ["il"] = "@loop.inner",
+          ["aP"] = "@parameter.outer",
+          ["iP"] = "@parameter.inner",
+        },
+      },
+    },
   })
 
   vim.filetype.add({
