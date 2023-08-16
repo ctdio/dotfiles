@@ -190,6 +190,12 @@ set cursorline
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
+" neoformat on save
+augroup fmt
+  autocmd!
+  autocmd BufWritePre * undojoin | Neoformat
+augroup END
+
 " ╭──────────────────────────────────────────────────────────╮
 " │                      Setup plugins                       │
 " ╰──────────────────────────────────────────────────────────╯
