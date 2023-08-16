@@ -252,7 +252,7 @@ map <leader>ts :lua require("neotest").summary.toggle()<CR>
 
 map <leader>l :Limelight!!<CR>
 
-map <C-p> :Telescope find_files<enter>
+map <C-p> :Telescope find_files hidden=true<enter>
 map <C-a> :lua require('telescope').extensions.live_grep_args.live_grep_args()<enter>
 map <C-c> <esc>
 
