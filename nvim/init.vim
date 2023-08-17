@@ -143,7 +143,7 @@ let g:firenvim_config = {
   \ }
 \ }
 
-let g:auto_session_pre_save_cmds = ["tabdo NERDTreeClose"]
+let g:auto_session_pre_save_cmds = ["tabdo NvimTreeClose"]
 
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
@@ -193,7 +193,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " neoformat on save
 augroup fmt
   autocmd!
-  autocmd BufWritePre * undojoin | Neoformat
+  au BufWritePre * try | undojoin | Neoformat | catch /^Vim\%((\a\+)\)\=:E790/ | finally | silent Neoformat | endtry
 augroup END
 
 " ╭──────────────────────────────────────────────────────────╮
