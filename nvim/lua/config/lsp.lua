@@ -239,6 +239,7 @@ setup_lsp = function()
   -- map buffer local keybindings when the language server attaches
   local servers = {
     "tsserver",
+    "eslint",
     "astro",
     "bashls",
     "rust_analyzer",

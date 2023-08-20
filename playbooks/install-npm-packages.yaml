@@ -4,6 +4,7 @@
   vars:
     packages:
       - typescript-language-server
+      - vscode-langservers-extracted
       - bash-language-server
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
