@@ -32,6 +32,7 @@
       - koekeishiya/formulae/skhd
       - databricks
       - sketchybar
+      - reattach-to-user-namespace
     casks:
       - bitwarden
       - docker

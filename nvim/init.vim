@@ -67,6 +67,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kevinhwang91/promise-async'
   Plug 'kevinhwang91/nvim-ufo'
   Plug 'sbdchd/neoformat'
+  Plug 'nicwest/vim-camelsnek'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -144,6 +145,7 @@ let g:firenvim_config = {
 \ }
 
 let g:auto_session_pre_save_cmds = ["tabdo NvimTreeClose"]
+let g:camelsnek_alternative_camel_commands = 1
 
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro

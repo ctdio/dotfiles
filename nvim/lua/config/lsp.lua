@@ -14,9 +14,11 @@ setup_cmp_completion = function()
   require("copilot").setup({
     panel = {
       enabled = false,
+      auto_refresh = true,
     },
     suggestion = {
       enabled = false,
+      auto_trigger = true,
     },
   })
 
@@ -127,8 +129,8 @@ setup_cmp_completion = function()
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
     sources = {
-      { name = "nvim_lsp", group_index = 1 },
-      { name = "nvim_lsp_signature_help", group_index = 1 },
+      { name = "nvim_lsp", group_index = 2 },
+      { name = "nvim_lsp_signature_help", group_index = 2 },
       { name = "copilot", group_index = 2 },
       { name = "buffer", group_index = 3 },
       { name = "dap", group_index = 3 },
