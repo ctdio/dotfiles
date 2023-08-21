@@ -12,4 +12,6 @@
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"
-      community.general.cargo: "name={{ item }}"
+      community.general.cargo:
+        name: "{{ item }}"
+        state: latest
