@@ -68,6 +68,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kevinhwang91/nvim-ufo'
   Plug 'sbdchd/neoformat'
   Plug 'nicwest/vim-camelsnek'
+  Plug 'junegunn/vim-easy-align'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -83,7 +84,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
-  Plug 'kyazdani42/nvim-tree.lua'
+  Plug 'kyazdani42/nvim-tree.lua', { 'on': 'NvimTreeToggle' }
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
   Plug 'kkharji/sqlite.lua'
 
@@ -277,3 +278,4 @@ command Snip :Telescope luasnip
 command Term :Lspsaga term_toggle
 command Inc :Telescope lsp_incoming_calls
 command Out :Telescope lsp_outgoing_calls
+command ResumeSearch :Telescope resume

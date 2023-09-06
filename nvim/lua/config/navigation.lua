@@ -253,6 +253,7 @@ local function setup()
   require("telescope").load_extension("session-lens")
   require("telescope").load_extension("luasnip")
   require("telescope").load_extension("live_grep_args")
+  -- require("telescope").load_extension("smart_history")
 
   require("telescope-tabs").setup()
 

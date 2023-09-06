@@ -7,18 +7,20 @@ local function setup()
 
   -- configure trouble for prettier diagnostics
   require("trouble").setup()
-  require("lspsaga").setup({})
+  require("lspsaga").setup({
+    lightbulb = {
+      sign = false,
+    },
+  })
 end
 
 setup_cmp_completion = function()
   require("copilot").setup({
     panel = {
       enabled = false,
-      auto_refresh = true,
     },
     suggestion = {
       enabled = false,
-      auto_trigger = true,
     },
   })
 
@@ -65,6 +67,18 @@ setup_cmp_completion = function()
 
   local replace_termcodes = function(str)
     return vim.api.nvim_replace_termcodes(str, true, true, true)
+  end
+
+  local has_words_before = function()
+    if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
+      return false
+    end
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0
+      and vim.api
+          .nvim_buf_get_text(0, line - 1, 0, line - 1, col, {})[1]
+          :match("^%s*$")
+        == nil
   end
 
   cmp.setup({
@@ -125,7 +139,13 @@ setup_cmp_completion = function()
           end
         end,
       }, { "i", "c" }),
-      ["<Tab>"] = cmp.mapping(select_next_item_or_confirm, { "i", "s", "c" }),
+      ["<Tab>"] = vim.schedule_wrap(function(fallback)
+        if cmp.visible() and has_words_before() then
+          cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+        else
+          fallback()
+        end
+      end),
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
     sources = {
@@ -246,6 +266,7 @@ setup_lsp = function()
     "gopls",
     "lua_ls",
     "pylsp",
+    "pyright",
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({

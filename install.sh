@@ -13,6 +13,7 @@ function main () {
   install_fzf_git
   install_asdf
   install_ansible
+  install_tpm
 
   # most language servers will be installed via playbooks
   run_ansible_playbooks
@@ -200,3 +201,10 @@ function prepare_neovim () {
 }
 
 main
+
+function install_tpm () {
+  # install tpm
+  if [[ ! -f ~/.tmux/plugins/tpm ]]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+
+}

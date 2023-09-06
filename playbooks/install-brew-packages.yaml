@@ -37,6 +37,7 @@
       - bitwarden
       - docker
       - font-hack-nerd-font
+      - unnaturalscrollwheels
     taps:
       - databricks/tap
       - homebrew/cask-fonts

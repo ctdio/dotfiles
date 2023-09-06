@@ -5,7 +5,8 @@
     packages:
       - visidata
       - thefuck
-      - python-lsp-server
+      - python-lsp-server[all]
+      - pyright
       - autopep8
       - jupytext
       - jupyterlab

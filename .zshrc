@@ -10,9 +10,7 @@ source ~/antigen.zsh
 antigen use oh-my-zsh
 
 antigen bundles <<EOF
-  # Bundles from the default repo (robbyrussell's oh-my-zsh).
   git
-  lein
   command-not-found
   thefuck
 
@@ -21,6 +19,8 @@ antigen bundles <<EOF
 
   # making zsh pretty
   mafredri/zsh-async
+
+  marlonrichert/zsh-autocomplete@main
 EOF
 
 antigen theme af-magic
@@ -69,4 +69,7 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-
+#
+if [ -f '/opt/homebrew/bin/brew' ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
