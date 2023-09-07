@@ -4,11 +4,11 @@
   vars:
     packages:
       - bat
-      - zoxide
-      - ripgrep
       - fd-find
+      - ripgrep
       - stylua
       - xsv
+      - zoxide
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"

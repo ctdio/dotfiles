@@ -3,45 +3,46 @@
   connection: local
   vars:
     packages:
-      - readline
-      - gcc
-      - wget
-      - tmux
-      - htop
-      - zsh
-      - neovim
-      - sqlite
-      - wget
-      - gh
-      - jq
-      - yarn
-      - gpg
-      - gawk
-      - thefuck
+      - awscli
+      - databricks
+      - ffmpeg
       - fzy
+      - gawk
+      - gcc
+      - gh
+      - gnu-sed
+      - gpg
+      - htop
+      - jq
+      - koekeishiya/formulae/skhd
+      - koekeishiya/formulae/yabai
+      - libpq
+      - neovim
+      - openssl
       - pyenv
       - readline
-      - xz
-      - openssl
-      - sqlite3
-      - zlib
-      - awscli
-      - ffmpeg
-      - libpq
-      - koekeishiya/formulae/yabai
-      - koekeishiya/formulae/skhd
-      - databricks
-      - sketchybar
+      - readline
       - reattach-to-user-namespace
+      - sketchybar
+      - sqlite
+      - sqlite3
+      - thefuck
+      - tmux
+      - wget
+      - wget
+      - xz
+      - yarn
+      - zlib
+      - zsh
     casks:
       - bitwarden
       - docker
       - font-hack-nerd-font
       - unnaturalscrollwheels
     taps:
+      - FelixKratz/formulae
       - databricks/tap
       - homebrew/cask-fonts
-      - FelixKratz/formulae
   tasks:
     - name: Install taps
       homebrew_tap: name={{ item }} state=present

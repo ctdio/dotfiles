@@ -3,14 +3,14 @@
   connection: local
   vars:
     packages:
-      - visidata
-      - thefuck
-      - python-lsp-server[all]
-      - pyright
       - autopep8
-      - jupytext
-      - jupyterlab
       - dbx
+      - jupyterlab
+      - jupytext
+      - pyright
+      - python-lsp-server[all]
+      - thefuck
+      - visidata
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"

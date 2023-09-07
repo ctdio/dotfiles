@@ -3,13 +3,13 @@
   connection: local
   vars:
     packages:
-      - typescript-language-server
-      - vscode-langservers-extracted
-      - bash-language-server
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
-      - "@withgraphite/graphite-cli"
       - "@socketsecurity/cli"
+      - "@withgraphite/graphite-cli"
+      - bash-language-server
+      - typescript-language-server
+      - vscode-langservers-extracted
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"

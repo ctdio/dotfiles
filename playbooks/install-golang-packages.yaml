@@ -3,10 +3,10 @@
   connection: local
   vars:
     package_repos:
-      - golang.org/x/tools/gopls@latest
-      - github.com/hashicorp/terraform-ls@latest
       - github.com/charmbracelet/glow@latest
+      - github.com/hashicorp/terraform-ls@latest
       - github.com/tomnomnom/gron@latest
+      - golang.org/x/tools/gopls@latest
   tasks:
     - name: Installing golang packages
       loop: "{{ package_repos }}"
