@@ -33,6 +33,10 @@ local function setup()
   }
 
   require("nvim-dap-virtual-text").setup()
+
+  require("sniprun").setup({
+    display = { "LongTempFloatingWindow" },
+  })
 end
 
 return {

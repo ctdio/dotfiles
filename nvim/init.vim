@@ -87,6 +87,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kyazdani42/nvim-tree.lua', { 'on': 'NvimTreeToggle' }
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
   Plug 'kkharji/sqlite.lua'
+  Plug 'nvim-pack/nvim-spectre'
 
   " utils
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
@@ -96,6 +97,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tyru/open-browser-github.vim'
   Plug 'simrat39/symbols-outline.nvim'
   Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
+  Plug 'kristijanhusak/vim-carbon-now-sh', { 'on': 'CarbonNowSh' }
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -111,6 +113,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'rcarriga/nvim-notify'
+  Plug 'michaelb/sniprun', {'do': 'sh install.sh' }
 
   " testing
   Plug 'antoinemadec/FixCursorHold.nvim'
@@ -240,7 +243,11 @@ map <leader>b :Telescope buffers<CR>
 map <leader>m :Telescope marks<CR>
 map <leader>g :Telescope telescope-tabs list_tabs<CR>
 map <leader>z :Telescope spell_suggest<CR>
-map <leader>s :lua require('spell-check-util').toggle_spell_check()<CR>
+map <leader>Z :lua require('spell-check-util').toggle_spell_check()<CR>
+nmap <leader>S :lua require("spectre").toggle()<CR>
+nmap <leader>sw :lua require("spectre").open_visual({select_word=true})<CR>
+vmap <leader>sw :lua require("spectre").open_visual()<CR>
+nmap <leader>sp :lua require("spectre").open_file_search({select_word=true})<CR>
 
 map <leader>p :Neoformat<CR>
 
@@ -263,7 +270,11 @@ map <leader>l :Limelight!!<CR>
 
 map <C-p> :Telescope find_files hidden=true<enter>
 map <C-a> :lua require('telescope').extensions.live_grep_args.live_grep_args()<enter>
-map <C-c> <esc>
+
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
 
 " Expand
 imap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
