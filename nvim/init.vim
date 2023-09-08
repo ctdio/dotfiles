@@ -66,7 +66,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'LudoPinelli/comment-box.nvim'
   Plug 'kevinhwang91/promise-async'
   Plug 'kevinhwang91/nvim-ufo'
-  Plug 'sbdchd/neoformat'
+  Plug 'sbdchd/neoformat', { 'on': 'Neoformat' }
   Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
 
@@ -113,7 +113,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'rcarriga/nvim-notify'
-  Plug 'michaelb/sniprun', {'do': 'sh install.sh' }
+  Plug 'michaelb/sniprun', { 'do': 'sh install.sh' }
 
   " testing
   Plug 'antoinemadec/FixCursorHold.nvim'
@@ -286,6 +286,7 @@ smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' 
 command Light :Catppuccin latte
 command Dark :Catppuccin mocha
 command Snip :Telescope luasnip
+command SR :SnipRun
 command Term :Lspsaga term_toggle
 command Inc :Telescope lsp_incoming_calls
 command Out :Telescope lsp_outgoing_calls
