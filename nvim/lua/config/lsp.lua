@@ -149,13 +149,13 @@ setup_cmp_completion = function()
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
     sources = {
-      { name = "nvim_lsp", group_index = 2 },
-      { name = "nvim_lsp_signature_help", group_index = 2 },
-      { name = "copilot", group_index = 2 },
-      { name = "buffer", group_index = 3 },
-      { name = "dap", group_index = 3 },
-      { name = "luasnip", group_index = 3 },
-      { name = "emoji", group_index = 4 },
+      { name = "copilot" },
+      { name = "nvim_lsp" },
+      { name = "nvim_lsp_signature_help" },
+      { name = "luasnip" },
+      { name = "buffer" },
+      { name = "dap" },
+      { name = "emoji" },
     },
   })
 
@@ -258,15 +258,16 @@ setup_lsp = function()
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches
   local servers = {
-    "tsserver",
-    "eslint",
     "astro",
     "bashls",
-    "rust_analyzer",
+    "eslint",
     "gopls",
     "lua_ls",
     "pylsp",
     "pyright",
+    "rust_analyzer",
+    "tailwindcss",
+    "tsserver",
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({

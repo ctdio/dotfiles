@@ -29,9 +29,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/cmp-buffer'
   Plug 'hrsh7th/cmp-path'
   Plug 'hrsh7th/cmp-cmdline'
-  Plug 'rafamadriz/friendly-snippets'
   Plug 'folke/trouble.nvim'
-  Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*'}
+  Plug 'rafamadriz/friendly-snippets'
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
   Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'nvimdev/lspsaga.nvim'
   Plug 'zbirenbaum/copilot.lua'
@@ -276,7 +276,7 @@ xmap ga <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
 
-" Expand
+" Expand snippets
 imap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
 smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
 

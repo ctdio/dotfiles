@@ -16,6 +16,7 @@ local function setup()
   })
 
   require("luasnip").filetype_extend("typescript", { "javascript" })
+  require("luasnip").filetype_extend("typescriptreact", { "javascript" })
 
   -- search and replace
   require("spectre").setup()
