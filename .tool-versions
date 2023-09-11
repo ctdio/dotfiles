@@ -1,24 +1,25 @@
-nodejs 18.16.0 # https://github.com/asdf-vm/asdf-nodejs
-yarn 1.22.4 # https://github.com/twuni/asdf-yarn
-pnpm 7.12.2 # https://github.com/jonathanmorley/asdf-pnpm
-deno 1.25.3 # https://github.com/asdf-community/asdf-deno
-rust 1.65.0 # https://github.com/code-lever/asdf-rust
-python 3.10.6 # https://github.com/asdf-community/asdf-python
-poetry 1.4.2 # https://github.com/asdf-community/asdf-poetry.git
-pdm 2.8.1 # https://github.com/1oglop1/asdf-pdm
-golang 1.19.1 # https://github.com/kennyp/asdf-golang
-elixir 1.14.0-otp-25 # https://github.com/asdf-vm/asdf-elixir
-erlang 25.0.4 # https://github.com/asdf-vm/asdf-erlang
-gleam 0.22.1 # https://github.com/asdf-community/asdf-gleam
-bazel 5.3.0 # https://github.com/mrinalwadhwa/asdf-bazel
-waypoint 0.10.0 # https://github.com/asdf-community/asdf-hashicorp
-terraform 1.5.5 # https://github.com/asdf-community/asdf-hashicorp
-helm 3.11.2 # https://github.com/Antiarchitect/asdf-helm
-helmfile 0.152.0 # https://github.com/feniix/asdf-helmfile
-eksctl 0.138.0 # https://github.com/elementalvoid/asdf-eksctl
-kubectl 1.25.2 # https://github.com/asdf-community/asdf-kubectl
-minikube 1.27.0 #https://github.com/alvarobp/asdf-minikube
-java openjdk-17 # https://github.com/halcyon/asdf-java
-scala 3.2.2 # https://github.com/asdf-community/asdf-scala.git
-gradle 8.0 # https://github.com/rfrancis/asdf-gradle.git
-earthly 0.7.4 # https://github.com/earthly/earthly
+nodejs 18.16.0
+bun 1.0.0
+yarn 1.22.4
+pnpm 7.12.2
+deno 1.25.3
+rust 1.65.0
+python 3.10.6
+poetry 1.4.2
+pdm 2.8.1
+golang 1.19.1
+elixir 1.14.0-otp-25
+erlang 25.0.4
+gleam 0.22.1
+bazel 5.3.0
+waypoint 0.10.0
+terraform 1.5.5
+helm 3.11.2
+helmfile 0.152.0
+eksctl 0.138.0
+kubectl 1.25.2
+minikube 1.27.0
+java openjdk-17
+scala 3.2.2
+gradle 8.0
+earthly 0.7.4

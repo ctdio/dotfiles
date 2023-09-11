@@ -51,6 +51,8 @@
         repo: https://github.com/rfrancis/asdf-gradle.git
       - plugin: earthly
         repo: https://github.com/YR-ZR0/asdf-earthly
+      - plugin: bun
+        repo: https://github.com/cometkim/asdf-bun
   connection: local
   tasks:
     - name: Install asdf plugins
