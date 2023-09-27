@@ -98,6 +98,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'simrat39/symbols-outline.nvim'
   Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
   Plug 'kristijanhusak/vim-carbon-now-sh', { 'on': 'CarbonNowSh' }
+  Plug 'tpope/vim-dadbod'
+  Plug 'kristijanhusak/vim-dadbod-ui'
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -148,7 +150,6 @@ let g:firenvim_config = {
   \ }
 \ }
 
-let g:auto_session_pre_save_cmds = ["tabdo NvimTreeClose"]
 let g:camelsnek_alternative_camel_commands = 1
 
 autocmd BufWritePre * :%s/\s\+$//e

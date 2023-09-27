@@ -3,7 +3,12 @@ local function setup()
   vim.notify = require("notify")
 
   -- setup autosession
-  require("auto-session").setup({})
+  require("auto-session").setup({
+    pre_save_cmds = { "tabdo NvimTreeClose" },
+  })
+
+  vim.o.sessionoptions =
+    "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
   require("session-lens").setup()
 
   -- setup hop for movement

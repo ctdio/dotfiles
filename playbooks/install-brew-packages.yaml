@@ -10,6 +10,7 @@
       - gawk
       - gcc
       - gh
+      - git-lfs
       - gnu-sed
       - gpg
       - htop
