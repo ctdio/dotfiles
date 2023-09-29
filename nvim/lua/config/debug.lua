@@ -15,7 +15,7 @@ local function setup()
     },
   })
 
-  dap.configurations.typescript = {
+  local node_config = {
     {
       type = "pwa-node",
       request = "launch",
@@ -31,6 +31,9 @@ local function setup()
       cwd = "${workspaceFolder}",
     },
   }
+
+  dap.configurations.typescript = node_config
+  dap.configurations.typescriptreact = node_config
 
   require("nvim-dap-virtual-text").setup()
 
