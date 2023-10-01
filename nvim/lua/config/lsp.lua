@@ -154,6 +154,7 @@ setup_cmp_completion = function()
       { name = "nvim_lsp_signature_help" },
       { name = "luasnip" },
       { name = "buffer" },
+      { name = "vim-dadbod-completion" },
       { name = "dap" },
       { name = "emoji" },
     },

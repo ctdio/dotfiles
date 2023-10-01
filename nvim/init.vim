@@ -100,6 +100,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-carbon-now-sh', { 'on': 'CarbonNowSh' }
   Plug 'tpope/vim-dadbod'
   Plug 'kristijanhusak/vim-dadbod-ui'
+  Plug 'kristijanhusak/vim-dadbod-completion'
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -151,6 +152,7 @@ let g:firenvim_config = {
 \ }
 
 let g:camelsnek_alternative_camel_commands = 1
+let g:db_ui_use_nvim_notify = 1
 
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
@@ -200,7 +202,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " neoformat on save
 augroup fmt
   autocmd!
-  au BufWritePre * try | undojoin | Neoformat | catch /^Vim\%((\a\+)\)\=:E790/ | finally | silent Neoformat | endtry
+  au BufWritePre * try | undojoin | Neoformat | catch /(.*)/ | Neoformat | endtry
 augroup END
 
 " ╭──────────────────────────────────────────────────────────╮

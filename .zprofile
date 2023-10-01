@@ -9,6 +9,9 @@ alias killn='killall node'
 alias oni='~/Onivim2-x86_64.AppImage'
 
 alias vim='nvim'
+alias nvim-no-sesh='nvim "+let g:auto_session_enabled = v:false"'
+alias vim-no-sesh='nvim-no-sesh'
+alias dbui='nvim-no-sesh -c "DBUI"'
 alias wtf='~/wtfutil'
 
 alias rmswp='find . -name "*.sw*" -ok rm {} +'
