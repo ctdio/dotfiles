@@ -15,7 +15,12 @@ local function setup()
   require("hop").setup()
 
   -- setup status line
-  require("lualine").setup()
+  local CodeGPTModule = require("codegpt")
+  require("lualine").setup({
+    sections = {
+      lualine_x = { CodeGPTModule.get_status, "encoding", "fileformat" },
+    },
+  })
 
   local function on_attach(bufnr)
     local api = require("nvim-tree.api")

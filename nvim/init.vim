@@ -90,6 +90,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-pack/nvim-spectre'
 
   " utils
+  Plug 'MunifTanjim/nui.nvim'
   Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
   Plug 'ellisonleao/glow.nvim'
   Plug 'ahw/vim-pbcopy'
@@ -101,6 +102,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'tpope/vim-dadbod'
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
+  Plug 'nvim-lua/plenary.nvim'
+  Plug 'dpayne/CodeGPT.nvim'
+  Plug 'tpope/vim-dotenv'
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -154,6 +158,10 @@ let g:firenvim_config = {
 let g:camelsnek_alternative_camel_commands = 1
 let g:db_ui_use_nvim_notify = 1
 
+function! s:env(var) abort
+  return exists('*DotenvGet') ? DotenvGet(a:var) : eval('$'.a:var)
+endfunction
+
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufRead,BufEnter *.astro set filetype=astro
 
@@ -202,7 +210,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " neoformat on save
 augroup fmt
   autocmd!
-  au BufWritePre * try | undojoin | Neoformat | catch /(.*)/ | Neoformat | endtry
+  autocmd BufWritePre * undojoin | Neoformat
 augroup END
 
 " ╭──────────────────────────────────────────────────────────╮
