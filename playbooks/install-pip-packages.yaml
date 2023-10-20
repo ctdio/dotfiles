@@ -11,6 +11,8 @@
       - python-lsp-server[all]
       - thefuck
       - visidata
+      - shell-gpt
+      - tiktoken
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"
