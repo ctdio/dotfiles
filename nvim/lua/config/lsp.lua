@@ -263,6 +263,7 @@ setup_lsp = function()
     "bashls",
     "eslint",
     "gopls",
+    "mojo",
     "lua_ls",
     "pylsp",
     "pyright",

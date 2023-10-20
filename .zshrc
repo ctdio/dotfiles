@@ -73,3 +73,5 @@ unset __conda_setup
 if [ -f '/opt/homebrew/bin/brew' ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
+export MODULAR_HOME="/Users/charlieduong/.modular"
+export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
