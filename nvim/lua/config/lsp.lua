@@ -219,6 +219,9 @@ setup_lsp = function()
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
     vim.keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", bufopts)
     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
+    vim.keymap.set("n", "gn", vim.diagnostic.goto_next, bufopts)
+    vim.keymap.set("n", "gp", vim.diagnostic.goto_prev, bufopts)
+
     vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
     vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
     vim.keymap.set(
