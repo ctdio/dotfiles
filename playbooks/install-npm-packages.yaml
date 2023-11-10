@@ -11,6 +11,8 @@
       - bash-language-server
       - typescript-language-server
       - vscode-langservers-extracted
+      - nx
+      - turbo
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"
