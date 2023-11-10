@@ -14,6 +14,9 @@ export PATH=${PATH}:${ANDROID_HOME}/tools
 export PATH=${PATH}:${ANDROID_HOME}/tools/bin
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 
+
+export FPATH="$HOME/.zcomp:$FPATH"
+
 # libpq
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
 
