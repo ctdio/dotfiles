@@ -5,5 +5,3 @@ endfunction
 
 " load .env file from home dir
 Dotenv ~
-
-let g:codegpt_openai_api_key = s:env('CODEGPT_OPENAI_API_KEY')

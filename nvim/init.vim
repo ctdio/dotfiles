@@ -103,7 +103,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
   Plug 'nvim-lua/plenary.nvim'
-  Plug 'dpayne/CodeGPT.nvim'
+  " Plug 'dpayne/CodeGPT.nvim'
+  Plug 'jackMort/ChatGPT.nvim'
   Plug 'tpope/vim-dotenv'
 
   "" session
@@ -208,10 +209,10 @@ set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
 " neoformat on save
-augroup fmt
-  autocmd!
-  autocmd BufWritePre * undojoin | Neoformat
-augroup END
+" augroup fmt
+"   autocmd!
+"   autocmd BufWritePre * undojoin | Neoformat
+" augroup END
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                      Setup plugins                       │

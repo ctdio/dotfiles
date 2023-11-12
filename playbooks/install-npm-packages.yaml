@@ -13,6 +13,7 @@
       - vscode-langservers-extracted
       - nx
       - turbo
+      - dotenv-cli
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"
