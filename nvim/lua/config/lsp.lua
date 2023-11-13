@@ -272,7 +272,7 @@ setup_lsp = function()
     "pyright",
     "rust_analyzer",
     "tailwindcss",
-    "tsserver",
+    -- "tsserver", (covered by typescript-tools)
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({
@@ -281,6 +281,10 @@ setup_lsp = function()
       detached = false,
     })
   end
+
+  require("typescript-tools").setup({
+    on_attach = on_attach,
+  })
 
   nvim_lsp.terraformls.setup({
     on_attach = on_attach,

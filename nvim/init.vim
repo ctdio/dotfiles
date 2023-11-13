@@ -36,6 +36,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvimdev/lspsaga.nvim'
   Plug 'zbirenbaum/copilot.lua'
   Plug 'zbirenbaum/copilot-cmp'
+  Plug 'pmizio/typescript-tools.nvim'
 
   " start screen
   Plug 'mhinz/vim-startify'
