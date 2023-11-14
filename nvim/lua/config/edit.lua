@@ -21,11 +21,10 @@ local function setup()
   -- search and replace
   require("spectre").setup()
 
-
   local env_path = vim.fn.expand("$HOME") .. "/.env"
 
   require("chatgpt").setup({
-    api_key_cmd = "dotenv -e " .. env_path .. " -p NEOVIM_OPENAI_API_KEY"
+    api_key_cmd = "dotenv -e " .. env_path .. " -p NEOVIM_OPENAI_API_KEY",
   })
 end
 
