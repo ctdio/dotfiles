@@ -104,7 +104,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
   Plug 'nvim-lua/plenary.nvim'
-  " Plug 'dpayne/CodeGPT.nvim'
   Plug 'jackMort/ChatGPT.nvim'
   Plug 'tpope/vim-dotenv'
 
@@ -210,10 +209,10 @@ set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
 " neoformat on save
-" augroup fmt
-"   autocmd!
-"   autocmd BufWritePre * undojoin | Neoformat
-" augroup END
+augroup fmt
+  autocmd!
+  autocmd BufWritePre * undojoin | Neoformat
+augroup END
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                      Setup plugins                       │
@@ -288,6 +287,9 @@ map <C-a> :lua require('telescope').extensions.live_grep_args.live_grep_args()<e
 xmap ga <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
+
+" force myself to break bad habits
+imap <C-c> <NOP>
 
 " Expand snippets
 imap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
