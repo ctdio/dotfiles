@@ -1,5 +1,5 @@
 nodejs 20.9.0
-bun 1.0.0
+bun 1.0.11
 yarn 1.22.4
 pnpm 7.12.2
 deno 1.25.3
