@@ -8,6 +8,7 @@
       - "@socketsecurity/cli"
       - "@withgraphite/graphite-cli"
       - "@tailwindcss/language-server"
+      - "@olrtg/emmet-language-server"
       - bash-language-server
       - typescript-language-server
       - vscode-langservers-extracted

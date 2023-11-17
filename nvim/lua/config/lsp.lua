@@ -286,6 +286,25 @@ setup_lsp = function()
     on_attach = on_attach,
   })
 
+  nvim_lsp.emmet_language_server.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = {
+      "css",
+      "eruby",
+      "html",
+      "javascript",
+      "javascriptreact",
+      "less",
+      "sass",
+      "scss",
+      "svelte",
+      "pug",
+      "typescriptreact",
+      "vue",
+    },
+  })
+
   nvim_lsp.terraformls.setup({
     on_attach = on_attach,
     capabilities = capabilities,
