@@ -21,12 +21,16 @@ antigen bundles <<EOF
   mafredri/zsh-async
 
   marlonrichert/zsh-autocomplete@main
+
+  jeffreytse/zsh-vi-mode
 EOF
 
 antigen theme af-magic
 
 # Tell Antigen that you're done.
 antigen apply
+
+bindkey -v
 
 # added by travis gem
 [ -f /home/charlie/.travis/travis.sh ] && source /home/charlie/.travis/travis.sh
