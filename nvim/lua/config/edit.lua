@@ -1,4 +1,13 @@
 local function setup()
+  -- diffing
+  require("diffview").setup({
+    view = {
+      merge_tool = {
+        layout = "diff3_mixed",
+      },
+    },
+  })
+
   -- setup zen-mode for focused writing
   require("zen-mode").setup()
 
