@@ -14,6 +14,9 @@ local function setup()
   -- setup hop for movement
   require("hop").setup()
 
+  -- setup oil
+  require("oil").setup()
+
   -- setup status line
   --local CodeGPTModule = require("codegpt")
   require("lualine").setup({

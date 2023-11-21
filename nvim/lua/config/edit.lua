@@ -8,6 +8,9 @@ local function setup()
     },
   })
 
+  -- autopairs
+  require("nvim-autopairs").setup()
+
   -- setup zen-mode for focused writing
   require("zen-mode").setup()
 

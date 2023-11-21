@@ -42,7 +42,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'mhinz/vim-startify'
 
   " statusline
-  " Plug 'feline-nvim/feline.nvim'
   Plug 'nvim-lualine/lualine.nvim'
 
   " colorscheme
@@ -70,6 +69,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'sbdchd/neoformat', { 'on': 'Neoformat' }
   Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
+  Plug 'windwp/nvim-autopairs'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -89,6 +89,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
   Plug 'kkharji/sqlite.lua'
   Plug 'nvim-pack/nvim-spectre'
+  Plug 'stevearc/oil.nvim'
 
   " utils
   Plug 'MunifTanjim/nui.nvim'
