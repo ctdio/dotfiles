@@ -9,6 +9,7 @@
       - stylua
       - xsv
       - zoxide
+      - ripgrep
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"
