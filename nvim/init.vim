@@ -292,6 +292,8 @@ nmap ga <Plug>(EasyAlign)
 " force myself to break bad habits
 imap <C-c> <NOP>
 
+nmap - :Oil<CR>
+
 " Expand snippets
 imap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
 smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-j>'
