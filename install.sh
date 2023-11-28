@@ -51,6 +51,24 @@ function link_dotfiles () {
 
   echo "Linking startup.sh to ~/startup.sh"
   ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
+
+  local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
+  local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
+
+  mkdir -p ${os_karabiner_mods_dir}
+
+  echo "Linking karabiner mods..."
+
+  echo "Linking karabiner mods from ${dotfiles_karabiner_mods_dir} to ${os_karabiner_mods_dir}"
+
+  for filename in $(ls -A ${dotfiles_karabiner_mods_dir}); do
+    echo "filename: ${filename}"
+    if [[ ${filename} != ".git" ]]; then
+      echo "Linking ${filename} to ${os_karabiner_mods_dir}/${filename}"
+      ln -nsf ${dotfiles_karabiner_mods_dir}/${filename} \
+        ${os_karabiner_mods_dir}/${filename}
+    fi
+  done
 }
 
 function link_git_hooks() {
