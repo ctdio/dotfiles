@@ -10,6 +10,7 @@
       - xsv
       - zoxide
       - ripgrep
+      - tmux-sessionizer
   tasks:
     - name: Install cargo packages
       loop: "{{ packages }}"
