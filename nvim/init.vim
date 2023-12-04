@@ -39,9 +39,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'zbirenbaum/copilot-cmp'
   Plug 'pmizio/typescript-tools.nvim'
 
-  " start screen
-  Plug 'mhinz/vim-startify'
-
   " statusline
   Plug 'nvim-lualine/lualine.nvim'
 
