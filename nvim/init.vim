@@ -90,6 +90,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kkharji/sqlite.lua'
   Plug 'nvim-pack/nvim-spectre'
   Plug 'stevearc/oil.nvim'
+  Plug 'thePrimeagen/harpoon', { 'tag': 'harpoon2' }
 
   " utils
   Plug 'MunifTanjim/nui.nvim'
