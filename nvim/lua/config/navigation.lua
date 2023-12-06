@@ -241,7 +241,8 @@ local function setup()
   -- setup telescope
   local telescope_actions = require("telescope.actions")
 
-  require("telescope").setup({
+  local telescope = require("telescope")
+  telescope.setup({
     defaults = {
       mappings = {
         i = {
@@ -249,15 +250,21 @@ local function setup()
           ["<C-Up>"] = require("telescope.actions").cycle_history_prev,
         },
       },
-      vimgrep_arguments = {
-        "rg",
-        "--color=never",
-        "--no-heading",
-        "--with-filename",
-        "--line-number",
-        "--column",
-        "--smart-case",
-        "--hidden",
+    },
+    extensions = {
+      live_grep_args = {
+        vimgrep_arguments = {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case",
+          "--hidden",
+          "-g",
+          "!{node_modules,.git}",
+        },
       },
     },
   })
@@ -269,13 +276,52 @@ local function setup()
   require("telescope").load_extension("live_grep_args")
   -- require("telescope").load_extension("smart_history")
 
-  require("telescope-tabs").setup()
-
   require("symbols-outline").setup({
     keymaps = {
       close = { "q" },
     },
   })
+
+  local telescope_builtin = require("telescope.builtin")
+
+  vim.keymap.set("n", "<C-p>", function()
+    telescope_builtin.find_files({
+      find_command = {
+        "rg",
+        "--files",
+        "--color=never",
+        "--no-heading",
+        "--with-filename",
+        "--line-number",
+        "--column",
+        "--smart-case",
+        "--hidden",
+        "-g",
+        "!{node_modules,.git}",
+      },
+    })
+  end, {})
+
+  vim.keymap.set("n", "<C-a>", function()
+    telescope.extensions.live_grep_args.live_grep_args({
+      vimgrep_arguments = {
+        "rg",
+        "--color=never",
+        "--no-heading",
+        "--with-filename",
+        "--line-number",
+        "--column",
+        "--smart-case",
+        "--hidden",
+        "-g",
+        "!{node_modules,.git}",
+      },
+    })
+  end, {})
+
+  vim.keymap.set("n", "<leader>b", telescope_builtin.buffers, {})
+  vim.keymap.set("n", "<leader>m", telescope_builtin.marks, {})
+  vim.keymap.set("n", "<leader>z", telescope_builtin.spell_suggest, {})
 
   -- setup harpoon
   local harpoon = require("harpoon")

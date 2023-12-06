@@ -79,7 +79,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
   Plug 'nvim-telescope/telescope-live-grep-args.nvim'
   Plug 'nvim-telescope/telescope-smart-history.nvim'
-  Plug 'LukasPietzschmann/telescope-tabs'
   Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
@@ -251,10 +250,6 @@ map <leader>ns :lua require('notify').dismiss()<CR>
 
 map <leader>f :HopChar1<CR>
 
-map <leader>b :Telescope buffers<CR>
-map <leader>m :Telescope marks<CR>
-map <leader>g :Telescope telescope-tabs list_tabs<CR>
-map <leader>z :Telescope spell_suggest<CR>
 map <leader>Z :lua require('spell-check-util').toggle_spell_check()<CR>
 nmap <leader>S :lua require("spectre").toggle()<CR>
 nmap <leader>sw :lua require("spectre").open_visual({select_word=true})<CR>
@@ -279,9 +274,6 @@ map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
 map <leader>ts :lua require("neotest").summary.toggle()<CR>
 
 map <leader>l :Limelight!!<CR>
-
-map <C-p> :Telescope find_files hidden=true<enter>
-map <C-a> :lua require('telescope').extensions.live_grep_args.live_grep_args()<enter>
 
 " Start interactive EasyAlign in visual mode (e.g. vipga)
 xmap ga <Plug>(EasyAlign)
