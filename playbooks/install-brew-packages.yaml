@@ -22,8 +22,8 @@
       - openssl
       - pyenv
       - readline
-      - readline
       - reattach-to-user-namespace
+      - rtx
       - sketchybar
       - sqlite
       - sqlite3

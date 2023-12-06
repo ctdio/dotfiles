@@ -11,7 +11,6 @@ function main () {
   link_git_hooks
   install_antigen
   install_fzf_git
-  install_asdf
   install_ansible
   install_tpm
 
@@ -24,8 +23,6 @@ function main () {
 
   # same with rust language server (rust-analyzer)
   install_rust_analyzer
-
-  asdf reshim
 
   prepare_neovim
 
@@ -112,16 +109,6 @@ function install_fzf_git () {
     echo "fzf-git.sh is already installed. Skipping."
   fi
 }
-
-function install_asdf () {
-  if [[ ! -d ~/.asdf ]]; then
-    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
-    . ${HOME}/.asdf/asdf.sh
-  else
-    echo "asdf is already installed. Skipping."
-  fi
-}
-
 
 function update_deps () {
   if [[ "$(uname)" = 'Linux' ]]; then

@@ -55,16 +55,16 @@
         repo: https://github.com/cometkim/asdf-bun
   connection: local
   tasks:
-    - name: Install asdf plugins
+    - name: Install rtx plugins
       loop: "{{ plugins }}"
       register: add_result
       ansible.builtin.shell: >
-        asdf plugin add {{ item.plugin }} {{ item.repo }}
+        rtx plugin install {{ item.plugin }} {{ item.repo }}
       failed_when: add_result.rc != 0 and add_result.rc != 2
     - name: Execute plugin result
       register: installed_plugins
       ansible.builtin.shell: >
-        asdf plugin list
+        rtx plugin list
     - name: Added plugins
       debug:
         msg: "{{installed_plugins.stdout.split('\n')}}"
@@ -82,11 +82,11 @@
     - name: Tool versions
       debug:
         msg: "{{tool_versions.stdout.split('\n')}}"
-    - name: Execute asdf install
-      register: asdf_install_result
+    - name: Execute rtx install
+      register: rtx_install_result
       ansible.builtin.shell: >
         cd "{{ansible_env.HOME}}";
-        asdf install
+        rtx install
     - name: Install result
       debug:
-        msg: "{{asdf_install_result.stdout.split('\n')}}"
+        msg: "{{rtx_install_result.stdout.split('\n')}}"

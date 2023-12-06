@@ -59,6 +59,7 @@ RG_IGNORE=$(cat <<EOM
 .node
 .please
 .prettierd
+.rtx
 .rustup
 .tmux
 .vim
