@@ -29,8 +29,54 @@ export LC_NUMERIC="en_US.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-# make fzf respect .gitignore
-export FZF_DEFAULT_COMMAND='rg --files'
+
+RG_IGNORE=$(cat <<EOM
+.Trash
+.ansible
+.antigen
+.asdf
+.aws
+.bun
+.cache
+.cargo
+.conda
+.docker
+.earthly
+.fig
+.fzf
+.git
+.hex
+.ipython
+.ivy2
+.jupyter
+.obsidian
+.kube
+.local
+.localized
+.lua-language-server
+.minikube
+.modular
+.node
+.please
+.prettierd
+.rustup
+.tmux
+.vim
+.yalc
+Library
+Downloads
+google-cloud-sdk
+miniconda3
+node_modules
+spark
+product-scraper
+EOM
+)
+
+RG_IGNORE_FORMATTED="$(echo "${RG_IGNORE}" | tr '\n' ',')"
+
+export FZF_DEFAULT_COMMAND="rg --files --hidden -g '!{${RG_IGNORE_FORMATTED}}'"
+export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND}"
 
 if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
   alias pbcopy='clip.exe'
