@@ -247,8 +247,10 @@ map , <leader>
 map <leader>nn :NvimTreeToggle<CR>
 map <leader>nf :NvimTreeFindFile<CR>
 map <leader>ns :lua require('notify').dismiss()<CR>
-
 map <leader>f :HopChar1<CR>
+
+map <leader>gd :DiffviewOpen<CR>
+map <leader>gb :Git blame<CR>
 
 map <leader>Z :lua require('spell-check-util').toggle_spell_check()<CR>
 nmap <leader>S :lua require("spectre").toggle()<CR>
