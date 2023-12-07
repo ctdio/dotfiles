@@ -18,8 +18,6 @@ alias rmswp='find . -name "*.sw*" -ok rm {} +'
 
 alias m='bat'
 
-alias weather="~/scripts/weather.sh"
-
 alias ns='npm start'
 alias nt='npm test'
 alias ys='yarn start'
