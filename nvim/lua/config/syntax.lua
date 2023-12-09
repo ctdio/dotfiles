@@ -31,6 +31,9 @@ local function setup()
       -- Instead of true it can also be a list of languages
       additional_vim_regex_highlighting = false,
     },
+    matchup = {
+      enable = true,
+    },
     textsubjects = {
       enable = true,
       prev_selection = ",", -- (Optional) keymap to select the previous selection

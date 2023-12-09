@@ -88,6 +88,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-pack/nvim-spectre'
   Plug 'stevearc/oil.nvim'
   Plug 'thePrimeagen/harpoon', { 'tag': 'harpoon2' }
+  Plug 'andymass/vim-matchup'
+
 
   " utils
   Plug 'MunifTanjim/nui.nvim'
@@ -284,6 +286,7 @@ nmap ga <Plug>(EasyAlign)
 
 " force myself to break bad habits
 imap <C-c> <NOP>
+map <C-s> :w<CR>
 
 nmap - :Oil<CR>
 
