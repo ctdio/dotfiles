@@ -80,7 +80,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-telescope/telescope-live-grep-args.nvim'
   Plug 'nvim-telescope/telescope-smart-history.nvim'
   Plug 'benfowler/telescope-luasnip.nvim'
-  Plug 'phaazon/hop.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua', { 'on': 'NvimTreeToggle' }
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }

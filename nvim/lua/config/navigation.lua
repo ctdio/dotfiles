@@ -11,9 +11,6 @@ local function setup()
     "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
   require("session-lens").setup()
 
-  -- setup hop for movement
-  require("hop").setup()
-
   -- setup oil
   require("oil").setup()
 
