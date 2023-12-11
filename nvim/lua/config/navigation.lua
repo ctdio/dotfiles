@@ -1,6 +1,8 @@
 local function setup()
   -- setup rcarriga/nvim-notify
-  vim.notify = require("notify")
+  vim.notify = require("notify").setup({
+    top_down = false,
+  })
 
   require("noice").setup({
     lsp = {
