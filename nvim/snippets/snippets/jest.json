@@ -1,26 +1,22 @@
 {
   "jest test": {
     "prefix": ["test"],
-    "body": [
-      "test('${0}', () => {",
-      "});"
-    ],
+    "body": ["test('${0}', () => {", "});"],
     "description": "jest test"
   },
   "jest test async": {
     "prefix": ["testa"],
-    "body": [
-      "test('${0}', async () => {",
-      "});"
-    ],
+    "body": ["test('${0}', async () => {", "});"],
+    "description": "Async jest test"
+  },
+  "jest test concurrent": {
+    "prefix": ["testc"],
+    "body": ["test.concurrent('${0}', async () => {", "});"],
     "description": "Async jest test"
   },
   "jest describe": {
     "prefix": ["desc"],
-    "body": [
-      "describe('${0}', () => {",
-      "});"
-    ],
+    "body": ["describe('${0}', () => {", "});"],
     "description": "jest description"
   }
 }
