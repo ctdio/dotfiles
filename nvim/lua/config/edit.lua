@@ -11,6 +11,9 @@ local function setup()
   -- autopairs
   require("nvim-autopairs").setup()
 
+  -- comments
+  require("Comment").setup()
+
   -- setup zen-mode for focused writing
   require("zen-mode").setup()
 

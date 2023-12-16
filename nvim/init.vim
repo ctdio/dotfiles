@@ -59,7 +59,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'danilamihailov/beacon.nvim'
   Plug 'tpope/vim-surround'
   Plug 'tpope/vim-repeat'
-  Plug 'scrooloose/nerdcommenter'
+  Plug 'numToStr/Comment.nvim'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
   Plug 'kevinhwang91/promise-async'
@@ -250,6 +250,7 @@ map <leader>nn :NvimTreeToggle<CR>
 map <leader>nf :NvimTreeFindFile<CR>
 map <leader>ns :lua require('notify').dismiss()<CR>
 map <leader>f :HopChar1<CR>
+map <leader>e :e!<CR>
 
 map <leader>gd :DiffviewOpen<CR>
 map <leader>gb :Git blame<CR>
