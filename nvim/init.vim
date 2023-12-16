@@ -44,6 +44,8 @@ call plug#begin('~/.vim/plugged')
 
   " colorscheme
   Plug 'catppuccin/nvim'
+  Plug 'nyoom-engineering/oxocarbon.nvim'
+  Plug 'folke/tokyonight.nvim'
 
   " writing
   Plug 'folke/zen-mode.nvim'
@@ -240,6 +242,7 @@ EOF
 let g:catppuccin_flavour = "mocha"
 
 " colorscheme catppuccin
+colorscheme tokyonight-night
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom mappings                 │
