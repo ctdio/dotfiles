@@ -8,6 +8,9 @@ local function setup()
     },
   })
 
+  -- setup indent-blankline
+  require("ibl").setup()
+
   -- autopairs
   require("nvim-autopairs").setup()
 

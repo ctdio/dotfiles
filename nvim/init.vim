@@ -46,6 +46,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'catppuccin/nvim'
   Plug 'nyoom-engineering/oxocarbon.nvim'
   Plug 'folke/tokyonight.nvim'
+  Plug 'rebelot/kanagawa.nvim'
 
   " writing
   Plug 'folke/zen-mode.nvim'
@@ -70,6 +71,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
   Plug 'windwp/nvim-autopairs'
+  Plug 'lukas-reineke/indent-blankline.nvim'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -193,6 +195,7 @@ set tabstop=4
 set softtabstop=4
 set shiftwidth=2
 set number
+set relativenumber
 set linebreak
 set nocompatible
 set hidden
@@ -240,9 +243,9 @@ EOF
 " macchiato
 " mocha (dark)
 let g:catppuccin_flavour = "mocha"
-
 " colorscheme catppuccin
-colorscheme tokyonight-night
+
+colorscheme kanagawa-dragon
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom mappings                 │
