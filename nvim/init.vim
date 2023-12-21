@@ -38,6 +38,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'zbirenbaum/copilot.lua'
   Plug 'zbirenbaum/copilot-cmp'
   Plug 'pmizio/typescript-tools.nvim'
+  Plug 'dmmulroy/tsc.nvim' " for workspace diagnostics
 
   " statusline
   Plug 'nvim-lualine/lualine.nvim'

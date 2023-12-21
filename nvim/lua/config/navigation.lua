@@ -39,8 +39,15 @@ local function setup()
   --local CodeGPTModule = require("codegpt")
   require("lualine").setup({
     sections = {
-      -- lualine_x = { CodeGPTModule.get_status, "encoding", "fileformat" },
-      lualine_x = { "encoding", "fileformat" },
+      lualine_x = {
+        "encoding",
+        "fileformat",
+        {
+          require("noice").api.status.mode.get,
+          cond = require("noice").api.status.mode.has,
+          color = { fg = "#ff9e64" },
+        },
+      },
     },
   })
 
