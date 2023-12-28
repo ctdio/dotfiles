@@ -35,6 +35,16 @@ local function setup()
   -- setup oil
   require("oil").setup()
 
+  require("neoclip").setup({
+    keys = {
+      telescope = {
+        i = {
+          paste = "<c-j>",
+        },
+      },
+    },
+  })
+
   -- setup status line
   --local CodeGPTModule = require("codegpt")
   require("lualine").setup({
@@ -347,6 +357,7 @@ local function setup()
   vim.keymap.set("n", "<leader>b", telescope_builtin.buffers, {})
   vim.keymap.set("n", "<leader>m", telescope_builtin.marks, {})
   vim.keymap.set("n", "<leader>z", telescope_builtin.spell_suggest, {})
+  vim.keymap.set("n", "<leader>y", telescope.extensions.neoclip.neoclip, {})
 
   -- setup harpoon
   local harpoon = require("harpoon")

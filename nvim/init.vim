@@ -112,6 +112,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'jackMort/ChatGPT.nvim'
   Plug 'tpope/vim-dotenv'
   Plug 'folke/noice.nvim'
+  Plug 'AckslD/nvim-neoclip.lua'
 
   "" session
   Plug 'rmagatti/auto-session'
