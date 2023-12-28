@@ -11,6 +11,9 @@ local function setup()
     lightbulb = {
       sign = false,
     },
+    rename = {
+      auto_save = true,
+    },
   })
 end
 

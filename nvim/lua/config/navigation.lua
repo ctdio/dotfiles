@@ -33,7 +33,11 @@ local function setup()
   require("session-lens").setup()
 
   -- setup oil
-  require("oil").setup()
+  require("oil").setup({
+    view_options = {
+      show_hidden = true,
+    },
+  })
 
   require("neoclip").setup({
     keys = {
