@@ -315,12 +315,6 @@ local function setup()
   require("telescope").load_extension("live_grep_args")
   -- require("telescope").load_extension("smart_history")
 
-  require("symbols-outline").setup({
-    keymaps = {
-      close = { "q" },
-    },
-  })
-
   local telescope_builtin = require("telescope.builtin")
 
   vim.keymap.set("n", "<C-p>", function()

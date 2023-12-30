@@ -55,7 +55,6 @@ call plug#begin('~/.vim/plugged')
 
   " git integration
   Plug 'tpope/vim-fugitive'
-  Plug 'pwntester/octo.nvim'
   Plug 'lewis6991/gitsigns.nvim'
   Plug 'sindrets/diffview.nvim'
 
@@ -97,14 +96,10 @@ call plug#begin('~/.vim/plugged')
 
   " utils
   Plug 'MunifTanjim/nui.nvim'
-  Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install'  }
-  Plug 'ellisonleao/glow.nvim'
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
-  Plug 'simrat39/symbols-outline.nvim'
   Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
-  Plug 'kristijanhusak/vim-carbon-now-sh', { 'on': 'CarbonNowSh' }
   Plug 'tpope/vim-dadbod'
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
@@ -113,6 +108,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tpope/vim-dotenv'
   Plug 'folke/noice.nvim'
   Plug 'AckslD/nvim-neoclip.lua'
+  Plug 'antoinemadec/FixCursorHold.nvim'
 
   "" session
   Plug 'rmagatti/auto-session'
@@ -131,7 +127,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'michaelb/sniprun', { 'do': 'sh install.sh' }
 
   " testing
-  Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'nvim-neotest/neotest'
   Plug 'nvim-neotest/neotest-go'
   Plug 'nvim-neotest/neotest-python'

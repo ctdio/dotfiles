@@ -1,13 +1,4 @@
 local function setup()
-  -- diffing
-  require("diffview").setup({
-    view = {
-      merge_tool = {
-        layout = "diff3_mixed",
-      },
-    },
-  })
-
   -- setup indent-blankline
   require("ibl").setup()
 
@@ -22,9 +13,6 @@ local function setup()
 
   -- setup ufo for folding
   require("ufo").setup()
-
-  -- setup glow for markdown
-  require("glow").setup()
 
   -- friendly snippets
   require("luasnip.loaders.from_vscode").lazy_load()
