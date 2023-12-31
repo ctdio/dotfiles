@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
+current_session_name="$(tmux display-message -p -F "#{session_name}")"
+target_session_name="popup-${1:-default}"
+
+# echo "current_session_name: ${current_session_name}"
+# echo "target_session_name: ${target_session_name}"
+
+if [[ ${current_session_name} == popup-* ]];then
     tmux detach-client
 else
     tmux popup \
       -w80% -h80% \
-      -E "tmux attach -t popup || tmux new -s popup"
+      -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
 fi
