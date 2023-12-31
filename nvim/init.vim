@@ -109,6 +109,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'folke/noice.nvim'
   Plug 'AckslD/nvim-neoclip.lua'
   Plug 'antoinemadec/FixCursorHold.nvim'
+  Plug 'epwalsh/obsidian.nvim'
 
   "" session
   Plug 'rmagatti/auto-session'

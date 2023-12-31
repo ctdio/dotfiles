@@ -32,6 +32,15 @@ local function setup()
   require("chatgpt").setup({
     api_key_cmd = "dotenv -e " .. env_path .. " -p NEOVIM_OPENAI_API_KEY",
   })
+
+  require("obsidian").setup({
+    workspaces = {
+      {
+        name = "personal",
+        path = "~/obsidian",
+      },
+    },
+  })
 end
 
 return {
