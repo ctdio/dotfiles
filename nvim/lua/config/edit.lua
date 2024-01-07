@@ -2,8 +2,13 @@ local function setup()
   -- setup indent-blankline
   require("ibl").setup()
 
+  -- setup text-case for easier text case manipulation
+  require("textcase").setup()
+
   -- autopairs
-  require("nvim-autopairs").setup()
+  require("nvim-autopairs").setup({
+    check_ts = true,
+  })
 
   -- comments
   require("Comment").setup()

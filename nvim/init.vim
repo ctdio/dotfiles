@@ -72,6 +72,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'junegunn/vim-easy-align'
   Plug 'windwp/nvim-autopairs'
   Plug 'lukas-reineke/indent-blankline.nvim'
+  Plug 'johmsalas/text-case.nvim'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
