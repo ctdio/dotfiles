@@ -73,6 +73,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'windwp/nvim-autopairs'
   Plug 'lukas-reineke/indent-blankline.nvim'
   Plug 'johmsalas/text-case.nvim'
+  Plug 'windwp/nvim-ts-autotag'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -210,6 +211,8 @@ set spelllang=en_us
 set termguicolors
 syntax on
 set cursorline
+set guicursor=n-v-c-sm:block,i-ci-ve:ver1,r-cr-o:hor20
+
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 

@@ -50,7 +50,6 @@ local function setup()
   })
 
   -- setup status line
-  --local CodeGPTModule = require("codegpt")
   require("lualine").setup({
     sections = {
       lualine_x = {
