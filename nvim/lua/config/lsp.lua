@@ -275,6 +275,7 @@ setup_lsp = function()
     "pyright",
     "rust_analyzer",
     "tailwindcss",
+    "prismals",
     -- "tsserver", (covered by typescript-tools)
   }
   for _, lsp in ipairs(servers) do

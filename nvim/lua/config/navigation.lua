@@ -37,6 +37,7 @@ local function setup()
     view_options = {
       show_hidden = true,
     },
+    lsp_rename_autosave = true,
   })
 
   require("neoclip").setup({
@@ -282,6 +283,14 @@ local function setup()
   local telescope = require("telescope")
   telescope.setup({
     defaults = {
+      layout_strategy = "vertical",
+      layout_config = {
+        vertical = {
+          width = 0.8,
+          height = 0.8,
+          preview_height = 0.5,
+        },
+      },
       mappings = {
         i = {
           ["<C-Down>"] = require("telescope.actions").cycle_history_next,
@@ -368,18 +377,18 @@ local function setup()
     harpoon.ui:toggle_quick_menu(harpoon:list())
   end)
 
-  vim.keymap.set("n", "7", function()
-    harpoon:list():select(1)
-  end)
-  vim.keymap.set("n", "8", function()
-    harpoon:list():select(2)
-  end)
-  vim.keymap.set("n", "9", function()
-    harpoon:list():select(3)
-  end)
-  vim.keymap.set("n", "0", function()
-    harpoon:list():select(4)
-  end)
+  -- vim.keymap.set("n", "7", function()
+  --   harpoon:list():select(1)
+  -- end)
+  -- vim.keymap.set("n", "8", function()
+  --   harpoon:list():select(2)
+  -- end)
+  -- vim.keymap.set("n", "9", function()
+  --   harpoon:list():select(3)
+  -- end)
+  -- vim.keymap.set("n", "0", function()
+  --   harpoon:list():select(4)
+  -- end)
 end
 
 return {

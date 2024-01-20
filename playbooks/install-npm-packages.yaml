@@ -17,6 +17,7 @@
       - turbo
       - dotenv-cli
       - "@fsouza/prettierd"
+      - "@prisma/language-server"
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"

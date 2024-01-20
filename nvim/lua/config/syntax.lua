@@ -195,6 +195,10 @@ local function setup()
     },
   })
 
+  require("ts_context_commentstring").setup({
+    enable_autocmd = false,
+  })
+
   local ts_repeat_move = require("nvim-treesitter.textobjects.repeatable_move")
 
   vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move)

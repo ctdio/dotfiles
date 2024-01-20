@@ -1,7 +1,6 @@
 local function setup()
   -- setup theme
-  require("catppuccin").setup()
-  vim.cmd([[colorscheme catppuccin]])
+  -- require("catppuccin").setup()
 end
 
 return {

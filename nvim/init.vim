@@ -44,9 +44,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-lualine/lualine.nvim'
 
   " colorscheme
-  Plug 'catppuccin/nvim'
-  Plug 'nyoom-engineering/oxocarbon.nvim'
-  Plug 'folke/tokyonight.nvim'
+  " Plug 'catppuccin/nvim'
+  " Plug 'nyoom-engineering/oxocarbon.nvim'
+  " Plug 'folke/tokyonight.nvim'
   Plug 'rebelot/kanagawa.nvim'
 
   " writing
@@ -66,7 +66,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
   Plug 'kevinhwang91/promise-async'
-  Plug 'kevinhwang91/nvim-ufo'
   Plug 'sbdchd/neoformat', { 'on': 'Neoformat' }
   Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
@@ -74,6 +73,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'lukas-reineke/indent-blankline.nvim'
   Plug 'johmsalas/text-case.nvim'
   Plug 'windwp/nvim-ts-autotag'
+  Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 
   " jupyter notebooks
   Plug 'goerz/jupytext.vim'
@@ -144,6 +144,7 @@ call plug#end()
 " ╰──────────────────────────────────────────────────────────╯
 " use project-local prettier
 let g:neoformat_try_node_exe = 1
+let g:neoformat_enabled_sql = []
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
 let g:firenvim_config = {
@@ -244,7 +245,7 @@ EOF
 " frappe
 " macchiato
 " mocha (dark)
-let g:catppuccin_flavour = "mocha"
+" let g:catppuccin_flavour = "mocha"
 " colorscheme catppuccin
 
 colorscheme kanagawa-dragon
@@ -306,8 +307,8 @@ smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom commands                 │
 " ╰──────────────────────────────────────────────────────────╯
-command Light :Catppuccin latte
-command Dark :Catppuccin mocha
+command Light :colorscheme kanagawa-lotus
+command Dark :colorscheme kanagawa-dragon
 command Snip :Telescope luasnip
 command SR :SnipRun
 command Term :Lspsaga term_toggle
