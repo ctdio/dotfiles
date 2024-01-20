@@ -22,6 +22,7 @@ local function setup()
       "markdown",
       "markdown_inline",
       "proto",
+      "vimdoc",
     },
     highlight = {
       enable = true,
