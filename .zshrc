@@ -3,40 +3,15 @@ autoload -Uz compinit && compinit
 # hack to get better colors in tmux
 alias tmux='TERM=screen-256color tmux'
 
-source ~/antigen.zsh
-#. ${HOME}/.asdf/asdf.sh
-
 eval "$(rtx activate zsh)"
 eval "$(rtx hook-env)"
 
-# Load the oh-my-zsh's library.
-antigen use oh-my-zsh
-
-antigen bundles <<EOF
-  git
-  command-not-found
-  thefuck
-
-  # syntax highlighting bundle.
-  zsh-users/zsh-syntax-highlighting
-
-  # making zsh pretty
-  mafredri/zsh-async
-
-  marlonrichert/zsh-autocomplete@main
-
-  jeffreytse/zsh-vi-mode
-EOF
-
-antigen theme af-magic
-
-# Tell Antigen that you're done.
-antigen apply
+# .zshrc
+source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
+antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
+autoload -Uz promptinit && promptinit && prompt pure
 
 bindkey -v
-
-# added by travis gem
-[ -f /home/charlie/.travis/travis.sh ] && source /home/charlie/.travis/travis.sh
 
 # install fzf keybindings
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
