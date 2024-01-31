@@ -10,6 +10,8 @@ local function setup()
     check_ts = true,
   })
 
+  require("nvim-surround").setup({})
+
   -- comments
   require("Comment").setup({
     pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
@@ -17,9 +19,6 @@ local function setup()
 
   -- setup zen-mode for focused writing
   require("zen-mode").setup()
-
-  -- setup ufo for folding
-  -- require("ufo").setup()
 
   -- friendly snippets
   require("luasnip.loaders.from_vscode").lazy_load()

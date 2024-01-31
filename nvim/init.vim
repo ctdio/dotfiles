@@ -60,7 +60,7 @@ call plug#begin('~/.vim/plugged')
 
   " text editing
   Plug 'danilamihailov/beacon.nvim'
-  Plug 'tpope/vim-surround'
+  Plug 'kylechui/nvim-surround'
   Plug 'tpope/vim-repeat'
   Plug 'numToStr/Comment.nvim'
   Plug 'editorconfig/editorconfig-vim'
@@ -220,7 +220,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " neoformat on save
 augroup fmt
   autocmd!
-  autocmd BufWritePre * undojoin | Neoformat
+  autocmd BufWritePre * silent! undojoin | Neoformat
 augroup END
 
 " ╭──────────────────────────────────────────────────────────╮

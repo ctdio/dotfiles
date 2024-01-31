@@ -8,6 +8,8 @@ elif [[ "$(uname)" = 'Darwin' ]]; then
   echo "Detected Linux"
   echo "Loading yabai scripting edition..."
   sudo yabai --load-sa
+
+  yabai -m config external_bar main:20:0
 fi
 
 echo "Completed startup!"

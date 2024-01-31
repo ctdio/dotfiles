@@ -1,5 +1,9 @@
 autoload -Uz compinit && compinit
 
+if [ -f '/opt/homebrew/bin/brew' ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 # hack to get better colors in tmux
 alias tmux='TERM=screen-256color tmux'
 
@@ -53,9 +57,6 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-#
-if [ -f '/opt/homebrew/bin/brew' ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+
 export MODULAR_HOME="/Users/charlieduong/.modular"
 export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
