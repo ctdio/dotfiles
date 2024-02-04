@@ -46,6 +46,24 @@ local function setup()
         path = "~/obsidian",
       },
     },
+    notes_subdir = "Notes",
+    note_id_func = function(title)
+      -- Convert the timestamp to a date table in the local time zone
+      local dateTable = os.date("*t", os.time())
+
+      -- Format the date and time as "YYYY-MM-DD-hh:mm"
+      local formattedDateTime = string.format(
+        "%04d-%02d-%02d-%02d%02d-%s.md",
+        dateTable.year,
+        dateTable.month,
+        dateTable.day,
+        dateTable.hour,
+        dateTable.min,
+        title
+      )
+
+      return formattedDateTime
+    end,
   })
 end
 
