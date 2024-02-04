@@ -186,7 +186,7 @@ function run_ansible_playbooks () {
     ansible-playbook ./playbooks/install-brew-packages.yaml
   fi
 
-  ansible-playbook ./playbooks/setup-asdf.yaml
+  ansible-playbook ./playbooks/setup-rtx.yaml
   ansible-playbook ./playbooks/install-cargo-packages.yaml
   ansible-playbook ./playbooks/install-golang-packages.yaml
   ansible-playbook ./playbooks/install-npm-packages.yaml
