@@ -13,8 +13,11 @@
       - visidata
       - shell-gpt
       - tiktoken
+      - prompt-toolkit
+      - pynvim
+      - requests
+      - python-dotenv
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"
       ansible.builtin.shell: "pip install {{ item }}"
-

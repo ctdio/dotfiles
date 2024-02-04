@@ -106,7 +106,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
   Plug 'nvim-lua/plenary.nvim'
-  Plug 'jackMort/ChatGPT.nvim'
+  Plug 'jellydn/CopilotChat.nvim'
   Plug 'tpope/vim-dotenv'
   Plug 'folke/noice.nvim'
   Plug 'AckslD/nvim-neoclip.lua'

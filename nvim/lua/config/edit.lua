@@ -35,9 +35,7 @@ local function setup()
 
   local env_path = vim.fn.expand("$HOME") .. "/.env"
 
-  require("chatgpt").setup({
-    api_key_cmd = "dotenv -e " .. env_path .. " -p NEOVIM_OPENAI_API_KEY",
-  })
+  require("CopilotChat").setup({})
 
   require("obsidian").setup({
     workspaces = {
