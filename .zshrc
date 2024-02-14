@@ -1,3 +1,5 @@
+setopt inc_append_history
+
 autoload -Uz compinit && compinit
 
 if [ -f '/opt/homebrew/bin/brew' ]; then
