@@ -206,7 +206,6 @@ set clipboard=unnamed
 set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
-set spelllang=en_us
 
 " Prepare config for theming
 set termguicolors
@@ -235,6 +234,10 @@ augroup END
   require('config.test').setup()
   require('config.git').setup()
   require('config.lsp').setup()
+
+  -- NOTE: `set spell` in vimscript for some reason does not work, but
+  -- setting it here does.
+  vim.o.spell = true
 EOF
 
 " ╭──────────────────────────────────────────────────────────╮
@@ -264,7 +267,6 @@ map <leader>e :e!<CR>
 map <leader>gd :DiffviewOpen<CR>
 map <leader>gb :Git blame<CR>
 
-map <leader>Z :lua require('spell-check-util').toggle_spell_check()<CR>
 nmap <leader>S :lua require("spectre").toggle()<CR>
 nmap <leader>sw :lua require("spectre").open_visual({select_word=true})<CR>
 vmap <leader>sw :lua require("spectre").open_visual()<CR>
