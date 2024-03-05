@@ -238,6 +238,12 @@ augroup END
   -- NOTE: `set spell` in vimscript for some reason does not work, but
   -- setting it here does.
   vim.o.spell = true
+
+  -- setup notify last
+  vim.notify = require("notify").setup({
+    top_down = false,
+  })
+
 EOF
 
 " ╭──────────────────────────────────────────────────────────╮

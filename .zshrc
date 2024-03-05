@@ -1,4 +1,7 @@
-setopt inc_append_history
+# history
+SAVEHIST=1000  # Save most-recent 1000 lines
+HISTFILE=~/.zsh_history
+setopt SHARE_HISTORY
 
 autoload -Uz compinit && compinit
 
