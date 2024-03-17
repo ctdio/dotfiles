@@ -36,10 +36,6 @@ local function setup()
   dap.configurations.typescriptreact = node_config
 
   require("nvim-dap-virtual-text").setup()
-
-  require("sniprun").setup({
-    display = { "LongTempFloatingWindow" },
-  })
 end
 
 return {

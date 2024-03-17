@@ -14,8 +14,6 @@ endif
 " │                     Install Plugins                      │
 " ╰──────────────────────────────────────────────────────────╯
 call plug#begin('~/.vim/plugged')
-  " highlighting
-  Plug 'tjvr/vim-nearley'
   " Updating the parsers on treesitter update is recommended
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
@@ -38,15 +36,11 @@ call plug#begin('~/.vim/plugged')
   Plug 'zbirenbaum/copilot.lua'
   Plug 'zbirenbaum/copilot-cmp'
   Plug 'pmizio/typescript-tools.nvim'
-  Plug 'dmmulroy/tsc.nvim' " for workspace diagnostics
 
   " statusline
   Plug 'nvim-lualine/lualine.nvim'
 
-  " colorscheme
-  " Plug 'catppuccin/nvim'
-  " Plug 'nyoom-engineering/oxocarbon.nvim'
-  " Plug 'folke/tokyonight.nvim'
+  " theme
   Plug 'rebelot/kanagawa.nvim'
 
   " writing
@@ -101,7 +95,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
-  Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
   Plug 'tpope/vim-dadbod'
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
@@ -112,22 +105,18 @@ call plug#begin('~/.vim/plugged')
   Plug 'AckslD/nvim-neoclip.lua'
   Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'epwalsh/obsidian.nvim'
+  Plug 'rcarriga/nvim-notify'
 
   "" session
   Plug 'rmagatti/auto-session'
-  Plug 'rmagatti/session-lens'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'
   Plug 'mfussenegger/nvim-dap-python'
   Plug 'leoluz/nvim-dap-go'
   Plug 'mxsdev/nvim-dap-vscode-js'
-
   Plug 'rcarriga/nvim-dap-ui'
-  Plug 'Pocco81/dap-buddy.nvim'
   Plug 'theHamsta/nvim-dap-virtual-text'
-  Plug 'rcarriga/nvim-notify'
-  Plug 'michaelb/sniprun', { 'do': 'sh install.sh' }
 
   " testing
   Plug 'nvim-neotest/neotest'
@@ -147,20 +136,6 @@ let g:neoformat_try_node_exe = 1
 let g:neoformat_enabled_sql = []
 " copy selected text to clipboard
 let g:vim_pbcopy_local_cmd = 'pbcopy'
-let g:firenvim_config = {
-  \ 'globalSettings': {
-    \ 'alt': 'all',
-  \  },
-  \ 'localSettings': {
-    \ '.*': {
-      \ 'cmdline': 'neovim',
-      \ 'content': 'text',
-      \ 'priority': 0,
-      \ 'selector': 'textarea',
-      \ 'takeover': 'never',
-    \ },
-  \ }
-\ }
 
 let g:camelsnek_alternative_camel_commands = 1
 let g:db_ui_use_nvim_notify = 1
@@ -227,7 +202,6 @@ augroup END
 " ╰──────────────────────────────────────────────────────────╯
 :lua << EOF
   require('config.edit').setup()
-  require('config.theme').setup()
   require('config.syntax').setup()
   require('config.navigation').setup()
   require('config.debug').setup()

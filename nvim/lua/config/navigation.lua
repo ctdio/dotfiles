@@ -25,7 +25,6 @@ local function setup()
 
   vim.o.sessionoptions =
     "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
-  require("session-lens").setup()
 
   -- setup oil
   require("oil").setup({

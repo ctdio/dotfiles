@@ -290,8 +290,6 @@ setup_lsp = function()
     on_attach = on_attach,
   })
 
-  require("tsc").setup()
-
   nvim_lsp.emmet_language_server.setup({
     on_attach = on_attach,
     capabilities = capabilities,
