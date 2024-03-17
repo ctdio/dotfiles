@@ -16,17 +16,7 @@ sketchybar --add item clock right                              \
                          icon=                                \
                          script="$PLUGIN_DIR/clock.sh"         \
                                                                \
-           --add item wifi right                               \
-           --set wifi    script="$PLUGIN_DIR/wifi.sh"          \
-                         icon=直                               \
-           --subscribe wifi wifi_change                        \
-                                                               \
-           --add item volume right                             \
-           --set volume  script="$PLUGIN_DIR/volume.sh"        \
-           --subscribe volume volume_change                    \
-                                                               \
            --add item battery right                            \
            --set battery script="$PLUGIN_DIR/battery.sh"       \
                          update_freq=120                       \
            --subscribe battery system_woke power_source_change
-
