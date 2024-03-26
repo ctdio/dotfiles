@@ -31,6 +31,16 @@ local function setup()
       -- Using this option may slow down your editor, and you may see some duplicate highlights.
       -- Instead of true it can also be a list of languages
       additional_vim_regex_highlighting = false,
+      is_supported = function()
+        if
+          vim.fn.strwidth(vim.fn.getline(".")) > 300
+          or vim.fn.getfsize(vim.fn.expand("%")) > 1024 * 1024
+        then
+          return false
+        else
+          return true
+        end
+      end,
     },
     autotag = {
       enable = true,

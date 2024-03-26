@@ -91,6 +91,7 @@ call plug#begin('~/.vim/plugged')
 
 
   " utils
+  Plug 'nvim-neotest/nvim-nio'
   Plug 'MunifTanjim/nui.nvim'
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
@@ -181,6 +182,8 @@ set clipboard=unnamed
 set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
+
+set conceallevel=1
 
 " Prepare config for theming
 set termguicolors
