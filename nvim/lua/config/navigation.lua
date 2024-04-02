@@ -31,7 +31,10 @@ local function setup()
     view_options = {
       show_hidden = true,
     },
-    lsp_rename_autosave = true,
+    lsp_file_methods = {
+      timeout_ms = 30000,
+      autosave_changes = true,
+    },
   })
 
   require("neoclip").setup({
