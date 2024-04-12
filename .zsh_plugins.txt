@@ -5,4 +5,4 @@ zsh-users/zsh-completions
 zsh-users/zsh-syntax-highlighting
 zsh-users/zsh-autosuggestions
 
-sindresorhus/pure     kind:fpath
+romkatv/powerlevel10k

@@ -30,6 +30,13 @@ export LC_NUMERIC="en_US.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
+# pnpm
+export PNPM_HOME="/home/charlieduong/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
+
+export MODULAR_HOME="/Users/charlieduong/.modular"
+export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
 
 RG_IGNORE=$(cat <<EOM
 .Trash

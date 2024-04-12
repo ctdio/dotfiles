@@ -1,3 +1,13 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# uncomment to profile
+# zmodload zsh/zprof
+
 # history
 SAVEHIST=1000  # Save most-recent 1000 lines
 HISTFILE=~/.zsh_history
@@ -18,7 +28,7 @@ eval "$(rtx hook-env)"
 # .zshrc
 source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
 antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
-autoload -Uz promptinit && promptinit && prompt pure
+autoload -Uz promptinit && promptinit
 
 bindkey -v
 
@@ -43,25 +53,8 @@ fpath=(~/.zcomp $fpath);
 
 alias luamake=~/.lua-language-server/3rd/luamake/luamake
 
-# pnpm
-export PNPM_HOME="/home/charlieduong/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-# pnpm end
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/charlieduong/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/charlieduong/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/charlieduong/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/charlieduong/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-export MODULAR_HOME="/Users/charlieduong/.modular"
-export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+# uncomment to profile
+# zprof
