@@ -217,63 +217,32 @@ augroup END
   vim.o.spell = true
 
   -- setup notify last
-  vim.notify = require("notify").setup({
+  local notify = require('notify')
+  vim.notify = notify.setup({
     top_down = false,
   })
 
+  vim.keymap.set("n", "<leader>ns", function()
+    notify.dismiss()
+  end)
 EOF
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                       Setup theme                        │
 " ╰──────────────────────────────────────────────────────────╯
 
-" latte (light)
-" frappe
-" macchiato
-" mocha (dark)
-" let g:catppuccin_flavour = "mocha"
-" colorscheme catppuccin
-
 colorscheme kanagawa-dragon
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom mappings                 │
 " ╰──────────────────────────────────────────────────────────╯
-" NOTE: completion mappings live in ./lua/config/completion.lua
+" NOTE: Most mappings have been moved to the `config` folder
+" near setup functions for the plugins they are related to.
 map , <leader>
-map <leader>nn :NvimTreeToggle<CR>
-map <leader>nf :NvimTreeFindFile<CR>
-map <leader>ns :lua require('notify').dismiss()<CR>
-map <leader>f :HopChar1<CR>
 map <leader>e :e!<CR>
-
 map <leader>gd :DiffviewOpen<CR>
 map <leader>gb :Git blame<CR>
-
-nmap <leader>S :lua require("spectre").toggle()<CR>
-nmap <leader>sw :lua require("spectre").open_visual({select_word=true})<CR>
-vmap <leader>sw :lua require("spectre").open_visual()<CR>
-nmap <leader>sp :lua require("spectre").open_file_search({select_word=true})<CR>
-
 map <leader>p :Neoformat<CR>
-
-map <leader>da :lua require('debugHelper').attach_to_inspector()<CR>
-map <leader>db :lua require('dap').toggle_breakpoint()<CR>
-map <leader>dc :lua require('dap').continue()<CR>
-map <leader>dsv :lua require('dap').step_over()<CR>
-map <leader>dsi :lua require('dap').step_into()<CR>
-map <leader>dso :lua require('dap').step_out()<CR>
-map <leader>du :lua require('dapui').toggle({ reset = true })<CR>
-
-map <leader>ta :lua require("neotest").run.attach()<CR>
-map <leader>td :lua require("neotest").run.run({strategy = "dap"})<CR>
-map <leader>tt :lua require("neotest").run.run()<CR>
-map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>
-map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
-map <leader>ts :lua require("neotest").summary.toggle()<CR>
-
-map <leader>cc :lua require("CopilotChat").open({window={layout='float'}})<CR>
-
 map <leader>l :Limelight!!<CR>
 
 " Start interactive EasyAlign in visual mode (e.g. vipga)

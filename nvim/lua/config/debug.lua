@@ -1,6 +1,7 @@
 local function setup()
   -- setup dap
-  require("dapui").setup()
+  local dapui = require("dapui")
+  dapui.setup()
 
   local dap = require("dap")
   require("dap-go").setup()
@@ -36,6 +37,30 @@ local function setup()
   dap.configurations.typescriptreact = node_config
 
   require("nvim-dap-virtual-text").setup()
+
+  vim.keymap.set("n", "<leader>db", function()
+    dap.toggle_breakpoint()
+  end)
+
+  vim.keymap.set("n", "<leader>dc", function()
+    dap.continue()
+  end)
+
+  vim.keymap.set("n", "<leader>dsv", function()
+    dap.step_over()
+  end)
+
+  vim.keymap.set("n", "<leader>dsi", function()
+    dap.step_into()
+  end)
+
+  vim.keymap.set("n", "<leader>dso", function()
+    dap.step_out()
+  end)
+
+  vim.keymap.set("n", "<leader>du", function()
+    dapui.toggle({ reset = true })
+  end)
 end
 
 return {

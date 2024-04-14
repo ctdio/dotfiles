@@ -1,7 +1,9 @@
+local setup_ai
 local setup_cmp_completion
 local setup_lsp
 
 local function setup()
+  setup_ai()
   setup_cmp_completion()
   setup_lsp()
 
@@ -17,7 +19,7 @@ local function setup()
   })
 end
 
-setup_cmp_completion = function()
+setup_ai = function()
   require("copilot").setup({
     panel = {
       enabled = false,
@@ -29,6 +31,21 @@ setup_cmp_completion = function()
 
   require("copilot_cmp").setup({})
 
+  local copilot_chat = require("CopilotChat")
+  copilot_chat.setup({})
+
+  vim.keymap.set("n", "<leader>cc", function()
+    copilot_chat.open({
+      window = {
+        layout = "float",
+        width = 0.8,
+        height = 0.8,
+      },
+    })
+  end)
+end
+
+setup_cmp_completion = function()
   -- Set up neodev
   require("neodev").setup({
     library = {
@@ -39,20 +56,6 @@ setup_cmp_completion = function()
 
   -- Setup nvim-cmp with recommended setup
   local cmp = require("cmp")
-
-  local select_next_item_or_confirm = function(fallback)
-    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
-    if cmp.visible() then
-      local entry = cmp.get_selected_entry()
-      if not entry then
-        cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-      else
-        cmp.confirm()
-      end
-    else
-      fallback()
-    end
-  end
 
   local confirm_item = function(fallback)
     -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item

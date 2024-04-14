@@ -31,11 +31,24 @@ local function setup()
   require("luasnip").filetype_extend("typescriptreact", { "javascript" })
 
   -- search and replace
-  require("spectre").setup()
+  local spectre = require("spectre")
+  spectre.setup()
 
-  local env_path = vim.fn.expand("$HOME") .. "/.env"
+  vim.keymap.set("n", "<leader>S", function()
+    spectre.toggle()
+  end)
 
-  require("CopilotChat").setup({})
+  vim.keymap.set("n", "<leader>sw", function()
+    spectre.open_visual({ select_word = true })
+  end)
+
+  vim.keymap.set("v", "<leader>sw", function()
+    spectre.open_visual()
+  end)
+
+  vim.keymap.set("n", "<leader>sp", function()
+    spectre.open_file_search({ select_word = true })
+  end)
 
   require("obsidian").setup({
     workspaces = {

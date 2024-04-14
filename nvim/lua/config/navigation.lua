@@ -264,6 +264,9 @@ local function setup()
     },
   })
 
+  vim.keymap.set("n", "<leader>nn", ":NvimTreeToggle<CR>")
+  vim.keymap.set("n", "<leader>nf", ":NvimTreeFindFile<CR>")
+
   -- setup bufferline for nicer tabs
   require("bufferline").setup({
     options = {
@@ -373,19 +376,6 @@ local function setup()
   vim.keymap.set("n", "<C-t>", function()
     harpoon.ui:toggle_quick_menu(harpoon:list())
   end)
-
-  -- vim.keymap.set("n", "7", function()
-  --   harpoon:list():select(1)
-  -- end)
-  -- vim.keymap.set("n", "8", function()
-  --   harpoon:list():select(2)
-  -- end)
-  -- vim.keymap.set("n", "9", function()
-  --   harpoon:list():select(3)
-  -- end)
-  -- vim.keymap.set("n", "0", function()
-  --   harpoon:list():select(4)
-  -- end)
 end
 
 return {
