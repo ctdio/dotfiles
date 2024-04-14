@@ -100,7 +100,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
   Plug 'nvim-lua/plenary.nvim'
-  Plug 'jellydn/CopilotChat.nvim'
+  Plug 'CopilotC-Nvim/CopilotChat.nvim'
   Plug 'tpope/vim-dotenv'
   Plug 'folke/noice.nvim'
   Plug 'AckslD/nvim-neoclip.lua'
@@ -271,6 +271,8 @@ map <leader>tt :lua require("neotest").run.run()<CR>
 map <leader>tf :lua require("neotest").run.run(vim.fn.expand("%"))<CR>
 map <leader>to :lua require("neotest").output.open({ enter = true })<CR>
 map <leader>ts :lua require("neotest").summary.toggle()<CR>
+
+map <leader>cc :lua require("CopilotChat").open({window={layout='float'}})<CR>
 
 map <leader>l :Limelight!!<CR>
 

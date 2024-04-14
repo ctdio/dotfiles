@@ -151,16 +151,17 @@ setup_cmp_completion = function()
       end),
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
-    sources = {
+    sources = cmp.config.sources({
       { name = "copilot" },
       { name = "nvim_lsp" },
+    }, {
       { name = "nvim_lsp_signature_help" },
       { name = "luasnip" },
       { name = "buffer" },
       { name = "vim-dadbod-completion" },
       { name = "dap" },
       { name = "emoji" },
-    },
+    }),
   })
 
   -- Use buffer source for `/`.
