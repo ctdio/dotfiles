@@ -36,6 +36,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'zbirenbaum/copilot.lua'
   Plug 'zbirenbaum/copilot-cmp'
   Plug 'pmizio/typescript-tools.nvim'
+  Plug 'aznhe21/actions-preview.nvim'
 
   " statusline
   Plug 'nvim-lualine/lualine.nvim'
@@ -183,7 +184,7 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
-set conceallevel=1
+set conceallevel=0
 
 " Prepare config for theming
 set termguicolors
@@ -267,7 +268,6 @@ command Light :colorscheme kanagawa-lotus
 command Dark :colorscheme kanagawa-dragon
 command Snip :Telescope luasnip
 command SR :SnipRun
-command Term :Lspsaga term_toggle
 command Inc :Telescope lsp_incoming_calls
 command Out :Telescope lsp_outgoing_calls
 command ResumeSearch :Telescope resume

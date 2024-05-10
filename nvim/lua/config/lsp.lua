@@ -9,14 +9,6 @@ local function setup()
 
   -- configure trouble for prettier diagnostics
   require("trouble").setup()
-  require("lspsaga").setup({
-    lightbulb = {
-      sign = false,
-    },
-    rename = {
-      auto_save = true,
-    },
-  })
 end
 
 setup_ai = function()
@@ -224,7 +216,7 @@ setup_lsp = function()
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
-    vim.keymap.set("n", "K", "<cmd>Lspsaga hover_doc<CR>", bufopts)
+    vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, bufopts)
     vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, bufopts)
@@ -241,18 +233,18 @@ setup_lsp = function()
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, bufopts)
     vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
-    vim.keymap.set("n", "<space>rn", "<cmd>Lspsaga rename<CR>", bufopts)
-    vim.keymap.set("n", "<space>ca", "<cmd>Lspsaga code_action<CR>", bufopts)
+    vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
+    -- vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
+    vim.keymap.set(
+      "n",
+      "<space>ca",
+      require("actions-preview").code_actions,
+      bufopts
+    )
     vim.keymap.set(
       "n",
       "gr",
       require("telescope.builtin").lsp_references,
-      bufopts
-    )
-    vim.keymap.set(
-      { "n", "t" },
-      "<A-d>",
-      "<cmd>Lspsaga term_toggle<CR>",
       bufopts
     )
   end
