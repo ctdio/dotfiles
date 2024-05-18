@@ -2,6 +2,8 @@
 
 export ENVIRONMENT=dev
 
+export DATABRICKS_CONFIG_PROFILE=default
+
 export SPARK_HOME=${HOME}/spark
 export ANDROID_HOME=${HOME}/android-sdk
 

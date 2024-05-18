@@ -22,17 +22,51 @@ local function setup()
       request = "launch",
       name = "Launch file",
       program = "${file}",
+      skipFiles = { "<node_internals>/**" },
       cwd = "${workspaceFolder}",
+      sourceMaps = true,
     },
     {
       type = "pwa-node",
       request = "attach",
       name = "Attach",
+      skipFiles = { "<node_internals>/**" },
       processId = require("dap.utils").pick_process,
       cwd = "${workspaceFolder}",
+      sourceMaps = true,
+    },
+    {
+      name = "Launch & Debug Chrome",
+      type = "pwa-chrome",
+      request = "launch",
+      skipFiles = { "<node_internals>/**" },
+      url = function()
+        local co = coroutine.running()
+        return coroutine.create(function()
+          vim.ui.input(
+            { prompt = "Enter URL: ", default = "http://localhost:3000" },
+            function(url)
+              if url == nil or url == "" then
+                return
+              else
+                coroutine.resume(co, url)
+              end
+            end
+          )
+        end)
+      end,
+      protocol = "inspector",
+      sourceMaps = true,
+      userDataDir = false,
+      rootPath = "${workspaceFolder}",
+      cwd = "${workspaceFolder}",
+      console = "integratedTerminal",
+      internalConsoleOptions = "neverOpen",
     },
   }
 
+  dap.configurations.javascript = node_config
+  dap.configurations.javascriptreact = node_config
   dap.configurations.typescript = node_config
   dap.configurations.typescriptreact = node_config
 

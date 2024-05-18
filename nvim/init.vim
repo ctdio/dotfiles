@@ -43,6 +43,7 @@ call plug#begin('~/.vim/plugged')
 
   " theme
   Plug 'rebelot/kanagawa.nvim'
+  Plug 'haystackandroid/rusticated'
 
   " writing
   Plug 'folke/zen-mode.nvim'
@@ -264,7 +265,7 @@ smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom commands                 │
 " ╰──────────────────────────────────────────────────────────╯
-command Light :colorscheme kanagawa-lotus
+command Light :colorscheme rusticated
 command Dark :colorscheme kanagawa-dragon
 command Snip :Telescope luasnip
 command SR :SnipRun

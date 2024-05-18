@@ -22,9 +22,6 @@ fi
 # hack to get better colors in tmux
 alias tmux='TERM=screen-256color tmux'
 
-eval "$(rtx activate zsh)"
-eval "$(rtx hook-env)"
-
 # .zshrc
 source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
 antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
@@ -52,6 +49,8 @@ fi
 fpath=(~/.zcomp $fpath);
 
 alias luamake=~/.lua-language-server/3rd/luamake/luamake
+
+eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

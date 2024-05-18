@@ -267,7 +267,7 @@ setup_lsp = function()
     "gopls",
     "mojo",
     "lua_ls",
-    "pylsp",
+    "yamlls",
     "pyright",
     "rust_analyzer",
     "tailwindcss",
