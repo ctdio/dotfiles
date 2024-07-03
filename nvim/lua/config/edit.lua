@@ -76,6 +76,8 @@ local function setup()
       return formattedDateTime
     end,
   })
+
+  require("hbac").setup()
 end
 
 return {

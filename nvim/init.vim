@@ -33,8 +33,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
   Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'nvimdev/lspsaga.nvim'
-  Plug 'zbirenbaum/copilot.lua'
-  Plug 'zbirenbaum/copilot-cmp'
+  Plug 'supermaven-inc/supermaven-nvim'
   Plug 'pmizio/typescript-tools.nvim'
   Plug 'aznhe21/actions-preview.nvim'
 
@@ -84,7 +83,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua', { 'on': 'NvimTreeToggle' }
-  Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
+  Plug 'akinsho/bufferline.nvim', { 'tag': 'v4.*' }
   Plug 'kkharji/sqlite.lua'
   Plug 'nvim-pack/nvim-spectre'
   Plug 'stevearc/oil.nvim'
@@ -109,9 +108,10 @@ call plug#begin('~/.vim/plugged')
   Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'epwalsh/obsidian.nvim'
   Plug 'rcarriga/nvim-notify'
+  Plug 'axkirillov/hbac.nvim'
 
   "" session
-  Plug 'rmagatti/auto-session'
+  Plug 'stevearc/resession.nvim'
 
   " debugging
   Plug 'mfussenegger/nvim-dap'

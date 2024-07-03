@@ -12,16 +12,13 @@ local function setup()
 end
 
 setup_ai = function()
-  require("copilot").setup({
-    panel = {
-      enabled = false,
-    },
-    suggestion = {
-      enabled = false,
+  require("supermaven-nvim").setup({
+    keymaps = {
+      accept_suggestion = "<C-k>",
+      clear_suggestion = nil,
+      accept_word = nil,
     },
   })
-
-  require("copilot_cmp").setup({})
 
   local copilot_chat = require("CopilotChat")
   copilot_chat.setup({})
@@ -65,18 +62,6 @@ setup_cmp_completion = function()
 
   local replace_termcodes = function(str)
     return vim.api.nvim_replace_termcodes(str, true, true, true)
-  end
-
-  local has_words_before = function()
-    if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
-      return false
-    end
-    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-    return col ~= 0
-      and vim.api
-          .nvim_buf_get_text(0, line - 1, 0, line - 1, col, {})[1]
-          :match("^%s*$")
-        == nil
   end
 
   cmp.setup({
@@ -137,20 +122,21 @@ setup_cmp_completion = function()
           end
         end,
       }, { "i", "c" }),
-      ["<Tab>"] = vim.schedule_wrap(function(fallback)
-        if cmp.visible() and has_words_before() then
-          cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-        else
-          fallback()
-        end
-      end),
+      -- ["<Tab>"] = vim.schedule_wrap(function(fallback)
+      --   if cmp.visible() and has_words_before() then
+      --     cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+      --   else
+      --     fallback()
+      --   end
+      -- end),
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
     sources = cmp.config.sources({
-      { name = "copilot" },
+      -- { name = "copilot" },
+      -- { name = "supermaven" },
       { name = "nvim_lsp" },
     }, {
-      { name = "nvim_lsp_signature_help" },
+      -- { name = "nvim_lsp_signature_help" },
       { name = "luasnip" },
       { name = "buffer" },
       { name = "vim-dadbod-completion" },
@@ -189,15 +175,10 @@ setup_lsp = function()
   vim.keymap.set(
     "n",
     "<space>q",
-    "<CMD>TroubleToggle document_diagnostics<CR>",
+    "<CMD>Trouble diagnostics toggle filter.buf=0<CR>",
     opts
   )
-  vim.keymap.set(
-    "n",
-    "<space>Q",
-    "<CMD>TroubleToggle workspace_diagnostics<CR>",
-    opts
-  )
+  vim.keymap.set("n", "<space>Q", "<CMD>Trouble diagnostics toggle<CR>", opts)
   vim.keymap.set("n", "<space>f", vim.lsp.buf.format, opts)
 
   -- Use an on_attach function to only map the following keys
@@ -221,7 +202,7 @@ setup_lsp = function()
     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, bufopts)
     vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, bufopts)
 
-    vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
+    -- vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
     vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
     vim.keymap.set(
       "n",

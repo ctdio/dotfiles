@@ -19,12 +19,37 @@ local function setup()
   })
 
   -- setup autosession
-  require("auto-session").setup({
-    pre_save_cmds = { "tabdo NvimTreeClose" },
+  local resession = require("resession")
+  resession.setup({
+    autosave = {
+      enabled = true,
+      interval = 60,
+      notify = false,
+    },
   })
 
-  vim.o.sessionoptions =
-    "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+  vim.keymap.set("n", "<leader>ss", resession.save)
+  vim.keymap.set("n", "<leader>sl", resession.load)
+  vim.keymap.set("n", "<leader>sd", resession.delete)
+
+  vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+      -- Only load the session if nvim was started with no args
+      if vim.fn.argc(-1) == 0 then
+        -- Save these to a different directory, so our manual sessions don't get polluted
+        resession.load(
+          vim.fn.getcwd(),
+          { dir = "dirsession", silence_errors = true }
+        )
+      end
+    end,
+    nested = true,
+  })
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+      resession.save(vim.fn.getcwd(), { dir = "dirsession", notify = false })
+    end,
+  })
 
   -- setup oil
   require("oil").setup({
@@ -318,7 +343,6 @@ local function setup()
 
   require("telescope").load_extension("fzf")
   require("telescope").load_extension("dap")
-  require("telescope").load_extension("session-lens")
   require("telescope").load_extension("luasnip")
   require("telescope").load_extension("live_grep_args")
   -- require("telescope").load_extension("smart_history")

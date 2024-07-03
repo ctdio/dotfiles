@@ -9,7 +9,7 @@ fi
 # zmodload zsh/zprof
 
 # history
-SAVEHIST=1000  # Save most-recent 1000 lines
+SAVEHIST=10000
 HISTFILE=~/.zsh_history
 setopt SHARE_HISTORY
 
@@ -57,3 +57,5 @@ eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 
 # uncomment to profile
 # zprof
+
+eval $(thefuck --alias)
