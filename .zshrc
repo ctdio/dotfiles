@@ -13,6 +13,8 @@ SAVEHIST=10000
 HISTFILE=~/.zsh_history
 setopt SHARE_HISTORY
 
+bindkey '^K'  autosuggest-accept
+
 autoload -Uz compinit && compinit
 
 if [ -f '/opt/homebrew/bin/brew' ]; then
