@@ -61,7 +61,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
   Plug 'kevinhwang91/promise-async'
-  Plug 'sbdchd/neoformat', { 'on': 'Neoformat' }
+  Plug 'stevearc/conform.nvim'
   Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
   Plug 'windwp/nvim-autopairs'
@@ -101,7 +101,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'kristijanhusak/vim-dadbod-ui'
   Plug 'kristijanhusak/vim-dadbod-completion'
   Plug 'nvim-lua/plenary.nvim'
-  Plug 'CopilotC-Nvim/CopilotChat.nvim'
   Plug 'tpope/vim-dotenv'
   Plug 'folke/noice.nvim'
   Plug 'AckslD/nvim-neoclip.lua'
@@ -196,12 +195,6 @@ set guicursor=n-v-c-sm:block,i-ci-ve:ver1,r-cr-o:hor20
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=grey
 
-" neoformat on save
-augroup fmt
-  autocmd!
-  autocmd BufWritePre * silent! undojoin | Neoformat
-augroup END
-
 " ╭──────────────────────────────────────────────────────────╮
 " │                      Setup plugins                       │
 " ╰──────────────────────────────────────────────────────────╯
@@ -244,7 +237,6 @@ map , <leader>
 map <leader>e :e!<CR>
 map <leader>gd :DiffviewOpen<CR>
 map <leader>gb :Git blame<CR>
-map <leader>p :Neoformat<CR>
 map <leader>l :Limelight!!<CR>
 
 " Start interactive EasyAlign in visual mode (e.g. vipga)

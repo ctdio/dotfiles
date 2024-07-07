@@ -18,20 +18,8 @@ setup_ai = function()
       clear_suggestion = nil,
       accept_word = nil,
     },
+    ignore_filetypes = { sh = true },
   })
-
-  local copilot_chat = require("CopilotChat")
-  copilot_chat.setup({})
-
-  vim.keymap.set("n", "<leader>cc", function()
-    copilot_chat.open({
-      window = {
-        layout = "float",
-        width = 0.8,
-        height = 0.8,
-      },
-    })
-  end)
 end
 
 setup_cmp_completion = function()

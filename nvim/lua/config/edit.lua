@@ -17,6 +17,22 @@ local function setup()
     pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
   })
 
+  -- formatting
+  require("conform").setup({
+    format_on_save = {
+      timeout_ms = 500,
+      lsp_format = "fallback",
+    },
+    formatters_by_ft = {
+      lua = { "stylua" },
+      python = { "ruff_format" },
+      javascript = { { "prettierd", "prettier" } },
+      typescript = { "prettierd", "prettier" },
+      go = { "gofmt" },
+      rust = { "rustfmt" },
+    },
+  })
+
   -- setup zen-mode for focused writing
   require("zen-mode").setup()
 

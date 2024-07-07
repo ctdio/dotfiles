@@ -35,7 +35,7 @@ local function setup()
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       -- Only load the session if nvim was started with no args
-      if vim.fn.argc(-1) == 0 then
+      if vim.fn.argc(-1) == 0 and #vim.v.argv < 4 then
         -- Save these to a different directory, so our manual sessions don't get polluted
         resession.load(
           vim.fn.getcwd(),
