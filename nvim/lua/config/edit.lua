@@ -28,6 +28,7 @@ local function setup()
       python = { "ruff_format" },
       javascript = { { "prettierd", "prettier" } },
       typescript = { "prettierd", "prettier" },
+      typescriptreact = { "prettierd", "prettier" },
       go = { "gofmt" },
       rust = { "rustfmt" },
     },
