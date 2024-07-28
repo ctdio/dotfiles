@@ -1,25 +1,12 @@
-local setup_ai
 local setup_cmp_completion
 local setup_lsp
 
 local function setup()
-  setup_ai()
   setup_cmp_completion()
   setup_lsp()
 
   -- configure trouble for prettier diagnostics
   require("trouble").setup()
-end
-
-setup_ai = function()
-  require("supermaven-nvim").setup({
-    keymaps = {
-      accept_suggestion = "<C-k>",
-      clear_suggestion = nil,
-      accept_word = nil,
-    },
-    ignore_filetypes = { sh = true },
-  })
 end
 
 setup_cmp_completion = function()
@@ -120,8 +107,6 @@ setup_cmp_completion = function()
       ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
     },
     sources = cmp.config.sources({
-      -- { name = "copilot" },
-      -- { name = "supermaven" },
       { name = "nvim_lsp" },
     }, {
       -- { name = "nvim_lsp_signature_help" },
@@ -253,6 +238,9 @@ setup_lsp = function()
 
   require("typescript-tools").setup({
     on_attach = on_attach,
+    settings = {
+      separate_diagnostic_server = false,
+    },
   })
 
   nvim_lsp.emmet_language_server.setup({

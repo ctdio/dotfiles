@@ -5,11 +5,10 @@ if [[ "$(uname)" = 'Linux' ]]; then
   echo "Setting key repeat and delay rate"
   xset r rate 220 60
 elif [[ "$(uname)" = 'Darwin' ]]; then
-  echo "Detected Linux"
-  echo "Loading yabai scripting edition..."
-  sudo yabai --load-sa
-
-  yabai -m config external_bar main:20:0
+  echo "Detected MacOs"
+  echo "Loading aerospace and sketchybar..."
+  aerospace enable on
+  sketchybar --reload
 fi
 
 echo "Completed startup!"

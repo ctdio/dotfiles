@@ -19,6 +19,10 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
   Plug 'RRethy/nvim-treesitter-textsubjects'
 
+  " ai
+  Plug 'robitx/gp.nvim'
+  Plug 'supermaven-inc/supermaven-nvim'
+
   " lsp/completion
   Plug 'folke/neodev.nvim'
   Plug 'neovim/nvim-lspconfig'
@@ -32,8 +36,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
   Plug 'saadparwaiz1/cmp_luasnip'
-  Plug 'nvimdev/lspsaga.nvim'
-  Plug 'supermaven-inc/supermaven-nvim'
   Plug 'pmizio/typescript-tools.nvim'
   Plug 'aznhe21/actions-preview.nvim'
 
@@ -62,7 +64,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'LudoPinelli/comment-box.nvim'
   Plug 'kevinhwang91/promise-async'
   Plug 'stevearc/conform.nvim'
-  Plug 'nicwest/vim-camelsnek'
   Plug 'junegunn/vim-easy-align'
   Plug 'windwp/nvim-autopairs'
   Plug 'lukas-reineke/indent-blankline.nvim'
@@ -205,6 +206,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
   require('config.debug').setup()
   require('config.test').setup()
   require('config.git').setup()
+  require('config.ai').setup()
   require('config.lsp').setup()
 
   -- NOTE: `set spell` in vimscript for some reason does not work, but

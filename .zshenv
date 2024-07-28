@@ -100,3 +100,7 @@ if [[ "$(uname)" = 'Linux' ]]; then
 else
   export EDITOR=nvim
 fi
+
+if [ -f "$HOME/.env" ]; then
+  export $(grep -v '^#' $HOME/.env | xargs)
+fi

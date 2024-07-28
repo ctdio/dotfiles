@@ -41,6 +41,7 @@
       - docker
       - font-hack-nerd-font
       - unnaturalscrollwheels
+      - nikitabobko/tap/aerospace
     taps:
       - FelixKratz/formulae
       - databricks/tap

@@ -1,22 +1,19 @@
 #!/bin/bash
 
-SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
+sketchybar --add event aerospace_workspace_change
 
-for i in "${!SPACE_ICONS[@]}"
-do
-  sid=$(($i+1))
-  sketchybar --add space space.$sid left                                 \
-             --set space.$sid associated_space=$sid                      \
-                              icon=${SPACE_ICONS[i]}                     \
-                              background.color=0x44ffffff                \
-                              background.corner_radius=5                 \
-                              background.height=20                       \
-                              background.drawing=off                     \
-                              label.drawing=off                          \
-                              script="$PLUGIN_DIR/space.sh"              \
-                              click_script="yabai -m space --focus $sid"
+for sid in $(aerospace list-workspaces --all); do
+    sketchybar --add item space.$sid left \
+        --subscribe space.$sid aerospace_workspace_change          \
+        --set space.$sid background.color=0x44ffffff               \
+                         background.corner_radius=5                \
+                         background.height=20                      \
+                         background.drawing=off                    \
+                         label.drawing=off                         \
+                         icon="$sid"                               \
+                         click_script="aerospace workspace $sid"   \
+                         script="$CONFIG_DIR/plugins/space.sh $sid"
 done
-
 
 
 ##### Adding Left Items #####
