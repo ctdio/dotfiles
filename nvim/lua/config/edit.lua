@@ -96,7 +96,9 @@ local function setup()
     end,
   })
 
-  require("hbac").setup()
+  require("hbac").setup({
+    threshold = 25,
+  })
 end
 
 return {

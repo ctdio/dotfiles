@@ -78,3 +78,5 @@ function fnvim () {
   local file_path="$(rg --files | fzf)"
   nvim ${file_path}
 }
+
+eval "$(mise activate zsh --shims)"

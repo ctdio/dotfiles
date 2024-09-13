@@ -108,8 +108,8 @@ setup_cmp_completion = function()
     },
     sources = cmp.config.sources({
       { name = "nvim_lsp" },
+      { name = "nvim_lsp_signature_help" },
     }, {
-      -- { name = "nvim_lsp_signature_help" },
       { name = "luasnip" },
       { name = "buffer" },
       { name = "vim-dadbod-completion" },
@@ -157,13 +157,6 @@ setup_lsp = function()
   -- Use an on_attach function to only map the following keys
   -- after the language server attaches to the current buffer
   local on_attach = function(_client, bufnr)
-    local function buf_set_option(...)
-      vim.api.nvim_buf_set_option(bufnr, ...)
-    end
-
-    --Enable completion triggered by <c-x><c-o>
-    buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
-
     -- Mappings.
     local bufopts = { noremap = true, silent = true, buffer = bufnr }
 
@@ -239,7 +232,13 @@ setup_lsp = function()
   require("typescript-tools").setup({
     on_attach = on_attach,
     settings = {
-      separate_diagnostic_server = false,
+      vtsls = {
+        experimental = {
+          completion = {
+            enableServerSideFuzzyMatch = true,
+          },
+        },
+      },
     },
   })
 

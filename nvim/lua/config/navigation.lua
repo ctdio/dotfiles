@@ -18,6 +18,8 @@ local function setup()
     },
   })
 
+  require("dressing").setup({})
+
   -- setup autosession
   local resession = require("resession")
   resession.setup({
@@ -369,6 +371,7 @@ local function setup()
 
   vim.keymap.set("n", "<C-a>", function()
     telescope.extensions.live_grep_args.live_grep_args({
+
       vimgrep_arguments = {
         "rg",
         "--color=never",
@@ -394,11 +397,37 @@ local function setup()
 
   harpoon:setup()
 
-  vim.keymap.set("n", "<leader>a", function()
+  vim.keymap.set("n", "<C-s>", function()
     harpoon:list():append()
   end)
   vim.keymap.set("n", "<C-t>", function()
     harpoon.ui:toggle_quick_menu(harpoon:list())
+  end)
+
+  vim.keymap.set("n", "<leader>1", function()
+    harpoon:list():select(1)
+  end)
+  vim.keymap.set("n", "<leader>2", function()
+    harpoon:list():select(2)
+  end)
+  vim.keymap.set("n", "<leader>3", function()
+    harpoon:list():select(3)
+  end)
+  vim.keymap.set("n", "<leader>4", function()
+    harpoon:list():select(4)
+  end)
+
+  vim.keymap.set("n", "<C-h>", function()
+    harpoon:list():select(1)
+  end)
+  vim.keymap.set("n", "<C-n>", function()
+    harpoon:list():select(2)
+  end)
+  vim.keymap.set("n", "<C-e>", function()
+    harpoon:list():select(3)
+  end)
+  vim.keymap.set("n", "<C-i>", function()
+    harpoon:list():select(4)
   end)
 end
 

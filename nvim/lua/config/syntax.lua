@@ -238,6 +238,10 @@ local function setup()
 
   vim.keymap.set({ "n", "x", "o" }, "]h", next_hunk_repeat)
   vim.keymap.set({ "n", "x", "o" }, "[h", prev_hunk_repeat)
+
+  require("render-markdown").setup({
+    file_types = { "markdown", "Avante" },
+  })
 end
 
 return {

@@ -21,6 +21,7 @@ call plug#begin('~/.vim/plugged')
 
   " ai
   Plug 'robitx/gp.nvim'
+  Plug 'yetone/avante.nvim'
   Plug 'supermaven-inc/supermaven-nvim'
 
   " lsp/completion
@@ -32,6 +33,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/cmp-buffer'
   Plug 'hrsh7th/cmp-path'
   Plug 'hrsh7th/cmp-cmdline'
+  Plug 'hrsh7th/cmp-emoji'
   Plug 'folke/trouble.nvim'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
@@ -95,6 +97,7 @@ call plug#begin('~/.vim/plugged')
   " utils
   Plug 'nvim-neotest/nvim-nio'
   Plug 'MunifTanjim/nui.nvim'
+  Plug 'stevearc/dressing.nvim'
   Plug 'ahw/vim-pbcopy'
   Plug 'tyru/open-browser.vim'
   Plug 'tyru/open-browser-github.vim'
@@ -109,6 +112,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'epwalsh/obsidian.nvim'
   Plug 'rcarriga/nvim-notify'
   Plug 'axkirillov/hbac.nvim'
+  Plug 'MeanderingProgrammer/render-markdown.nvim'
+  Plug 'HakonHarnes/img-clip.nvim'
 
   "" session
   Plug 'stevearc/resession.nvim'
@@ -185,7 +190,9 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
-set conceallevel=0
+set conceallevel=2
+set laststatus=3
+set splitkeep=screen
 
 " Prepare config for theming
 set termguicolors
@@ -200,6 +207,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " │                      Setup plugins                       │
 " ╰──────────────────────────────────────────────────────────╯
 :lua << EOF
+  require('config.util').setup()
   require('config.edit').setup()
   require('config.syntax').setup()
   require('config.navigation').setup()
@@ -248,7 +256,6 @@ nmap ga <Plug>(EasyAlign)
 
 " force myself to break bad habits
 imap <C-c> <NOP>
-map <C-s> :w<CR>
 
 nmap - :Oil<CR>
 
