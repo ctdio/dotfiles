@@ -96,9 +96,16 @@ local function setup()
     end,
   })
 
-  require("hbac").setup({
-    threshold = 25,
+  require("early-retirement").setup({
+    retirementAgeMins = 10,
+    ignoreFiletypes = {
+      "sql", -- annoying to have dbui open and buffers closed
+    },
   })
+
+  -- require("hbac").setup({
+  --   threshold = 25,
+  -- })
 end
 
 return {

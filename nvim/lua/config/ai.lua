@@ -11,6 +11,9 @@ local function setup()
   require("avante_lib").load()
   require("avante").setup({
     provider = "claude",
+    behavior = {
+      auto_suggestion = true,
+    },
   })
 end
 

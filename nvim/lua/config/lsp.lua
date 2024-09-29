@@ -2,6 +2,15 @@ local setup_cmp_completion
 local setup_lsp
 
 local function setup()
+  require("lspsaga").setup({
+    lightbulb = {
+      enable = false,
+    },
+    rename = {
+      auto_save = true,
+    },
+  })
+
   setup_cmp_completion()
   setup_lsp()
 
@@ -180,7 +189,8 @@ setup_lsp = function()
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, bufopts)
     vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
-    vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
+    -- vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
+    vim.keymap.set("n", "<space>rn", ":Lspsaga rename<CR>", bufopts)
     -- vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
     vim.keymap.set(
       "n",
@@ -232,6 +242,8 @@ setup_lsp = function()
   require("typescript-tools").setup({
     on_attach = on_attach,
     settings = {
+      separate_diagnostic_server = false,
+      root_dir = nvim_lsp.util.root_pattern(".git"),
       vtsls = {
         experimental = {
           completion = {

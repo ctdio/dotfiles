@@ -40,6 +40,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'pmizio/typescript-tools.nvim'
   Plug 'aznhe21/actions-preview.nvim'
+  Plug 'nvimdev/lspsaga.nvim'
 
   " statusline
   Plug 'nvim-lualine/lualine.nvim'
@@ -111,7 +112,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'epwalsh/obsidian.nvim'
   Plug 'rcarriga/nvim-notify'
-  Plug 'axkirillov/hbac.nvim'
+  "" Plug 'axkirillov/hbac.nvim'
+  Plug 'chrisgrieser/nvim-early-retirement'
   Plug 'MeanderingProgrammer/render-markdown.nvim'
   Plug 'HakonHarnes/img-clip.nvim'
 
