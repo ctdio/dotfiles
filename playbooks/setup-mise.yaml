@@ -57,16 +57,16 @@
         repo: https://github.com/asdf-community/asdf-zig
   connection: local
   tasks:
-    - name: Install rtx plugins
+    - name: Install mise plugins
       loop: "{{ plugins }}"
       register: add_result
       ansible.builtin.shell: >
-        rtx plugin install {{ item.plugin }} {{ item.repo }}
+        mise plugin install {{ item.plugin }} {{ item.repo }}
       failed_when: add_result.rc != 0 and add_result.rc != 2
     - name: Execute plugin result
       register: installed_plugins
       ansible.builtin.shell: >
-        rtx plugin list
+        mise plugin list
     - name: Added plugins
       debug:
         msg: "{{installed_plugins.stdout.split('\n')}}"
@@ -84,11 +84,11 @@
     - name: Tool versions
       debug:
         msg: "{{tool_versions.stdout.split('\n')}}"
-    - name: Execute rtx install
-      register: rtx_install_result
+    - name: Execute mise install
+      register: mise_install_result
       ansible.builtin.shell: >
         cd "{{ansible_env.HOME}}";
-        rtx install
+        mise install
     - name: Install result
       debug:
-        msg: "{{rtx_install_result.stdout.split('\n')}}"
+        msg: "{{mise_install_result.stdout.split('\n')}}"

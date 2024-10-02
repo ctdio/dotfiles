@@ -5,7 +5,10 @@ local function setup()
       clear_suggestion = nil,
       accept_word = nil,
     },
-    ignore_filetypes = { sh = true, TelescopePrompt = true },
+    ignore_filetypes = { TelescopePrompt = true },
+    condition = function()
+      return string.match(vim.fn.expand("%:t"), ".env")
+    end,
   })
 
   require("avante_lib").load()

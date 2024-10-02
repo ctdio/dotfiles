@@ -41,6 +41,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'pmizio/typescript-tools.nvim'
   Plug 'aznhe21/actions-preview.nvim'
   Plug 'nvimdev/lspsaga.nvim'
+  Plug 'ziglang/zig.vim'
 
   " statusline
   Plug 'nvim-lualine/lualine.nvim'

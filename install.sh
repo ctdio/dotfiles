@@ -156,6 +156,19 @@ function install_lua_language_server () {
   fi
 }
 
+function install_zig_language_server () {
+  if [[ ! f- ~/.zig/bin/zls ]]; then
+    echo "Installing zig-language-server"
+    git clone https://github.com/zigtools/zls ~/.zls
+
+    cd ~/.zls
+    git checkout 0.12.0
+    zig build -Doptimize=ReleaseSafe
+  else
+    echo "zig-language-server is already installed"
+  fi
+}
+
 function install_rust_analyzer () {
   if [[ ! -f ~/.local/bin/rust-analyzer ]]; then
     echo "Installing rust-analyzer"
@@ -186,7 +199,7 @@ function run_ansible_playbooks () {
     ansible-playbook ./playbooks/install-brew-packages.yaml
   fi
 
-  ansible-playbook ./playbooks/setup-rtx.yaml
+  ansible-playbook ./playbooks/setup-mise.yaml
   ansible-playbook ./playbooks/install-cargo-packages.yaml
   ansible-playbook ./playbooks/install-golang-packages.yaml
   ansible-playbook ./playbooks/install-npm-packages.yaml

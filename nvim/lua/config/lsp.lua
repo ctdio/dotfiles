@@ -229,6 +229,7 @@ setup_lsp = function()
     "rust_analyzer",
     "tailwindcss",
     "prismals",
+    "zls",
     -- "tsserver", (covered by typescript-tools)
   }
   for _, lsp in ipairs(servers) do
