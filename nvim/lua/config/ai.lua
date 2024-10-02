@@ -11,13 +11,42 @@ local function setup()
     end,
   })
 
-  require("avante_lib").load()
-  require("avante").setup({
-    provider = "claude",
-    behavior = {
-      auto_suggestion = true,
+  -- require("avante_lib").load()
+  -- require("avante").setup({
+  --   provider = "claude",
+  --   behavior = {
+  --     auto_suggestion = true,
+  --   },
+  -- })
+  --
+  os = require("os")
+
+  require("codecompanion").setup({
+    adapters = {
+      anthropic = function()
+        return require("codecompanion.adapters").extend("anthropic", {
+          env = {
+            api_key = os.getenv("ANTHROPIC_API_KEY"),
+          },
+        })
+      end,
+    },
+    strategies = {
+      chat = {
+        adapter = "anthropic",
+      },
+      inline = {
+        adapter = "anthropic",
+      },
+      agent = {
+        adapter = "anthropic",
+      },
     },
   })
+
+  vim.keymap.set("v", "<C-a>", ":CodeCompanion ")
+  vim.keymap.set("n", "<leader>aa", ":CodeCompanionChat toggle<CR>")
+  vim.keymap.set("n", "<leader>ac", ":CodeCompanionActions<CR>")
 end
 
 return {

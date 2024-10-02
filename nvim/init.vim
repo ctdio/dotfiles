@@ -21,8 +21,9 @@ call plug#begin('~/.vim/plugged')
 
   " ai
   Plug 'robitx/gp.nvim'
-  Plug 'yetone/avante.nvim'
+  " Plug 'yetone/avante.nvim'
   Plug 'supermaven-inc/supermaven-nvim'
+  Plug 'olimorris/codecompanion.nvim'
 
   " lsp/completion
   Plug 'folke/neodev.nvim'
