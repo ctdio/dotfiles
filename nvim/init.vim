@@ -118,6 +118,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'chrisgrieser/nvim-early-retirement'
   Plug 'MeanderingProgrammer/render-markdown.nvim'
   Plug 'HakonHarnes/img-clip.nvim'
+  Plug 'dstein64/vim-startuptime'
 
   "" session
   Plug 'stevearc/resession.nvim'
@@ -211,6 +212,8 @@ highlight ColorColumn ctermbg=0 guibg=grey
 " │                      Setup plugins                       │
 " ╰──────────────────────────────────────────────────────────╯
 :lua << EOF
+  vim.loader.enable()
+
   require('config.util').setup()
   require('config.edit').setup()
   require('config.syntax').setup()
