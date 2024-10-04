@@ -160,7 +160,7 @@ setup_lsp = function()
     "<CMD>Trouble diagnostics toggle filter.buf=0<CR>",
     opts
   )
-  vim.keymap.set("n", "<space>Q", "<CMD>Trouble diagnostics toggle<CR>", opts)
+  vim.keymap.set("n", "<space>d", "<CMD>Trouble diagnostics toggle<CR>", opts)
   vim.keymap.set("n", "<space>f", vim.lsp.buf.format, opts)
 
   -- Use an on_attach function to only map the following keys
