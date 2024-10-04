@@ -20,7 +20,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'RRethy/nvim-treesitter-textsubjects'
 
   " ai
-  Plug 'robitx/gp.nvim'
   " Plug 'yetone/avante.nvim'
   Plug 'supermaven-inc/supermaven-nvim'
   Plug 'olimorris/codecompanion.nvim'
@@ -67,7 +66,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'numToStr/Comment.nvim'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'LudoPinelli/comment-box.nvim'
-  Plug 'kevinhwang91/promise-async'
   Plug 'stevearc/conform.nvim'
   Plug 'junegunn/vim-easy-align'
   Plug 'windwp/nvim-autopairs'
@@ -94,8 +92,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'nvim-pack/nvim-spectre'
   Plug 'stevearc/oil.nvim'
   Plug 'thePrimeagen/harpoon', { 'tag': 'harpoon2' }
-  Plug 'andymass/vim-matchup'
-
 
   " utils
   Plug 'nvim-neotest/nvim-nio'

@@ -46,9 +46,6 @@ local function setup()
     autotag = {
       enable = true,
     },
-    matchup = {
-      enable = true,
-    },
     textsubjects = {
       enable = true,
       prev_selection = ",", -- (Optional) keymap to select the previous selection
