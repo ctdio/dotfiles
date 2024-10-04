@@ -22,6 +22,17 @@ local function setup()
   os = require("os")
 
   require("codecompanion").setup({
+    display = {
+      diff = {
+        provider = "mini_diff",
+      },
+      chat = {
+        window = {
+          layout = "vertical",
+          width = 0.25,
+        },
+      },
+    },
     adapters = {
       anthropic = function()
         return require("codecompanion.adapters").extend("anthropic", {

@@ -119,6 +119,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'MeanderingProgrammer/render-markdown.nvim'
   Plug 'HakonHarnes/img-clip.nvim'
   Plug 'dstein64/vim-startuptime'
+  Plug 'echasnovski/mini.nvim'
 
   "" session
   Plug 'stevearc/resession.nvim'
