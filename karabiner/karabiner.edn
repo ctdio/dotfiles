@@ -1,0 +1,31 @@
+;; Karabiner implementation of symbol layer from
+;; https://github.com/callum-oakley/keymap
+
+{:layers {:symbol-mode {:key :right_command}} ;; :right_command :spacebar
+ :main [{:des "symbol mode"
+         :rules [[:q :escape :symbol-mode] ;; escape
+                 [:w :open_bracket :symbol-mode] ;; [
+                 [:e :!Sopen_bracket :symbol-mode] ;; {
+                 [:r :!S9 :symbol-mode] ;; (
+                 [:t :!Sgrave_accent_and_tilde :symbol-mode] ;; `
+                 [:y :!S6 :symbol-mode] ;; ^
+                 [:u :!S0 :symbol-mode] ;; )
+                 [:i :!Sclose_bracket :symbol-mode] ;; }
+                 [:o :close_bracket :symbol-mode] ;; ]
+                 [:p :grave_accent_and_tilde :symbol-mode] ;; `
+                 [:a :hyphen :symbol-mode] ;; `
+                 [:s :!S8 :symbol-mode] ;; `
+                 [:d :equal_sign :symbol-mode] ;; =
+                 [:f :!Shyphen :symbol-mode] ;; _
+                 [:d :!S4 :symbol-mode] ;; $
+                 [:h :!S3 :symbol-mode] ;; #
+                 [:z :!Sequal_sign :symbol-mode] ;; +
+                 [:x :!Sbackslash :symbol-mode] ;; |
+                 [:c :!S2 :symbol-mode] ;; @
+                 [:v :backslash :symbol-mode] ;; /
+                 [:b :!S5 :symbol-mode] ;; %
+                 [:m :slash :symbol-mode] ;; /
+                 [:comma :!S7 :symbol-mode] ;; &
+                 [:period :!Sslash :symbol-mode] ;; ?
+                 [:slash :!S1 :symbol-mode] ;; !
+                 ]}]}

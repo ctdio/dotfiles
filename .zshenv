@@ -2,6 +2,8 @@
 
 export ENVIRONMENT=dev
 
+export GOKU_EDN_CONFIG_FILE=~/dotfiles/karabiner/karabiner.edn
+
 export DATABRICKS_CONFIG_PROFILE=default
 
 export ANDROID_HOME=${HOME}/android-sdk
