@@ -1,7 +1,7 @@
 ;; Karabiner implementation of symbol layer from
 ;; https://github.com/callum-oakley/keymap
 
-{:layers {:symbol-mode {:key :right_command}} ;; :right_command :spacebar
+{:layers {:symbol-mode {:key :right_command}}
  :main [{:des "symbol mode"
          :rules [[:q :escape :symbol-mode] ;; escape
                  [:w :open_bracket :symbol-mode] ;; [
@@ -28,4 +28,7 @@
                  [:comma :!S7 :symbol-mode] ;; &
                  [:period :!Sslash :symbol-mode] ;; ?
                  [:slash :!S1 :symbol-mode] ;; !
+                 ;; preserve rcmd left right
+                 [:left_arrow :!Qleft_arrow :symbol-mode]
+                 [:right_arrow :!Qright_arrow :symbol-mode]
                  ]}]}
