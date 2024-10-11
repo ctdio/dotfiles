@@ -1,12 +1,12 @@
+# uncomment to profile
+# zmodload zsh/zprof
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
-
-# uncomment to profile
-# zmodload zsh/zprof
 
 # history
 SAVEHIST=10000
@@ -15,7 +15,9 @@ setopt SHARE_HISTORY
 
 bindkey '^K'  autosuggest-accept
 
-autoload -Uz compinit && compinit
+# Use -C to only check for completion fields when .zompdump is missing or
+# outdated. Necessary for making shell
+autoload -Uz compinit && compinit -C
 
 if [ -f '/opt/homebrew/bin/brew' ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -57,7 +59,7 @@ eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+eval $(thefuck --alias)
+
 # uncomment to profile
 # zprof
-
-eval $(thefuck --alias)
