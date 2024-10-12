@@ -192,7 +192,6 @@ set backspace=indent,eol,start
 set splitbelow " horizontal splits go below
 set splitright " vertical splits go to the right
 
-set conceallevel=2
 set laststatus=3
 set splitkeep=screen
 
