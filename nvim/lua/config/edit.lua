@@ -98,7 +98,7 @@ local function setup()
 
   require("early-retirement").setup({
     retirementAgeMins = 10,
-    ignoreFiletypes = {
+    ignoredFiletypes = {
       "sql", -- annoying to have dbui open and buffers closed
     },
   })
