@@ -16,6 +16,10 @@ local function setup()
 
   -- configure trouble for prettier diagnostics
   require("trouble").setup()
+
+  require("tsc").setup({
+    use_trouble_qflist = true,
+  })
 end
 
 setup_cmp_completion = function()
@@ -243,14 +247,10 @@ setup_lsp = function()
   require("typescript-tools").setup({
     on_attach = on_attach,
     settings = {
-      separate_diagnostic_server = false,
+      separate_diagnostic_server = true,
       root_dir = nvim_lsp.util.root_pattern(".git"),
-      vtsls = {
-        experimental = {
-          completion = {
-            enableServerSideFuzzyMatch = true,
-          },
-        },
+      tsserver_file_preferences = {
+        includeCompletionsForModuleExports = false,
       },
     },
   })
