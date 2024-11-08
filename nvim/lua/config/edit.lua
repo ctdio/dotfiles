@@ -102,10 +102,6 @@ local function setup()
       "sql", -- annoying to have dbui open and buffers closed
     },
   })
-
-  -- require("hbac").setup({
-  --   threshold = 25,
-  -- })
 end
 
 return {

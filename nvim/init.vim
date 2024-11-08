@@ -111,12 +111,12 @@ call plug#begin('~/.vim/plugged')
   Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'epwalsh/obsidian.nvim'
   Plug 'rcarriga/nvim-notify'
-  "" Plug 'axkirillov/hbac.nvim'
   Plug 'chrisgrieser/nvim-early-retirement'
   Plug 'MeanderingProgrammer/render-markdown.nvim'
   Plug 'HakonHarnes/img-clip.nvim'
   Plug 'dstein64/vim-startuptime'
   Plug 'echasnovski/mini.nvim'
+  Plug 'folke/snacks.nvim'
 
   "" session
   Plug 'stevearc/resession.nvim'
