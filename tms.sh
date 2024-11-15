@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tms  config --max-depth=2 -p \
+tms  config --max-depths=2 -p \
   ~/projects/private \
   ~/projects/private/opine \
   ~/projects/private/scratch \
