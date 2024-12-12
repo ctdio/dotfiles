@@ -16,8 +16,7 @@
       - gpg
       - htop
       - jq
-      - koekeishiya/formulae/skhd
-      - koekeishiya/formulae/yabai
+      - kanata
       - libpq
       - neovim
       - openssl

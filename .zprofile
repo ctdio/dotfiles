@@ -9,6 +9,8 @@ alias killn='killall node'
 alias oni='~/Onivim2-x86_64.AppImage'
 
 alias l='ls -la'
+alias v='nvim'
+alias vi='nvim'
 alias vim='nvim'
 alias nvim-no-sesh='nvim "+let g:auto_session_enabled = v:false"'
 alias vim-no-sesh='nvim-no-sesh'

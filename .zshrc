@@ -13,8 +13,6 @@ SAVEHIST=10000
 HISTFILE=~/.zsh_history
 setopt SHARE_HISTORY
 
-bindkey '^K'  autosuggest-accept
-
 # Use -C to only check for completion fields when .zompdump is missing or
 # outdated. Necessary for making shell
 autoload -Uz compinit && compinit -C
@@ -26,6 +24,16 @@ fi
 # hack to get better colors in tmux
 alias tmux='TERM=screen-256color tmux'
 
+function zvm_after_init() {
+  # install fzf keybindings
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+  # enable fzf-git
+  [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
+
+  bindkey '^K' autosuggest-accept
+}
+
 # .zshrc
 source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
 antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
@@ -33,18 +41,15 @@ autoload -Uz promptinit && promptinit
 
 bindkey -v
 
-# install fzf keybindings
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-# enable fzf-git
-[ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
-
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/charlieduong/google-cloud-sdk/path.zsh.inc' ]; then
   . '/Users/charlieduong/google-cloud-sdk/path.zsh.inc';
 fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc'; fi
+if [ -f '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc' ]; then
+  . '/Users/charlieduong/google-cloud-sdk/completion.zsh.inc';
+fi
 
 if type zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"

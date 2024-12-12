@@ -20,9 +20,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'RRethy/nvim-treesitter-textsubjects'
 
   " ai
-  " Plug 'yetone/avante.nvim'
+  Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
   Plug 'supermaven-inc/supermaven-nvim'
-  Plug 'olimorris/codecompanion.nvim'
 
   " lsp/completion
   Plug 'folke/neodev.nvim'
@@ -248,6 +247,7 @@ colorscheme kanagawa-dragon
 " NOTE: Most mappings have been moved to the `config` folder
 " near setup functions for the plugins they are related to.
 map , <leader>
+vmap , <leader>
 map <leader>e :e!<CR>
 map <leader>gd :DiffviewOpen<CR>
 map <leader>gb :Git blame<CR>

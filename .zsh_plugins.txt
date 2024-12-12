@@ -4,5 +4,6 @@ ohmyzsh/ohmyzsh path:plugins/command-not-found
 zsh-users/zsh-completions
 zsh-users/zsh-syntax-highlighting
 zsh-users/zsh-autosuggestions
+jeffreytse/zsh-vi-mode
 
 romkatv/powerlevel10k

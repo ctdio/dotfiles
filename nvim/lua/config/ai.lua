@@ -11,53 +11,30 @@ local function setup()
     end,
   })
 
-  -- require("avante_lib").load()
-  -- require("avante").setup({
-  --   provider = "claude",
-  --   behavior = {
-  --     auto_suggestion = true,
-  --   },
-  -- })
-  --
-  os = require("os")
+  require("avante_lib").load()
 
-  require("codecompanion").setup({
-    display = {
-      diff = {
-        provider = "mini_diff",
-      },
-      chat = {
-        window = {
-          layout = "vertical",
-          width = 0.25,
-        },
-      },
+  require("avante").setup({
+    provider = "claude",
+    claude = {
+      model = "claude-3-5-haiku-20241022",
     },
-    adapters = {
-      anthropic = function()
-        return require("codecompanion.adapters").extend("anthropic", {
-          env = {
-            api_key = os.getenv("ANTHROPIC_API_KEY"),
-          },
-        })
-      end,
+    behavior = {
+      auto_suggestions = true,
     },
-    strategies = {
-      chat = {
-        adapter = "anthropic",
-      },
-      inline = {
-        adapter = "anthropic",
-      },
-      agent = {
-        adapter = "anthropic",
+    mappings = {
+      ask = "<space>aa",
+      edit = "<space>ae",
+      refresh = "<space>ar",
+      focus = "<space>af",
+      toggle = {
+        default = "<space>at",
+        debug = "<space>ad",
+        hint = "<space>ah",
+        suggestion = "<space>as",
+        repomap = "<space>aR",
       },
     },
   })
-
-  vim.keymap.set("v", "<C-a>", ":CodeCompanion ")
-  vim.keymap.set("n", "<leader>aa", ":CodeCompanionChat toggle<CR>")
-  vim.keymap.set("n", "<leader>ac", ":CodeCompanionActions<CR>")
 end
 
 return {
