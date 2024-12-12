@@ -53,19 +53,19 @@ local function setup()
   local spectre = require("spectre")
   spectre.setup()
 
-  vim.keymap.set("n", "<leader>S", function()
+  vim.keymap.set("n", "<leader>F", function()
     spectre.toggle()
   end)
 
-  vim.keymap.set("n", "<leader>sw", function()
+  vim.keymap.set("n", "<leader>fw", function()
     spectre.open_visual({ select_word = true })
   end)
 
-  vim.keymap.set("v", "<leader>sw", function()
+  vim.keymap.set("v", "<leader>fw", function()
     spectre.open_visual()
   end)
 
-  vim.keymap.set("n", "<leader>sp", function()
+  vim.keymap.set("n", "<leader>fp", function()
     spectre.open_file_search({ select_word = true })
   end)
 

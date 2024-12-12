@@ -109,7 +109,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'AckslD/nvim-neoclip.lua'
   Plug 'antoinemadec/FixCursorHold.nvim'
   Plug 'epwalsh/obsidian.nvim'
-  Plug 'rcarriga/nvim-notify'
   Plug 'chrisgrieser/nvim-early-retirement'
   Plug 'MeanderingProgrammer/render-markdown.nvim'
   Plug 'HakonHarnes/img-clip.nvim'
@@ -223,12 +222,6 @@ highlight ColorColumn ctermbg=0 guibg=grey
   -- NOTE: `set spell` in vimscript for some reason does not work, but
   -- setting it here does.
   vim.o.spell = true
-
-  -- setup notify last
-  local notify = require('notify')
-  vim.notify = notify.setup({
-    top_down = false,
-  })
 
   vim.keymap.set("n", "<leader>ns", function()
     notify.dismiss()
