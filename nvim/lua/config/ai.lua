@@ -16,7 +16,7 @@ local function setup()
   require("avante").setup({
     provider = "claude",
     claude = {
-      model = "claude-3-5-haiku-20241022",
+      model = "claude-3-5-sonnet-latest",
     },
     behavior = {
       auto_suggestions = true,

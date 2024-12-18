@@ -49,6 +49,7 @@ call plug#begin('~/.vim/plugged')
   " theme
   Plug 'rebelot/kanagawa.nvim'
   Plug 'haystackandroid/rusticated'
+  Plug 'EdenEast/nightfox.nvim'
 
   " writing
   Plug 'folke/zen-mode.nvim'
@@ -224,7 +225,7 @@ highlight ColorColumn ctermbg=0 guibg=grey
   vim.o.spell = true
 
   vim.keymap.set("n", "<leader>ns", function()
-    notify.dismiss()
+    Snacks.notifier.hide()
   end)
 EOF
 

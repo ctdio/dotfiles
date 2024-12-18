@@ -322,22 +322,13 @@ local function setup()
         i = {
           ["<C-Down>"] = require("telescope.actions").cycle_history_next,
           ["<C-Up>"] = require("telescope.actions").cycle_history_prev,
-        },
-      },
-    },
-    extensions = {
-      live_grep_args = {
-        vimgrep_arguments = {
-          "rg",
-          "--color=never",
-          "--no-heading",
-          "--with-filename",
-          "--line-number",
-          "--column",
-          "--smart-case",
-          "--hidden",
-          "-g",
-          "!{node_modules,.git}",
+          ["<C-y>"] = function()
+            local entry =
+              require("telescope.actions.state").get_selected_entry()
+            local file_path = entry.path
+            vim.fn.setreg("+", file_path) -- Copy to system clipboard
+            print("Copied: " .. file_path)
+          end,
         },
       },
     },
@@ -346,8 +337,6 @@ local function setup()
   require("telescope").load_extension("fzf")
   require("telescope").load_extension("dap")
   require("telescope").load_extension("luasnip")
-  require("telescope").load_extension("live_grep_args")
-  -- require("telescope").load_extension("smart_history")
 
   local telescope_builtin = require("telescope.builtin")
 
@@ -370,8 +359,7 @@ local function setup()
   end, {})
 
   vim.keymap.set("n", "<C-a>", function()
-    telescope.extensions.live_grep_args.live_grep_args({
-
+    telescope_builtin.live_grep({
       vimgrep_arguments = {
         "rg",
         "--color=never",
