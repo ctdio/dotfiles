@@ -51,7 +51,18 @@ local function setup()
 
   -- search and replace
   local spectre = require("spectre")
-  spectre.setup()
+  spectre.setup({
+    replace_engine = {
+      ["sed"] = {
+        cmd = "sed",
+        args = {
+          "-i",
+          "",
+          "-E",
+        },
+      },
+    },
+  })
 
   vim.keymap.set("n", "<leader>F", function()
     spectre.toggle()
