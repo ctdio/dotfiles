@@ -40,6 +40,14 @@ function link_dotfiles () {
     fi
   done
 
+  echo "Linking .ghostty-config to ~/.config/ghostty/config"
+  mkdir -p ~/.config/ghostty
+  ln -nsf ${DOTFILES_DIR}/.ghostty-config ~/.config/ghostty/config
+
+  echo "Linking aider.conf.yml to ~/aider.conf.yml"
+  ln -nsf ${DOTFILES_DIR}/.aider.conf.yml ~/.aider.conf.yml
+
+
   echo "Linking nvim to ~/.config/nvim"
   ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
 
