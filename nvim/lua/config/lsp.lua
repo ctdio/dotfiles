@@ -237,6 +237,7 @@ setup_lsp = function()
     "tailwindcss",
     "prismals",
     "zls",
+    "vtsls",
     -- "tsserver", (covered by typescript-tools)
   }
   for _, lsp in ipairs(servers) do
@@ -247,16 +248,7 @@ setup_lsp = function()
     })
   end
 
-  require("typescript-tools").setup({
-    on_attach = on_attach,
-    settings = {
-      separate_diagnostic_server = true,
-      root_dir = nvim_lsp.util.root_pattern(".git"),
-      tsserver_file_preferences = {
-        includeCompletionsForModuleExports = false,
-      },
-    },
-  })
+  vim.api.nvim_create_user_command("TSA", "VtsExec source_actions", {})
 
   nvim_lsp.emmet_language_server.setup({
     on_attach = on_attach,

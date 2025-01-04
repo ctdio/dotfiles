@@ -37,7 +37,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
   Plug 'saadparwaiz1/cmp_luasnip'
-  Plug 'pmizio/typescript-tools.nvim'
+  Plug 'yioneko/nvim-vtsls'
   Plug 'aznhe21/actions-preview.nvim'
   Plug 'nvimdev/lspsaga.nvim'
   Plug 'ziglang/zig.vim'
