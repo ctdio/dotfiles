@@ -29,7 +29,7 @@ alias ungron='gron --ungron'
 
 alias notes='pushd ~/obsidian; nvim; popd'
 
-alias ai="aider --read=~/dotfiles/.aider.rules"
+alias ai="aider --read=~/dotfiles/.aider.rules.md"
 
 # helper functions
 function fcd () {
