@@ -1,0 +1,15 @@
+font-family = ""
+font-family = "JetBrains Mono"
+font-feature = -calt
+font-feature = -liga
+font-feature = -clig
+
+theme = "UltraDark"
+window-decoration = false
+macos-titlebar-style = hidden
+
+shell-integration = zsh
+
+quick-terminal-position = top
+
+keybind = alt+enter=toggle_quick_terminal
