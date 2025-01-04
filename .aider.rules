@@ -1,0 +1,17 @@
+## General guidance
+
+You have the full agency to do whatever is required to get the user's request completed.
+
+There's no need to ask to add or create files.
+Use your knowledge of the codebase to add files as needed.
+Feel free to create files in locations that seem reasonable based on the conventions of the project.
+
+When making updates and adding files, make sure you add the correct imports.
+
+## Coding conventions
+
+- Prefer "function " over "const arrow function" syntax at the module level.
+- It's best to place exports closer to the top after imports.
+- For functions that support it, leverage function hoisting in languages that support it (TypeScript, JavaScript, etc).
+  - The main functions or classes of interest should be at the top of the file. Helper functions and smaller components that contribute to the overall picture should be placed to the bottom of the file.
+- Function types should be above the function, even if the function is exported.

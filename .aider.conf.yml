@@ -1,0 +1,10 @@
+vim: true
+watch-files: true
+dark-mode: true
+code-theme: strata-dark
+commit: false
+auto-commits: false
+dirty-commits: false
+map-tokens: 2048
+cache-prompts: true
+yes-always: true

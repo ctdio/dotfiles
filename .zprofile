@@ -29,6 +29,8 @@ alias ungron='gron --ungron'
 
 alias notes='pushd ~/obsidian; nvim; popd'
 
+alias ai="aider --read=~/dotfiles/.aider.rules"
+
 # helper functions
 function fcd () {
   local directories=$(ls -d */)
