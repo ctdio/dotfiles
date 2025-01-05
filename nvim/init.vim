@@ -26,17 +26,11 @@ call plug#begin('~/.vim/plugged')
   " lsp/completion
   Plug 'folke/neodev.nvim'
   Plug 'neovim/nvim-lspconfig'
-  Plug 'hrsh7th/nvim-cmp'
-  Plug 'hrsh7th/cmp-nvim-lsp'
-  Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
-  Plug 'hrsh7th/cmp-buffer'
-  Plug 'hrsh7th/cmp-path'
-  Plug 'hrsh7th/cmp-cmdline'
-  Plug 'hrsh7th/cmp-emoji'
+  Plug 'Saghen/blink.cmp', {'tag': '*'}
   Plug 'folke/trouble.nvim'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
-  Plug 'saadparwaiz1/cmp_luasnip'
+  " Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'yioneko/nvim-vtsls'
   Plug 'aznhe21/actions-preview.nvim'
   Plug 'nvimdev/lspsaga.nvim'

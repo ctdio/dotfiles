@@ -31,120 +31,47 @@ setup_cmp_completion = function()
     },
   })
 
-  -- Setup nvim-cmp with recommended setup
-  local cmp = require("cmp")
-
-  local confirm_item = function(fallback)
-    -- This little snippet will confirm with tab, and if no entry is selected, will confirm the first item
-    if cmp.visible() then
-      local entry = cmp.get_selected_entry()
-      if entry then
-        cmp.confirm()
-      else
-        fallback()
-      end
-    else
-      fallback()
-    end
-  end
-
-  local replace_termcodes = function(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-  end
-
-  cmp.setup({
-    snippet = {
-      expand = function(args)
-        require("luasnip").lsp_expand(args.body)
-      end,
+  require("blink-cmp").setup({
+    completion = {
+      list = {
+        selection = function(ctx)
+          return ctx.mode == "cmdline" and "auto_insert" or "preselect"
+        end,
+      },
     },
-    window = {
-      completion = cmp.config.window.bordered(),
-      documentation = cmp.config.window.bordered(),
-    },
-    mapping = {
-      ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
-      ["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
-      ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
-      ["<C-e>"] = cmp.mapping({
-        i = cmp.mapping.abort(),
-        c = cmp.mapping.close(),
-      }),
-      ["<C-n>"] = cmp.mapping({
-        c = function()
-          if cmp.visible() then
-            cmp.select_next_item({
-              behavior = cmp.SelectBehavior.Select,
-            })
-          else
-            vim.api.nvim_feedkeys(replace_termcodes("<Down>"), "n", true)
-          end
-        end,
-        i = function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item({
-              behavior = cmp.SelectBehavior.Select,
-            })
-          else
-            fallback()
-          end
-        end,
-      }, { "i", "c" }),
-      ["<C-p>"] = cmp.mapping({
-        c = function()
-          if cmp.visible() then
-            cmp.select_prev_item({
-              behavior = cmp.SelectBehavior.Select,
-            })
-          else
-            vim.api.nvim_feedkeys(replace_termcodes("<Up>"), "n", true)
-          end
-        end,
-        i = function(fallback)
-          if cmp.visible() then
-            cmp.select_prev_item({
-              behavior = cmp.SelectBehavior.Select,
-            })
-          else
-            fallback()
-          end
-        end,
-      }, { "i", "c" }),
-      -- ["<Tab>"] = vim.schedule_wrap(function(fallback)
-      --   if cmp.visible() and has_words_before() then
-      --     cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-      --   else
-      --     fallback()
-      --   end
-      -- end),
-      ["<CR>"] = cmp.mapping(confirm_item, { "i", "s", "c" }),
-    },
-    sources = cmp.config.sources({
-      { name = "nvim_lsp" },
-      { name = "nvim_lsp_signature_help" },
-    }, {
-      { name = "luasnip" },
-      { name = "buffer" },
-      { name = "vim-dadbod-completion" },
-      { name = "dap" },
-      { name = "emoji" },
-    }),
-  })
 
-  -- Use buffer source for `/`.
-  cmp.setup.cmdline("/", {
+    keymap = {
+      ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+      ["<C-e>"] = { "hide", "fallback" },
+      -- ["<CR>"] = { "accept", "fallback" },
+      ["<CR>"] = { "accept", "fallback" },
+
+      ["<Tab>"] = {},
+      ["<S-Tab>"] = { "snippet_backward", "fallback" },
+
+      ["<Up>"] = { "select_prev", "fallback" },
+      ["<Down>"] = { "select_next", "fallback" },
+      ["<C-p>"] = { "select_prev", "fallback" },
+      ["<C-n>"] = { "select_next", "fallback" },
+
+      ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+      ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+    },
+    signature = {
+      enabled = true,
+    },
     sources = {
-      { name = "buffer" },
+      default = {
+        "lsp",
+        "path",
+        "snippets",
+        "buffer",
+        "dadbod",
+      },
+      providers = {
+        dadbod = { name = "Dadbod", module = "vim_dadbod_completion.blink" },
+      },
     },
-  })
-
-  -- Use cmdline & path source for ':'.
-  cmp.setup.cmdline(":", {
-    sources = cmp.config.sources({
-      { name = "path" },
-    }, {
-      { name = "cmdline" },
-    }),
   })
 end
 
@@ -220,7 +147,7 @@ setup_lsp = function()
     lineFoldingOnly = true,
   }
 
-  capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
+  capabilities = require("blink.cmp").get_lsp_capabilities(capabilities)
 
   -- Use a loop to conveniently call 'setup' on multiple servers and
   -- map buffer local keybindings when the language server attaches
