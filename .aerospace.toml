@@ -126,3 +126,15 @@ esc = 'mode main'
 
 [gaps]
 outer.top = [ { monitor."Built-in Retina Display" = 0 }, 30]
+
+[[on-window-detected]]
+if.app-id="com.mitchellh.ghostty"
+run= [
+  "layout tiling",
+]
+
+[[on-window-detected]]
+if.app-id="com.openai.chat"
+run= [
+  "layout floating",
+]
