@@ -53,6 +53,8 @@
         repo: https://github.com/YR-ZR0/asdf-earthly
       - plugin: bun
         repo: https://github.com/cometkim/asdf-bun
+      - plugin: uv
+        repo: https://github.com/asdf-community/asdf-uv.git
       - plugin: zig
         repo: https://github.com/asdf-community/asdf-zig
   connection: local
