@@ -30,7 +30,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'folke/trouble.nvim'
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
-  " Plug 'saadparwaiz1/cmp_luasnip'
   Plug 'yioneko/nvim-vtsls'
   Plug 'aznhe21/actions-preview.nvim'
   Plug 'nvimdev/lspsaga.nvim'
@@ -42,7 +41,6 @@ call plug#begin('~/.vim/plugged')
 
   " theme
   Plug 'rebelot/kanagawa.nvim'
-  Plug 'haystackandroid/rusticated'
   Plug 'EdenEast/nightfox.nvim'
 
   " writing
@@ -258,7 +256,7 @@ smap <expr> <C-j> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom commands                 │
 " ╰──────────────────────────────────────────────────────────╯
-command Light :colorscheme rusticated
+command Light :colorscheme dayfox
 command Dark :colorscheme kanagawa-dragon
 command Snip :Telescope luasnip
 command SR :SnipRun
