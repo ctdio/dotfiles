@@ -1,5 +1,5 @@
 antigen.zsh
-.aider.chat.history.md
-.aider.input.history
-.aider.tags.cache.v3/
 .avante_chat_history/
+.aider*
+!.aider.conf.yml
+!.aider.rules.md
