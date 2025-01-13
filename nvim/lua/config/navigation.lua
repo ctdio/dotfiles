@@ -63,6 +63,17 @@ local function setup()
       timeout_ms = 30000,
       autosave_changes = true,
     },
+    keymaps = {
+      ["y"] = {
+        mode = "n",
+        desc = "Copy file path to system clipboard",
+        callback = function()
+          -- copy the to the system clipboard
+          require("oil.actions").copy_entry_path.callback()
+          vim.fn.setreg("+", vim.fn.getreg(vim.v.register))
+        end,
+      },
+    },
   })
 
   require("neoclip").setup({
