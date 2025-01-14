@@ -23,8 +23,8 @@ local function setup()
       -- Set up timer for periodic restart
       local timer = vim.loop.new_timer()
       timer:start(
-        10 * 60 * 1000, -- 10 minutes in milliseconds
-        10 * 60 * 1000, -- 10 minutes in milliseconds
+        5 * 60 * 1000, -- 10 minutes in milliseconds
+        5 * 60 * 1000, -- 10 minutes in milliseconds
         vim.schedule_wrap(function()
           if not api.is_running() then
             vim.cmd("SupermavenRestart")
