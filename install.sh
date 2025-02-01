@@ -44,8 +44,10 @@ function link_dotfiles () {
   mkdir -p ~/.config/ghostty
   ln -nsf ${DOTFILES_DIR}/.ghostty-config ~/.config/ghostty/config
 
-  echo "Linking aider.conf.yml to ~/aider.conf.yml"
+  echo "Linking .aider.conf.yml to ~/.aider.conf.yml"
   ln -nsf ${DOTFILES_DIR}/.aider.conf.yml ~/.aider.conf.yml
+  echo "Linking .aider.model.settings.yml to ~/.aider.model.settings.yml"
+  ln -nsf ${DOTFILES_DIR}/.aider.model.settings.yml ~/.aider.model.settings.yml
 
 
   echo "Linking nvim to ~/.config/nvim"

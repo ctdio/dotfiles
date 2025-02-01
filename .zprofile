@@ -30,6 +30,7 @@ alias ungron='gron --ungron'
 alias notes='pushd ~/obsidian; nvim; popd'
 
 alias ai="aider --read=~/dotfiles/.aider.rules.md"
+alias air1="ai --model=fireworks_ai/accounts/fireworks/models/deepseek-r1 --editor-model=claude-3-5-sonnet-20241022"
 
 # helper functions
 function fcd () {

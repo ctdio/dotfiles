@@ -64,7 +64,7 @@ local function setup()
       autosave_changes = true,
     },
     keymaps = {
-      ["y"] = {
+      ["<C-y>"] = {
         mode = "n",
         desc = "Copy file path to system clipboard",
         callback = function()

@@ -76,6 +76,7 @@ setup_cmp_completion = function()
 end
 
 setup_lsp = function()
+  vim.lsp.set_log_level("off")
   local nvim_lsp = require("lspconfig")
 
   local opts = { noremap = true, silent = true }
@@ -165,13 +166,13 @@ setup_lsp = function()
     "prismals",
     "zls",
     "vtsls",
-    -- "tsserver", (covered by typescript-tools)
   }
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup({
       on_attach = on_attach,
       capabilities = capabilities,
       detached = false,
+      root_dir = nvim_lsp.util.root_pattern(".git"),
     })
   end
 
@@ -203,11 +204,11 @@ setup_lsp = function()
   })
 
   -- tweak denols config to avoid conflict with nodejs projects
-  nvim_lsp.denols.setup({
-    on_attach = on_attach,
-    capabilities = capabilities,
-    root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
-  })
+  -- nvim_lsp.denols.setup({
+  --   on_attach = on_attach,
+  --   capabilities = capabilities,
+  --   root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
+  -- })
 
   -- lua_ls requires some additional config
   nvim_lsp.lua_ls.setup({

@@ -7,3 +7,4 @@ auto-commits: false
 dirty-commits: false
 cache-prompts: true
 yes-always: true
+map-tokens: 4096
