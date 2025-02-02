@@ -46,9 +46,9 @@ local function setup()
     },
     mappings = {
       ask = "<space>aa",
-      edit = "<space>ae",
+      edit = "<C-enter>",
       refresh = "<space>ar",
-      focus = "<space>af",
+      focus = "<space>ar",
       toggle = {
         default = "<space>at",
         debug = "<space>ad",
@@ -58,6 +58,11 @@ local function setup()
       },
     },
   })
+
+  vim.keymap.set("n", "<C-enter>", function()
+    vim.cmd("normal! v")
+    vim.api.nvim_cmd({ cmd = "AvanteEdit" }, {})
+  end)
 end
 
 return {
