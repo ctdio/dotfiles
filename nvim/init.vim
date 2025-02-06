@@ -31,7 +31,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'rafamadriz/friendly-snippets'
   Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}
   Plug 'yioneko/nvim-vtsls'
-  Plug 'aznhe21/actions-preview.nvim'
   Plug 'nvimdev/lspsaga.nvim'
   Plug 'ziglang/zig.vim'
   Plug 'dmmulroy/tsc.nvim'
@@ -71,13 +70,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'goerz/jupytext.vim'
 
   " search/nav
+  Plug 'ibhagwan/fzf-lua'
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'
-  Plug 'nvim-telescope/telescope-dap.nvim'
-  Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-  Plug 'nvim-telescope/telescope-live-grep-args.nvim'
-  Plug 'nvim-telescope/telescope-smart-history.nvim'
-  Plug 'benfowler/telescope-luasnip.nvim'
   Plug 'kyazdani42/nvim-web-devicons' " for file icons
   Plug 'kyazdani42/nvim-tree.lua', { 'on': 'NvimTreeToggle' }
   Plug 'akinsho/bufferline.nvim', { 'tag': 'v4.*' }

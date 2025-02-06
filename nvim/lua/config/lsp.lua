@@ -34,9 +34,12 @@ setup_cmp_completion = function()
   require("blink-cmp").setup({
     completion = {
       list = {
-        selection = function(ctx)
-          return ctx.mode == "cmdline" and "auto_insert" or "preselect"
-        end,
+        selection = {
+          preselect = function(ctx)
+            return ctx.mode ~= "cmdline"
+              and not require("blink.cmp").snippet_active({ direction = 1 })
+          end,
+        },
       },
     },
 
@@ -126,19 +129,14 @@ setup_lsp = function()
     vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
     -- vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
     vim.keymap.set("n", "<space>rn", ":Lspsaga rename<CR>", bufopts)
-    -- vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
-    vim.keymap.set(
-      "n",
-      "<space>ca",
-      require("actions-preview").code_actions,
-      bufopts
-    )
-    vim.keymap.set(
-      "n",
-      "gr",
-      require("telescope.builtin").lsp_references,
-      bufopts
-    )
+    vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
+    -- vim.keymap.set(
+    --   "n",
+    --   "<space>ca",vim.lsp.buf.
+    --   require("actions-preview").code_actions,
+    --   bufopts
+    -- )
+    vim.keymap.set("n", "gr", require("fzf-lua").lsp_references, bufopts)
   end
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()

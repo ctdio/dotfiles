@@ -77,14 +77,15 @@ local function setup()
   })
 
   require("neoclip").setup({
-    keys = {
-      telescope = {
-        i = {
-          paste = "<c-j>",
-        },
-      },
+    fzf = {
+      paste = "ctrl-k",
+      paste_behind = "ctrl-j",
     },
   })
+
+  vim.keymap.set("n", "<leader>y", function()
+    require("neoclip.fzf")()
+  end, {})
 
   -- setup status line
   require("lualine").setup({
@@ -316,81 +317,38 @@ local function setup()
     },
   })
 
-  -- setup telescope
-  local telescope_actions = require("telescope.actions")
+  local fzf = require("fzf-lua")
 
-  local telescope = require("telescope")
-  telescope.setup({
-    defaults = {
-      layout_strategy = "vertical",
-      layout_config = {
-        vertical = {
-          width = 0.8,
-          height = 0.8,
-          preview_height = 0.5,
-        },
-      },
-      mappings = {
-        i = {
-          ["<C-Down>"] = require("telescope.actions").cycle_history_next,
-          ["<C-Up>"] = require("telescope.actions").cycle_history_prev,
-          ["<C-y>"] = function()
-            local entry =
-              require("telescope.actions.state").get_selected_entry()
-            local file_path = entry.path
-            vim.fn.setreg("+", file_path) -- Copy to system clipboard
-            print("Copied: " .. file_path)
-          end,
-        },
+  fzf.setup({
+    winopts = {
+      width = 0.90,
+    },
+    keymap = {
+      fzf = {
+        ["ctrl-q"] = "select-all+accept",
       },
     },
   })
 
-  require("telescope").load_extension("fzf")
-  require("telescope").load_extension("dap")
-  require("telescope").load_extension("luasnip")
-
-  local telescope_builtin = require("telescope.builtin")
-
   vim.keymap.set("n", "<C-p>", function()
-    telescope_builtin.find_files({
-      find_command = {
-        "rg",
-        "--files",
-        "--color=never",
-        "--no-heading",
-        "--with-filename",
-        "--line-number",
-        "--column",
-        "--smart-case",
-        "--hidden",
-        "-g",
-        "!{node_modules,.git}",
-      },
-    })
+    fzf.files()
   end, {})
 
   vim.keymap.set("n", "<C-a>", function()
-    telescope_builtin.live_grep({
-      vimgrep_arguments = {
-        "rg",
-        "--color=never",
-        "--no-heading",
-        "--with-filename",
-        "--line-number",
-        "--column",
-        "--smart-case",
-        "--hidden",
-        "-g",
-        "!{node_modules,.git}",
-      },
-    })
+    fzf.live_grep()
   end, {})
 
-  vim.keymap.set("n", "<leader>b", telescope_builtin.buffers, {})
-  vim.keymap.set("n", "<leader>m", telescope_builtin.marks, {})
-  vim.keymap.set("n", "<leader>z", telescope_builtin.spell_suggest, {})
-  vim.keymap.set("n", "<leader>y", telescope.extensions.neoclip.neoclip, {})
+  vim.keymap.set("n", "<leader>b", function()
+    fzf.buffers()
+  end, {})
+
+  vim.keymap.set("n", "<leader>m", function()
+    fzf.marks()
+  end, {})
+
+  vim.keymap.set("n", "<leader>z", function()
+    fzf.spell_suggest()
+  end, {})
 
   -- setup harpoon
   local harpoon = require("harpoon")
@@ -428,6 +386,11 @@ local function setup()
   end)
   vim.keymap.set("n", "<C-i>", function()
     harpoon:list():select(4)
+  end)
+
+  vim.keymap.set("n", "<C-y>", function()
+    local current_path = vim.fn.expand("%:p")
+    vim.fn.setreg("+", current_path)
   end)
 end
 
