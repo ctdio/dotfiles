@@ -44,6 +44,7 @@ setup_cmp_completion = function()
     },
 
     keymap = {
+      preset = "none",
       ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-e>"] = { "hide", "fallback" },
       -- ["<CR>"] = { "accept", "fallback" },

@@ -125,7 +125,7 @@ local function setup()
       api.node.open.replace_tree_buffer,
       opts("Open: In Place")
     )
-    vim.keymap.set("n", "<C-k>", api.node.show_info_popup, opts("Info"))
+    -- vim.keymap.set("n", "<C-k>", api.node.show_info_popup, opts("Info"))
     vim.keymap.set(
       "n",
       "<C-r>",
