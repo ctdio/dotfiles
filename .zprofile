@@ -17,6 +17,8 @@ alias vim-no-sesh='nvim-no-sesh'
 alias dbui='nvim -c "DBUI"'
 alias wtf='~/wtfutil'
 
+alias pr='gh pr view --web'
+
 alias rmswp='find . -name "*.sw*" -ok rm {} +'
 
 alias m='bat'
