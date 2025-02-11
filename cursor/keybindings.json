@@ -1,0 +1,51 @@
+// Place your key bindings in this file to override the defaults
+[
+  // terminal movement
+  {
+    "key": "ctrl+n",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": { "text": "\u001b[B" },
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+p",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": { "text": "\u001b[A" },
+    "when": "terminalFocus"
+  },
+
+  // cancel
+  {
+    "key": "ctrl+c",
+    "command": "closeReferenceSearch",
+    "when": "referenceSearchVisible"
+  },
+  {
+    "key": "ctrl+c",
+    "command": "closeParameterHints",
+    "when": "parameterHintsVisible"
+  },
+  {
+    "key": "ctrl+c",
+    "command": "workbench.action.closeQuickOpen",
+    "when": "inQuickInput"
+  },
+  // file tree
+  {
+    "key": ", n n",
+    "command": "workbench.action.focusFirstEditorGroup",
+    "when": "filesExplorerFocus"
+  }
+
+  // does not work...
+  // {
+  //   "key": "ctrl+n",
+  //   "command": "list.focusDown",
+  //   "when": "focusedView == 'workbench.panel.aichat.view' && listFocus"
+  // },
+  // {
+  //   "key": "ctrl+p",
+  //   "command": "list.focusUp",
+  //   "when": "focusedView == 'workbench.panel.aichat.view' && listFocus"
+  // }
+]
