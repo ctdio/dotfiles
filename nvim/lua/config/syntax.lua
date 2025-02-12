@@ -3,8 +3,10 @@ local function setup()
   require("nvim-treesitter.configs").setup({
     ensure_installed = {
       "astro",
+      "diff",
       "elixir",
       "gitcommit",
+      "git_rebase",
       "gleam",
       "go",
       "gomod",
