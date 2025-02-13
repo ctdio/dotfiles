@@ -1,0 +1,51 @@
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+)
+
+(defvar
+  tap-timeout   150
+  hold-timeout  200
+  chord-timeout 150
+
+  tt $tap-timeout
+  ht $hold-timeout
+  ct $chord-timeout
+)
+
+(defalias
+  f-mod (tap-hold-press $tt $ht f (layer-while-held symbols))
+  j-mod (tap-hold-press $tt $ht j (layer-while-held symbols))
+)
+
+(defchordsv2
+  (s f) (tap-hold $tt $ht (switch
+    ((input-history real s 1)) (multi f s) break
+    ((input-history real f 1)) (multi s f) break
+   ) (layer-while-held symbols)) $ct first-release ()
+
+  (j l) (tap-hold $tt $ht (switch
+    ((input-history real j 1)) (multi l j) break
+    ((input-history real l 1)) (multi j l) break
+   ) (layer-while-held symbols)) $ct first-release ()
+)
+
+(defsrc
+  q    w    e    r    t    y    u    i    o    p
+  a    s    d    f    g    h    j    k    l    ;
+  z    x    c    v    b    n    m    ,    .    /
+)
+
+
+(deflayer default
+  q    w    e    r    t    y    u    i    o    p
+  a    s    d    f    g    h    j    k    l    ;
+  z    x    c    v    b    n    m    ,    .    /
+)
+
+(deflayer symbols
+  _        lbrc      S-lbrc   S-9      S-grv    S-6    S-9    S-rbrc   rbrc    grv
+  min      S-8       eql      S-min    S-5      S-3    _      _        _       _
+  S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
+)
+
