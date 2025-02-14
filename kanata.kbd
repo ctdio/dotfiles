@@ -13,11 +13,6 @@
   ct $chord-timeout
 )
 
-(defalias
-  f-mod (tap-hold-press $tt $ht f (layer-while-held symbols))
-  j-mod (tap-hold-press $tt $ht j (layer-while-held symbols))
-)
-
 (defchordsv2
   (s f) (tap-hold $tt $ht (switch
     ((input-history real s 1)) (multi f s) break
@@ -28,12 +23,23 @@
     ((input-history real j 1)) (multi l j) break
     ((input-history real l 1)) (multi j l) break
    ) (layer-while-held symbols)) $ct first-release ()
+
+  (x v) (tap-hold $tt $ht (switch
+    ((input-history real x 1)) (multi v x) break
+    ((input-history real v 1)) (multi x v) break
+   ) (layer-while-held arrow)) $ct first-release ()
+
+  (w r) (tap-hold $tt $ht (switch
+    ((input-history real r 1)) (multi r w) break
+    ((input-history real w 1)) (multi w r) break
+   ) (layer-while-held number)) $ct first-release ()
 )
 
 (defsrc
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
   z    x    c    v    b    n    m    ,    .    /
+  spc
 )
 
 
@@ -41,11 +47,28 @@
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
   z    x    c    v    b    n    m    ,    .    /
+  spc
 )
 
 (deflayer symbols
-  _        lbrc      S-lbrc   S-9      S-grv    S-6    S-9    S-rbrc   rbrc    grv
+  _        lbrc      S-lbrc   S-9      S-grv    S-6    S-0    S-rbrc   rbrc    grv
   min      S-8       eql      S-min    S-5      S-3    _      _        _       _
   S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
+  spc
 )
 
+
+(deflayer arrow
+  _    _    _    _    _    down    right   _    _    _
+  _    _    _    _    _    left    _       _    _    _
+  _    _    _    _    _    up      _       _    _    _
+  esc
+)
+
+
+(deflayer number
+  _    _    _    _    _    _    7   8   9    _
+  _    _    _    _    _    _    4   5   6    _
+  _    _    _    _    _    _    1   2   3    _
+  0
+)
