@@ -30,11 +30,39 @@
     "command": "workbench.action.closeQuickOpen",
     "when": "inQuickInput"
   },
+  {
+    "key": "ctrl+c",
+    "command": "workbench.action.closeQuickOpen",
+    "when": "inQuickOpen"
+  },
+  {
+    "key": "ctrl+c",
+    "command": "hideCodeActionWidget",
+    "when": "codeActionMenuVisible"
+  },
+
   // file tree
   {
     "key": ", n n",
     "command": "workbench.action.focusFirstEditorGroup",
     "when": "filesExplorerFocus"
+  },
+
+  // harpoon
+  {
+    "key": "ctrl+s",
+    "when": "editorTextFocus && vim.mode == 'Normal'",
+    "command": "vscode-harpoon.addEditor"
+  },
+  {
+    "key": "ctrl+t",
+    "when": "editorTextFocus && vim.mode == 'Normal'",
+    "command": "vscode-harpoon.editorQuickPick"
+  },
+  {
+    "key": "ctrl+shift+t",
+    "when": "editorTextFocus && vim.mode == 'Normal'",
+    "command": "vscode-harpoon.editEditors"
   }
 
   // does not work...
