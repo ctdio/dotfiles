@@ -53,11 +53,19 @@ function link_dotfiles () {
   echo "Linking nvim to ~/.config/nvim"
   ln -nsf ${DOTFILES_DIR}/nvim ~/.config/nvim
 
+  if [[ "$(uname)" = 'Darwin' ]]; then
+    echo "Linking cursor settings to ~/Library/Application Support/Cursor/User"
+    mkdir -p ~/Library/Application\ Support/Cursor/User
+    ln -nsf ${DOTFILES_DIR}/cursor/settings.json ~/Library/Application\ Support/Cursor/User/settings.json
+    ln -nsf ${DOTFILES_DIR}/cursor/keybindings.json ~/Library/Application\ Support/Cursor/User/keybindings.json
+  fi
+
   echo "Linking .sketchybarrc to ~/.config/sketchybar/sketchybarrc"
   ln -nsf ${DOTFILES_DIR}/sketchybar ~/.config/sketchybar
 
   echo "Linking startup.sh to ~/startup.sh"
   ln -nsf ${DOTFILES_DIR}/startup.sh ~/startup.sh
+
 
   local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
   local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
@@ -167,7 +175,7 @@ function install_lua_language_server () {
 }
 
 function install_zig_language_server () {
-  if [[ ! f- ~/.zig/bin/zls ]]; then
+  if [[ ! -f ~/.zig/bin/zls ]]; then
     echo "Installing zig-language-server"
     git clone https://github.com/zigtools/zls ~/.zls
 
@@ -228,11 +236,11 @@ function prepare_neovim () {
   fi
 }
 
+function install_tpm () {
+  if [[ ! -f ~/.tmux/plugins/tpm ]]; then
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  fi
+}
+
 main
 
-function install_tpm () {
-  # install tpm
-  if [[ ! -f ~/.tmux/plugins/tpm ]]; then
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-
-}
