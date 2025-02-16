@@ -19,9 +19,14 @@
     ((input-history real f 1)) (multi s f) break
    ) (layer-while-held symbols)) $ct first-release ()
 
-  (j l) (tap-hold $tt $ht (switch
-    ((input-history real j 1)) (multi l j) break
-    ((input-history real l 1)) (multi j l) break
+  (e r) (tap-hold $tt $ht (switch
+    ((input-history real r 1)) (multi e r) break
+    ((input-history real e 1)) (multi r e) break
+   ) (layer-while-held symbols)) $ct first-release ()
+
+  (u i) (tap-hold $tt $ht (switch
+    ((input-history real u 1)) (multi l y) break
+    ((input-history real y 1)) (multi y l) break
    ) (layer-while-held symbols)) $ct first-release ()
 
   (x v) (tap-hold $tt $ht (switch
@@ -39,7 +44,7 @@
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
   z    x    c    v    b    n    m    ,    .    /
-  spc
+  esc
 )
 
 
@@ -47,15 +52,17 @@
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
   z    x    c    v    b    n    m    ,    .    /
-  spc
+  esc
 )
 
 (deflayer symbols
   _        lbrc      S-lbrc   S-9      S-grv    S-6    S-0    S-rbrc   rbrc    grv
   min      S-8       eql      S-min    S-5      S-3    _      _        _       _
   S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
-  spc
+  esc
 )
+
+
 
 
 (deflayer arrow
