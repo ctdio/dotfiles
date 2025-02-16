@@ -40,6 +40,11 @@
     "command": "hideCodeActionWidget",
     "when": "codeActionMenuVisible"
   },
+  {
+    "key": "ctrl+c",
+    "command": "cancelRenameInput",
+    "when": "renameInputVisible"
+  },
 
   // file tree
   {
