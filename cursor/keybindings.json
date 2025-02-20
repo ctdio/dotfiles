@@ -72,6 +72,16 @@
 
   // does not work...
   // {
+  //   "key": "ctrl+[",
+  //   "command": "-composer.selectPreviousComposer",
+  //   "when": "view == 'workbench.panel.composerViewPane2.view"
+  // },
+  // {
+  //   "key": "ctrl+]",
+  //   "command": "-composer.selectNextComposer",
+  //   "when": "view == 'workbench.panel.composerViewPane2.view"
+  // },
+  // {
   //   "key": "ctrl+n",
   //   "command": "list.focusDown",
   //   "when": "focusedView == 'workbench.panel.aichat.view' && listFocus"

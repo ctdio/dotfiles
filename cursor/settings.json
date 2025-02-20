@@ -9,6 +9,7 @@
   "find-it-faster.findWithinFiles.fuzzRipgrepQuery": true,
   "find-it-faster.general.hideTerminalAfterFail": true,
   "find-it-faster.general.hideTerminalAfterSuccess": true,
+  "find-it-faster.general.batTheme": "Nord",
   "notebook.formatOnSave.enabled": true,
   "window.commandCenter": false,
   "window.customTitleBarVisibility": "never",
@@ -81,9 +82,16 @@
       "commands": ["find-it-faster.findFiles"]
     },
 
+    // search
     {
       "before": ["<leader>", "f"],
       "commands": ["workbench.action.quickTextSearch"]
+    },
+
+    // revert file
+    {
+      "before": ["<leader>", "e"],
+      "commands": ["workbench.action.files.revert"]
     },
 
     // hover
