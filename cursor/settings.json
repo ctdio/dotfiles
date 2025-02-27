@@ -51,7 +51,18 @@
     }
   ],
   "vim.leader": ",",
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["<C-k>"],
+      "commands": ["editor.action.acceptCursorTabSuggestion"]
+    }
+  ],
   "vim.normalModeKeyBindings": [
+    {
+      "before": ["<C-k>"],
+      "commands": ["editor.action.acceptCursorTabSuggestion"]
+    },
+
     // netrw
     {
       "before": ["-"],

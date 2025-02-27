@@ -13,7 +13,7 @@ helmfile 0.165.0
 java openjdk-17
 kubectl 1.30.0
 minikube 1.27.0
-nodejs 20.9.0
+nodejs 20.18.3
 pdm 2.14.0
 pnpm 9.15.3
 poetry 1.4.2
