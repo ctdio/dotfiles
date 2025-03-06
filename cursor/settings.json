@@ -1,6 +1,7 @@
 {
-  "cursor.aipreview.enabled": true,
-  "cursor.composer.cmdPFilePicker2": true,
+  "extensions.experimental.affinity": {
+    "vscodevim.vim": 1
+  },
   "editor.accessibilitySupport": "off",
   "editor.formatOnSave": true,
   "editor.lineNumbers": "relative",
@@ -28,6 +29,7 @@
   "workbench.preferredLightColorTheme": "Kanagawa Lotus",
   "zenMode.showTabs": "none",
   "zenMode.fullScreen": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -63,6 +65,12 @@
     {
       "before": ["<C-k>"],
       "commands": ["editor.action.acceptCursorTabSuggestion"]
+    },
+
+    // notification
+    {
+      "before": [",", "n", "s"],
+      "commands": ["notifications.clearAll"]
     },
 
     // netrw

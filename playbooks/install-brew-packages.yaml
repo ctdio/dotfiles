@@ -5,6 +5,7 @@
     packages:
       - awscli
       - antidote
+      - bat
       - databricks
       - ffmpeg
       - fzy
@@ -23,6 +24,7 @@
       - pyenv
       - readline
       - reattach-to-user-namespace
+      - ripgrep
       - rtx
       - sketchybar
       - sqlite

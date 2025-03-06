@@ -9,6 +9,7 @@
       - "@withgraphite/graphite-cli"
       - "@tailwindcss/language-server"
       - "@olrtg/emmet-language-server"
+      - "@vtsls/language-server"
       - bash-language-server
       - typescript
       - typescript-language-server
