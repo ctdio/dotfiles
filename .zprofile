@@ -31,9 +31,35 @@ alias ungron='gron --ungron'
 
 alias notes='pushd ~/obsidian; nvim; popd'
 
-alias ai="aider --read=~/dotfiles/.aider.rules.md"
+alias ai="aider --read=~/dotfiles/prompts/system.md"
 alias ai-r1="ai --architect --model=fireworks_ai/accounts/fireworks/models/deepseek-r1 --editor-model=claude-3-5-sonnet-20241022"
 alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-20241022"
+
+# vim to claude code
+function vcc () {
+  local uuid=$(uuidgen)
+  local temp_file="/tmp/prompt-${uuid}.md"
+  touch ${temp_file}
+  echo "# System Prompt\n" >> ${temp_file}
+  cat ~/dotfiles/prompts/system.md >> ${temp_file}
+
+  echo "\n" >> ${temp_file}
+  echo "-------------------------------------------------------" >> ${temp_file}
+  echo "\n\n# Instructions\n\n" >> ${temp_file}
+
+  local sha_before_edit=$(sha256sum ${temp_file} | awk '{print $1}')
+  # open file in vim, move to bottom of file, center view on cursor
+  vim ${temp_file} -c "norm G" -c "norm zz" -c "norm i"
+  local sha_after_edit=$(sha256sum ${temp_file} | awk '{print $1}')
+
+  if [[ ${sha_before_edit} == ${sha_after_edit} ]]; then
+    echo "No changes made to prompt. Not sending to Claude."
+  else
+    echo "Wrote prompt to ${temp_file}"
+    # add system prompt to context upon loading
+    claude ${temp_file}
+  fi
+}
 
 # helper functions
 function fcd () {

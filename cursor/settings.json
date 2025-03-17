@@ -14,7 +14,6 @@
   "find-it-faster.general.hideTerminalAfterSuccess": true,
   "find-it-faster.general.batTheme": "Nord",
   "notebook.formatOnSave.enabled": true,
-  "window.commandCenter": false,
   "window.customTitleBarVisibility": "never",
   "window.titleBarStyle": "custom",
   "workbench.colorTheme": "Kanagawa Dragon",
@@ -23,8 +22,6 @@
   // 2 allows for vsnetrw to play nicely
   "workbench.editor.limit.value": 2,
   "workbench.editor.showTabs": "single",
-  "workbench.layoutControl.enabled": false,
-  "workbench.navigationControl.enabled": false,
   "workbench.preferredDarkColorTheme": "Kanagawa Dragon",
   "workbench.preferredLightColorTheme": "Kanagawa Lotus",
   "zenMode.showTabs": "none",
@@ -1565,5 +1562,9 @@
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
       "commands": ["vscode-textobjects.yank.next.inner.node"]
     }
-  ]
+  ],
+  "workbench.layoutControl.enabled": false,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
