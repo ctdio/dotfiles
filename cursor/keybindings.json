@@ -68,8 +68,32 @@
     "key": "ctrl+shift+t",
     "when": "editorTextFocus && vim.mode == 'Normal'",
     "command": "vscode-harpoon.editEditors"
+  },
+  {
+    "key": "cmd+[",
+    "command": "-composer.previousChatTab",
+    "when": "composerFocused"
+  },
+  {
+    "key": "cmd+]",
+    "command": "-composer.nextChatTab",
+    "when": "composerFocused"
+  },
+  {
+    "key": "cmd+shift+[",
+    "command": "composer.previousChatTab",
+    "when": "composerFocused"
+  },
+  {
+    "key": "cmd+shift+]",
+    "command": "composer.nextChatTab",
+    "when": "composerFocused"
+  },
+  {
+    "key": "ctrl+enter",
+    "command": "aipopup.action.modal.generate",
+    "when": "editorTextFocus"
   }
-
   // does not work...
   // {
   //   "key": "ctrl+[",
