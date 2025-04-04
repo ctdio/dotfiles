@@ -93,26 +93,19 @@
     "key": "ctrl+enter",
     "command": "aipopup.action.modal.generate",
     "when": "editorTextFocus"
+  },
+  {
+    "key": "cmd+i",
+    "command": "composerMode.agent"
+  },
+  {
+    "key": "cmd+/",
+    "command": "-composer.openModelToggle",
+    "when": "composerFocused"
+  },
+  {
+    "key": "cmd+/",
+    "command": "composer.cycleModel",
+    "when": "composerFocused"
   }
-  // does not work...
-  // {
-  //   "key": "ctrl+[",
-  //   "command": "-composer.selectPreviousComposer",
-  //   "when": "view == 'workbench.panel.composerViewPane2.view"
-  // },
-  // {
-  //   "key": "ctrl+]",
-  //   "command": "-composer.selectNextComposer",
-  //   "when": "view == 'workbench.panel.composerViewPane2.view"
-  // },
-  // {
-  //   "key": "ctrl+n",
-  //   "command": "list.focusDown",
-  //   "when": "focusedView == 'workbench.panel.aichat.view' && listFocus"
-  // },
-  // {
-  //   "key": "ctrl+p",
-  //   "command": "list.focusUp",
-  //   "when": "focusedView == 'workbench.panel.aichat.view' && listFocus"
-  // }
 ]
