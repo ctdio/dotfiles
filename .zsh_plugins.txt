@@ -2,8 +2,9 @@ ohmyzsh/ohmyzsh path:plugins/git
 ohmyzsh/ohmyzsh path:plugins/command-not-found
 
 zsh-users/zsh-completions
-zsh-users/zsh-syntax-highlighting
-zsh-users/zsh-autosuggestions
-jeffreytse/zsh-vi-mode
 
 romkatv/powerlevel10k
+
+jeffreytse/zsh-vi-mode
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-syntax-highlighting
