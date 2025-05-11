@@ -40,6 +40,7 @@ call plug#begin('~/.vim/plugged')
 
   " theme
   Plug 'rebelot/kanagawa.nvim'
+  Plug 'webhooked/kanso.nvim'
   Plug 'EdenEast/nightfox.nvim'
 
   " writing
@@ -220,7 +221,8 @@ EOF
 " │                       Setup theme                        │
 " ╰──────────────────────────────────────────────────────────╯
 
-colorscheme kanagawa-dragon
+" colorscheme kanagawa-dragon
+colorscheme kanso-zen
 
 " ╭──────────────────────────────────────────────────────────╮
 " │                Configure custom mappings                 │

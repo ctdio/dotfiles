@@ -46,6 +46,22 @@
     "when": "renameInputVisible"
   },
 
+  {
+    "key": "ctrl+c",
+    "command": "closeDirtyDiff",
+    "when": "dirtyDiffVisible"
+  },
+
+  // unbind default ctrl-p ctrl-a. This is added in
+  {
+    "key": "ctrl+p",
+    "command": "-television.ToggleFileFinder"
+  },
+  {
+    "key": "ctrl+a",
+    "command": "-television.ToggleTextFinder"
+  },
+
   // file tree
   {
     "key": ", n n",
@@ -101,11 +117,6 @@
   {
     "key": "cmd+/",
     "command": "-composer.openModelToggle",
-    "when": "composerFocused"
-  },
-  {
-    "key": "cmd+/",
-    "command": "composer.cycleModel",
     "when": "composerFocused"
   }
 ]

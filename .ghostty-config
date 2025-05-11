@@ -10,6 +10,7 @@ macos-titlebar-style = hidden
 
 shell-integration = zsh
 
-quick-terminal-position = top
+quick-terminal-screen = main
+quick-terminal-position = right
 
-keybind = alt+enter=toggle_quick_terminal
+keybind = global:alt+enter=toggle_quick_terminal

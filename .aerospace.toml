@@ -141,3 +141,11 @@ if.app-id="com.openai.chat"
 run= [
   "layout floating",
 ]
+
+
+[[on-window-detected]]
+if.app-id="com.timpler.screenstudio"
+run= [
+  "layout floating",
+]
+

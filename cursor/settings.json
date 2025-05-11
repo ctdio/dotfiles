@@ -1,5 +1,4 @@
 {
-  "cSpell.words": ["inngest", "nuqs", "Toastable"],
   "extensions.experimental.affinity": {
     "vscodevim.vim": 1
   },
@@ -17,7 +16,7 @@
   "notebook.formatOnSave.enabled": true,
   "window.customTitleBarVisibility": "never",
   "window.titleBarStyle": "custom",
-  "workbench.colorTheme": "Kanagawa Dragon",
+  "workbench.colorTheme": "Kanso Zen",
   "workbench.editor.limit.enabled": true,
   "workbench.editor.limit.perEditorGroup": true,
   "workbench.layoutControl.enabled": false,
@@ -51,11 +50,11 @@
   "vim.visualModeKeyBindings": [
     {
       "before": ["."],
-      "commands": ["vscode-textobjects.select.next.outer.function"]
+      "commands": ["vscode-textobjects.select.next.outer.function.start"]
     },
     {
       "before": [","],
-      "commands": ["vscode-textobjects.select.next.inner.function"]
+      "commands": ["vscode-textobjects.select.next.inner.function.start"]
     }
   ],
   "vim.leader": ",",
@@ -70,74 +69,59 @@
       "before": ["<C-k>"],
       "commands": ["editor.action.acceptCursorTabSuggestion"]
     },
-
-    // notification
     {
       "before": [",", "n", "s"],
       "commands": ["notifications.clearAll"]
     },
-
-    // netrw
     {
       "before": ["-"],
       "commands": ["vsnetrw.open"]
     },
-
-    // show all editors
     {
       "before": ["<leader>", "b"],
       "commands": ["workbench.action.quickOpen"]
     },
-
-    // cancel
     {
       "before": ["<C-c>"],
       "commands": ["editor.action.cancelSelectionAnchor"]
     },
-
-    // file tree
-    // toggling is configured in keybindings.json
     {
       "before": [",", "n", "n"],
       "commands": ["workbench.files.action.focusFilesExplorer"],
       "when": "vim.mode === 'Normal' && editorTextFocus"
     },
-
-    // find-it-faster
+    // {
+    //   "before": ["<C-a>"],
+    //   "commands": ["find-it-faster.findWithinFiles"]
+    // },
+    // {
+    //   "before": ["<C-p>"],
+    //   "commands": ["find-it-faster.findFiles"]
+    // },
     {
       "before": ["<C-a>"],
-      "commands": ["find-it-faster.findWithinFiles"]
+      "commands": ["television.ToggleTextFinder"]
     },
     {
       "before": ["<C-p>"],
-      "commands": ["find-it-faster.findFiles"]
+      "commands": ["television.ToggleFileFinder"]
     },
-
-    // search
     {
       "before": ["<leader>", "f"],
       "commands": ["workbench.action.quickTextSearch"]
     },
-
-    // revert file
     {
       "before": ["<leader>", "e"],
       "commands": ["workbench.action.files.revert"]
     },
-
-    // hover
     {
       "before": ["K"],
       "commands": ["editor.action.showHover"]
     },
-
-    // problems
     {
       "before": ["<space>", "q"],
       "commands": ["workbench.actions.view.toggleProblems"]
     },
-
-    // lsp
     {
       "before": ["g", "r"],
       "commands": ["editor.action.goToReferences"]
@@ -158,8 +142,6 @@
       "before": ["[", "d"],
       "commands": ["editor.action.marker.prev"]
     },
-
-    // diffs
     {
       "before": ["]", "x"],
       "commands": ["editor.action.inlineDiffs.nextChange"]
@@ -184,8 +166,6 @@
       "before": ["[", "h"],
       "commands": ["editor.action.dirtydiff.previous"]
     },
-
-    // code actions
     {
       "before": ["<space>", "c", "a"],
       "commands": ["editor.action.codeAction"]
@@ -194,14 +174,10 @@
       "before": ["<space>", "r", "n"],
       "commands": ["editor.action.rename"]
     },
-
-    // formatting
     {
       "before": ["<space>", "f"],
       "commands": ["editor.action.formatDocument"]
     },
-
-    // tabs
     {
       "before": ["g", "t"],
       "commands": ["workbench.action.nextEditorInGroup"]
@@ -210,14 +186,10 @@
       "before": ["g", "T"],
       "commands": ["workbench.action.previousEditorInGroup"]
     },
-
-    // comments
     {
       "before": ["g", "c", "c"],
       "commands": ["toggle-comments.toggleLineComments"]
     },
-
-    // movement
     {
       "before": ["g", "g"],
       "commands": ["cursorTop"]
@@ -234,8 +206,6 @@
       "before": ["]", "]"],
       "commands": ["cursorBottom"]
     },
-
-    // window movement
     {
       "before": ["<C-w>", "h"],
       "commands": ["workbench.action.focusLeftGroup"]
@@ -276,27 +246,18 @@
       "before": ["<C-w>", "s"],
       "commands": ["workbench.action.splitEditorDown"]
     },
-
-    // composer/chat
     {
       "before": [",", "c"],
       "commands": ["workbench.panel.composerViewPane2.view.focus"]
     },
-
-    // copy file path
     {
       "before": ["y", "<C-g>"],
       "commands": ["copyRelativeFilePath"]
     },
-
-    // add files to composer
     {
       "before": [",", "a"],
       "commands": ["composer.addfilestocomposer"]
     },
-
-    // harpoon
-    // NOTE: some of these are configured in keybindings.json
     {
       "before": ["<C-h>"],
       "commands": ["vscode-harpoon.gotoEditor1"]
@@ -313,1269 +274,1278 @@
       "before": ["<C-i>"],
       "commands": ["vscode-harpoon.gotoEditor4"]
     },
-
-    // text objects
     {
       "before": ["v", "a", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.function"]
+      "commands": ["vscode-textobjects.select.next.outer.function.start"]
     },
     {
       "before": ["v", "i", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.function"]
+      "commands": ["vscode-textobjects.select.next.inner.function.start"]
     },
     {
       "before": ["v", "a", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.loop"]
+      "commands": ["vscode-textobjects.select.next.outer.loop.start"]
     },
     {
       "before": ["v", "i", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.loop"]
+      "commands": ["vscode-textobjects.select.next.inner.loop.start"]
     },
     {
       "before": ["v", "a", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.conditional"]
+      "commands": ["vscode-textobjects.select.next.outer.conditional.start"]
     },
     {
       "before": ["v", "i", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.conditional"]
+      "commands": ["vscode-textobjects.select.next.inner.conditional.start"]
     },
     {
       "before": ["v", "a", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.rhs"]
+      "commands": ["vscode-textobjects.select.next.outer.rhs.start"]
     },
     {
       "before": ["v", "i", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.rhs"]
+      "commands": ["vscode-textobjects.select.next.inner.rhs.start"]
     },
     {
       "before": ["v", "a", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.lhs"]
+      "commands": ["vscode-textobjects.select.next.outer.lhs.start"]
     },
     {
       "before": ["v", "i", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.lhs"]
+      "commands": ["vscode-textobjects.select.next.inner.lhs.start"]
     },
     {
       "before": ["v", "a", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.variable"]
+      "commands": ["vscode-textobjects.select.next.outer.variable.start"]
     },
     {
       "before": ["v", "a", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.string"]
+      "commands": ["vscode-textobjects.select.next.outer.string.start"]
     },
     {
       "before": ["v", "i", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.string"]
+      "commands": ["vscode-textobjects.select.next.inner.string.start"]
     },
     {
       "before": ["v", "a", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.class"]
+      "commands": ["vscode-textobjects.select.next.outer.class.start"]
     },
     {
       "before": ["v", "i", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.class"]
+      "commands": ["vscode-textobjects.select.next.inner.class.start"]
     },
     {
       "before": ["v", "a", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.parameters"]
+      "commands": ["vscode-textobjects.select.next.outer.parameters.start"]
     },
     {
       "before": ["v", "i", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.parameters"]
+      "commands": ["vscode-textobjects.select.next.inner.parameters.start"]
     },
     {
       "before": ["v", "a", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.object"]
+      "commands": ["vscode-textobjects.select.next.outer.object.start"]
     },
     {
       "before": ["v", "i", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.object"]
+      "commands": ["vscode-textobjects.select.next.inner.object.start"]
     },
     {
       "before": ["v", "a", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.call"]
+      "commands": ["vscode-textobjects.select.next.outer.call.start"]
     },
     {
       "before": ["v", "i", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.call"]
+      "commands": ["vscode-textobjects.select.next.inner.call.start"]
     },
     {
       "before": ["v", "a", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.type"]
+      "commands": ["vscode-textobjects.select.next.outer.type.start"]
     },
     {
       "before": ["v", "i", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.type"]
+      "commands": ["vscode-textobjects.select.next.inner.type.start"]
     },
     {
       "before": ["v", "a", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.call"]
+      "commands": ["vscode-textobjects.select.next.outer.call.start"]
     },
     {
       "before": ["v", "i", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.call"]
+      "commands": ["vscode-textobjects.select.next.inner.call.start"]
     },
     {
       "before": ["v", "a", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.function"]
+      "commands": ["vscode-textobjects.select.previous.outer.function.start"]
     },
     {
       "before": ["v", "i", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.function"]
+      "commands": ["vscode-textobjects.select.previous.inner.function.start"]
     },
     {
       "before": ["v", "a", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.loop"]
+      "commands": ["vscode-textobjects.select.previous.outer.loop.start"]
     },
     {
       "before": ["v", "i", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.loop"]
+      "commands": ["vscode-textobjects.select.previous.inner.loop.start"]
     },
     {
       "before": ["v", "a", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.conditional"]
+      "commands": ["vscode-textobjects.select.previous.outer.conditional.start"]
     },
     {
       "before": ["v", "i", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.conditional"]
+      "commands": ["vscode-textobjects.select.previous.inner.conditional.start"]
     },
     {
       "before": ["v", "a", "V"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.variable"]
+      "commands": ["vscode-textobjects.select.previous.outer.variable.start"]
     },
     {
       "before": ["v", "a", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.string"]
+      "commands": ["vscode-textobjects.select.previous.outer.string.start"]
     },
     {
       "before": ["v", "i", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.string"]
+      "commands": ["vscode-textobjects.select.previous.inner.string.start"]
     },
     {
       "before": ["v", "a", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.class"]
+      "commands": ["vscode-textobjects.select.previous.outer.class.start"]
     },
     {
       "before": ["v", "i", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.class"]
+      "commands": ["vscode-textobjects.select.previous.inner.class.start"]
     },
     {
       "before": ["v", "a", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.select.previous.outer.parameters.start"]
     },
     {
       "before": ["v", "i", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.parameters"]
+      "commands": ["vscode-textobjects.select.previous.inner.parameters.start"]
     },
     {
       "before": ["v", "a", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.object"]
+      "commands": ["vscode-textobjects.select.previous.outer.object.start"]
     },
     {
       "before": ["v", "i", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.object"]
+      "commands": ["vscode-textobjects.select.previous.inner.object.start"]
     },
     {
       "before": ["v", "a", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.call"]
+      "commands": ["vscode-textobjects.select.previous.outer.call.start"]
     },
     {
       "before": ["v", "i", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.call"]
+      "commands": ["vscode-textobjects.select.previous.inner.call.start"]
     },
     {
       "before": ["v", "a", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.type"]
+      "commands": ["vscode-textobjects.select.previous.outer.type.start"]
     },
     {
       "before": ["v", "i", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.type"]
+      "commands": ["vscode-textobjects.select.previous.inner.type.start"]
     },
     {
       "before": ["v", "a", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.call"]
+      "commands": ["vscode-textobjects.select.previous.outer.call.start"]
     },
     {
       "before": ["v", "i", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.call"]
+      "commands": ["vscode-textobjects.select.previous.inner.call.start"]
     },
     {
       "before": ["[", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.function"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.function.start"]
     },
     {
       "before": ["[", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.function"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.function.start"]
     },
     {
       "before": ["[", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.loop"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.loop.start"]
     },
     {
       "before": ["[", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.loop"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.loop.start"]
     },
     {
       "before": ["[", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.conditional"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.conditional.start"]
     },
     {
       "before": ["[", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.conditional"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.conditional.start"]
     },
     {
       "before": ["[", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.variable"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.variable.start"]
     },
     {
       "before": ["[", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.string"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.string.start"]
     },
     {
       "before": ["[", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.string"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.string.start"]
     },
     {
       "before": ["[", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.class"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.class.start"]
     },
     {
       "before": ["[", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.class"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.class.start"]
     },
     {
       "before": ["[", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.parameters.start"]
     },
     {
       "before": ["[", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.parameters"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.parameters.start"]
     },
     {
       "before": ["[", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.object"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.object.start"]
     },
     {
       "before": ["[", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.object"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.object.start"]
     },
     {
       "before": ["[", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.call"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.call.start"]
     },
     {
       "before": ["[", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.call"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.call.start"]
     },
     {
       "before": ["[", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.type"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.type.start"]
     },
     {
       "before": ["[", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.type"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.type.start"]
     },
     {
       "before": ["[", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.call"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.call.start"]
     },
     {
       "before": ["[", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.call"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.call.start"]
     },
     {
       "before": ["]", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.function"]
+      "commands": ["vscode-textobjects.goTo.next.outer.function.start"]
     },
     {
       "before": ["]", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.function"]
+      "commands": ["vscode-textobjects.goTo.next.inner.function.start"]
     },
     {
       "before": ["]", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.loop"]
+      "commands": ["vscode-textobjects.goTo.next.outer.loop.start"]
     },
     {
       "before": ["]", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.loop"]
+      "commands": ["vscode-textobjects.goTo.next.inner.loop.start"]
     },
     {
       "before": ["]", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.conditional"]
+      "commands": ["vscode-textobjects.goTo.next.outer.conditional.start"]
     },
     {
       "before": ["]", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.conditional"]
+      "commands": ["vscode-textobjects.goTo.next.inner.conditional.start"]
     },
     {
       "before": ["]", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.variable"]
+      "commands": ["vscode-textobjects.goTo.next.outer.variable.start"]
     },
     {
       "before": ["]", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.string"]
+      "commands": ["vscode-textobjects.goTo.next.outer.string.start"]
     },
     {
       "before": ["]", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.string"]
+      "commands": ["vscode-textobjects.goTo.next.inner.string.start"]
     },
     {
       "before": ["]", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.class"]
+      "commands": ["vscode-textobjects.goTo.next.outer.class.start"]
     },
     {
       "before": ["]", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.class"]
+      "commands": ["vscode-textobjects.goTo.next.inner.class.start"]
     },
     {
       "before": ["]", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.parameters"]
+      "commands": ["vscode-textobjects.goTo.next.outer.parameters.start"]
     },
     {
       "before": ["]", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.parameters"]
+      "commands": ["vscode-textobjects.goTo.next.inner.parameters.start"]
     },
     {
       "before": ["]", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.object"]
+      "commands": ["vscode-textobjects.goTo.next.outer.object.start"]
     },
     {
       "before": ["]", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.object"]
+      "commands": ["vscode-textobjects.goTo.next.inner.object.start"]
     },
     {
       "before": ["]", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.call"]
+      "commands": ["vscode-textobjects.goTo.next.outer.call.start"]
     },
     {
       "before": ["]", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.call"]
+      "commands": ["vscode-textobjects.goTo.next.inner.call.start"]
     },
     {
       "before": ["]", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.type"]
+      "commands": ["vscode-textobjects.goTo.next.outer.type.start"]
     },
     {
       "before": ["]", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.type"]
+      "commands": ["vscode-textobjects.goTo.next.inner.type.start"]
     },
     {
       "before": ["]", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.call"]
+      "commands": ["vscode-textobjects.goTo.next.outer.call.start"]
     },
     {
       "before": ["]", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.call"]
+      "commands": ["vscode-textobjects.goTo.next.inner.call.start"]
     },
     {
       "before": ["d", "a", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.function"]
+      "commands": ["vscode-textobjects.delete.next.outer.function.start"]
     },
     {
       "before": ["d", "i", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.function"]
+      "commands": ["vscode-textobjects.delete.next.inner.function.start"]
     },
     {
       "before": ["d", "a", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.loop"]
+      "commands": ["vscode-textobjects.delete.next.outer.loop.start"]
     },
     {
       "before": ["d", "i", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.loop"]
+      "commands": ["vscode-textobjects.delete.next.inner.loop.start"]
     },
     {
       "before": ["d", "a", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.conditional"]
+      "commands": ["vscode-textobjects.delete.next.outer.conditional.start"]
     },
     {
       "before": ["d", "i", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.conditional"]
+      "commands": ["vscode-textobjects.delete.next.inner.conditional.start"]
     },
     {
       "before": ["d", "a", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.rhs"]
+      "commands": ["vscode-textobjects.delete.next.outer.rhs.start"]
     },
     {
       "before": ["d", "i", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.rhs"]
+      "commands": ["vscode-textobjects.delete.next.inner.rhs.start"]
     },
     {
       "before": ["d", "a", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.lhs"]
+      "commands": ["vscode-textobjects.delete.next.outer.lhs.start"]
     },
     {
       "before": ["d", "i", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.lhs"]
+      "commands": ["vscode-textobjects.delete.next.inner.lhs.start"]
     },
     {
       "before": ["d", "a", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.variable"]
+      "commands": ["vscode-textobjects.delete.next.outer.variable.start"]
     },
     {
       "before": ["d", "a", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.string"]
+      "commands": ["vscode-textobjects.delete.next.outer.string.start"]
     },
     {
       "before": ["d", "i", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.string"]
+      "commands": ["vscode-textobjects.delete.next.inner.string.start"]
     },
     {
       "before": ["d", "a", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.class"]
+      "commands": ["vscode-textobjects.delete.next.outer.class.start"]
     },
     {
       "before": ["d", "i", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.class"]
+      "commands": ["vscode-textobjects.delete.next.inner.class.start"]
     },
     {
       "before": ["d", "a", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.parameters"]
+      "commands": ["vscode-textobjects.delete.next.outer.parameters.start"]
     },
     {
       "before": ["d", "i", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.parameters"]
+      "commands": ["vscode-textobjects.delete.next.inner.parameters.start"]
     },
     {
       "before": ["d", "a", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.object"]
+      "commands": ["vscode-textobjects.delete.next.outer.object.start"]
     },
     {
       "before": ["d", "i", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.object"]
+      "commands": ["vscode-textobjects.delete.next.inner.object.start"]
     },
     {
       "before": ["d", "a", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.call"]
+      "commands": ["vscode-textobjects.delete.next.outer.call.start"]
     },
     {
       "before": ["d", "i", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.call"]
+      "commands": ["vscode-textobjects.delete.next.inner.call.start"]
     },
     {
       "before": ["d", "a", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.type"]
+      "commands": ["vscode-textobjects.delete.next.outer.type.start"]
     },
     {
       "before": ["d", "i", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.type"]
+      "commands": ["vscode-textobjects.delete.next.inner.type.start"]
     },
     {
       "before": ["d", "a", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.call"]
+      "commands": ["vscode-textobjects.delete.next.outer.call.start"]
     },
     {
       "before": ["d", "i", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.inner.call"]
+      "commands": ["vscode-textobjects.delete.next.inner.call.start"]
     },
     {
       "before": ["d", "a", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.function"]
+      "commands": ["vscode-textobjects.delete.previous.outer.function.start"]
     },
     {
       "before": ["d", "i", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.function"]
+      "commands": ["vscode-textobjects.delete.previous.inner.function.start"]
     },
     {
       "before": ["d", "a", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.loop"]
+      "commands": ["vscode-textobjects.delete.previous.outer.loop.start"]
     },
     {
       "before": ["d", "i", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.loop"]
+      "commands": ["vscode-textobjects.delete.previous.inner.loop.start"]
     },
     {
       "before": ["d", "a", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.conditional"]
+      "commands": ["vscode-textobjects.delete.previous.outer.conditional.start"]
     },
     {
       "before": ["d", "i", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.conditional"]
+      "commands": ["vscode-textobjects.delete.previous.inner.conditional.start"]
     },
     {
       "before": ["d", "a", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.rhs"]
+      "commands": ["vscode-textobjects.delete.previous.outer.rhs.start"]
     },
     {
       "before": ["d", "i", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.rhs"]
+      "commands": ["vscode-textobjects.delete.previous.inner.rhs.start"]
     },
     {
       "before": ["d", "a", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.lhs"]
+      "commands": ["vscode-textobjects.delete.previous.outer.lhs.start"]
     },
     {
       "before": ["d", "i", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.lhs"]
+      "commands": ["vscode-textobjects.delete.previous.inner.lhs.start"]
     },
     {
       "before": ["d", "a", "V"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.variable"]
+      "commands": ["vscode-textobjects.delete.previous.outer.variable.start"]
     },
     {
       "before": ["d", "a", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.string"]
+      "commands": ["vscode-textobjects.delete.previous.outer.string.start"]
     },
     {
       "before": ["d", "i", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.string"]
+      "commands": ["vscode-textobjects.delete.previous.inner.string.start"]
     },
     {
       "before": ["d", "a", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.class"]
+      "commands": ["vscode-textobjects.delete.previous.outer.class.start"]
     },
     {
       "before": ["d", "i", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.class"]
+      "commands": ["vscode-textobjects.delete.previous.inner.class.start"]
     },
     {
       "before": ["d", "a", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.delete.previous.outer.parameters.start"]
     },
     {
       "before": ["d", "i", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.parameters"]
+      "commands": ["vscode-textobjects.delete.previous.inner.parameters.start"]
     },
     {
       "before": ["d", "a", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.object"]
+      "commands": ["vscode-textobjects.delete.previous.outer.object.start"]
     },
     {
       "before": ["d", "i", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.object"]
+      "commands": ["vscode-textobjects.delete.previous.inner.object.start"]
     },
     {
       "before": ["d", "a", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.call"]
+      "commands": ["vscode-textobjects.delete.previous.outer.call.start"]
     },
     {
       "before": ["d", "i", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.call"]
+      "commands": ["vscode-textobjects.delete.previous.inner.call.start"]
     },
     {
       "before": ["d", "a", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.type"]
+      "commands": ["vscode-textobjects.delete.previous.outer.type.start"]
     },
     {
       "before": ["d", "i", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.type"]
+      "commands": ["vscode-textobjects.delete.previous.inner.type.start"]
     },
     {
       "before": ["d", "a", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.outer.call"]
+      "commands": ["vscode-textobjects.delete.previous.outer.call.start"]
     },
     {
       "before": ["d", "i", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.call"]
+      "commands": ["vscode-textobjects.delete.previous.inner.call.start"]
     },
     {
       "before": ["y", "a", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.function"]
+      "commands": ["vscode-textobjects.yank.next.outer.function.start"]
     },
     {
       "before": ["y", "i", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.function"]
+      "commands": ["vscode-textobjects.yank.next.inner.function.start"]
     },
     {
       "before": ["y", "a", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.loop"]
+      "commands": ["vscode-textobjects.yank.next.outer.loop.start"]
     },
     {
       "before": ["y", "i", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.loop"]
+      "commands": ["vscode-textobjects.yank.next.inner.loop.start"]
     },
     {
       "before": ["y", "a", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.conditional"]
+      "commands": ["vscode-textobjects.yank.next.outer.conditional.start"]
     },
     {
       "before": ["y", "i", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.conditional"]
+      "commands": ["vscode-textobjects.yank.next.inner.conditional.start"]
     },
     {
       "before": ["y", "a", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.rhs"]
+      "commands": ["vscode-textobjects.yank.next.outer.rhs.start"]
     },
     {
       "before": ["y", "i", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.rhs"]
+      "commands": ["vscode-textobjects.yank.next.inner.rhs.start"]
     },
     {
       "before": ["y", "a", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.lhs"]
+      "commands": ["vscode-textobjects.yank.next.outer.lhs.start"]
     },
     {
       "before": ["y", "i", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.lhs"]
+      "commands": ["vscode-textobjects.yank.next.inner.lhs.start"]
     },
     {
       "before": ["y", "a", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.variable"]
+      "commands": ["vscode-textobjects.yank.next.outer.variable.start"]
     },
     {
       "before": ["y", "a", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.string"]
+      "commands": ["vscode-textobjects.yank.next.outer.string.start"]
     },
     {
       "before": ["y", "i", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.string"]
+      "commands": ["vscode-textobjects.yank.next.inner.string.start"]
     },
     {
       "before": ["y", "a", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.class"]
+      "commands": ["vscode-textobjects.yank.next.outer.class.start"]
     },
     {
       "before": ["y", "i", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.class"]
+      "commands": ["vscode-textobjects.yank.next.inner.class.start"]
     },
     {
       "before": ["y", "a", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.parameters"]
+      "commands": ["vscode-textobjects.yank.next.outer.parameters.start"]
     },
     {
       "before": ["y", "i", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.parameters"]
+      "commands": ["vscode-textobjects.yank.next.inner.parameters.start"]
     },
     {
       "before": ["y", "a", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.object"]
+      "commands": ["vscode-textobjects.yank.next.outer.object.start"]
     },
     {
       "before": ["y", "i", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.object"]
+      "commands": ["vscode-textobjects.yank.next.inner.object.start"]
     },
     {
       "before": ["y", "a", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.call"]
+      "commands": ["vscode-textobjects.yank.next.outer.call.start"]
     },
     {
       "before": ["y", "i", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.call"]
+      "commands": ["vscode-textobjects.yank.next.inner.call.start"]
     },
     {
       "before": ["y", "a", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.type"]
+      "commands": ["vscode-textobjects.yank.next.outer.type.start"]
     },
     {
       "before": ["y", "i", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.type"]
+      "commands": ["vscode-textobjects.yank.next.inner.type.start"]
     },
     {
       "before": ["y", "a", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.call"]
+      "commands": ["vscode-textobjects.yank.next.outer.call.start"]
     },
     {
       "before": ["y", "i", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.call"]
+      "commands": ["vscode-textobjects.yank.next.inner.call.start"]
     },
     {
       "before": ["y", "a", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.function"]
+      "commands": ["vscode-textobjects.yank.previous.outer.function.start"]
     },
     {
       "before": ["y", "i", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.function"]
+      "commands": ["vscode-textobjects.yank.previous.inner.function.start"]
     },
     {
       "before": ["y", "a", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.loop"]
+      "commands": ["vscode-textobjects.yank.previous.outer.loop.start"]
     },
     {
       "before": ["y", "i", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.loop"]
+      "commands": ["vscode-textobjects.yank.previous.inner.loop.start"]
     },
     {
       "before": ["y", "a", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.conditional"]
+      "commands": ["vscode-textobjects.yank.previous.outer.conditional.start"]
     },
     {
       "before": ["y", "i", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.conditional"]
+      "commands": ["vscode-textobjects.yank.previous.inner.conditional.start"]
     },
     {
       "before": ["y", "a", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.rhs"]
+      "commands": ["vscode-textobjects.yank.previous.outer.rhs.start"]
     },
     {
       "before": ["y", "i", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.rhs"]
+      "commands": ["vscode-textobjects.yank.previous.inner.rhs.start"]
     },
     {
       "before": ["y", "a", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.lhs"]
+      "commands": ["vscode-textobjects.yank.previous.outer.lhs.start"]
     },
     {
       "before": ["y", "i", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.lhs"]
+      "commands": ["vscode-textobjects.yank.previous.inner.lhs.start"]
     },
     {
       "before": ["y", "a", "V"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.variable"]
+      "commands": ["vscode-textobjects.yank.previous.outer.variable.start"]
     },
     {
       "before": ["y", "a", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.string"]
+      "commands": ["vscode-textobjects.yank.previous.outer.string.start"]
     },
     {
       "before": ["y", "i", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.string"]
+      "commands": ["vscode-textobjects.yank.previous.inner.string.start"]
     },
     {
       "before": ["y", "a", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.class"]
+      "commands": ["vscode-textobjects.yank.previous.outer.class.start"]
     },
     {
       "before": ["y", "i", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.class"]
+      "commands": ["vscode-textobjects.yank.previous.inner.class.start"]
     },
     {
       "before": ["y", "a", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.yank.previous.outer.parameters.start"]
     },
     {
       "before": ["y", "i", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.parameters"]
+      "commands": ["vscode-textobjects.yank.previous.inner.parameters.start"]
     },
     {
       "before": ["y", "a", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.object"]
+      "commands": ["vscode-textobjects.yank.previous.outer.object.start"]
     },
     {
       "before": ["y", "i", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.object"]
+      "commands": ["vscode-textobjects.yank.previous.inner.object.start"]
     },
     {
       "before": ["y", "a", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.call"]
+      "commands": ["vscode-textobjects.yank.previous.outer.call.start"]
     },
     {
       "before": ["y", "i", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.call"]
+      "commands": ["vscode-textobjects.yank.previous.inner.call.start"]
     },
     {
       "before": ["y", "a", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.type"]
+      "commands": ["vscode-textobjects.yank.previous.outer.type.start"]
     },
     {
       "before": ["y", "i", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.type"]
+      "commands": ["vscode-textobjects.yank.previous.inner.type.start"]
     },
     {
       "before": ["y", "a", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.outer.call"]
+      "commands": ["vscode-textobjects.yank.previous.outer.call.start"]
     },
     {
       "before": ["y", "i", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.previous.inner.call"]
+      "commands": ["vscode-textobjects.yank.previous.inner.call.start"]
     },
     {
       "before": ["c", "a", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.function"]
+      "commands": ["vscode-textobjects.change.next.outer.function.start"]
     },
     {
       "before": ["c", "i", "f"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.function"]
+      "commands": ["vscode-textobjects.change.next.inner.function.start"]
     },
     {
       "before": ["c", "a", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.loop"]
+      "commands": ["vscode-textobjects.change.next.outer.loop.start"]
     },
     {
       "before": ["c", "i", "l"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.loop"]
+      "commands": ["vscode-textobjects.change.next.inner.loop.start"]
     },
     {
       "before": ["c", "a", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.conditional"]
+      "commands": ["vscode-textobjects.change.next.outer.conditional.start"]
     },
     {
       "before": ["c", "i", "i"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.conditional"]
+      "commands": ["vscode-textobjects.change.next.inner.conditional.start"]
     },
     {
       "before": ["c", "a", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.rhs"]
+      "commands": ["vscode-textobjects.change.next.outer.rhs.start"]
     },
     {
       "before": ["c", "i", "r"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.rhs"]
+      "commands": ["vscode-textobjects.change.next.inner.rhs.start"]
     },
     {
       "before": ["c", "a", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.lhs"]
+      "commands": ["vscode-textobjects.change.next.outer.lhs.start"]
     },
     {
       "before": ["c", "i", "h"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.lhs"]
+      "commands": ["vscode-textobjects.change.next.inner.lhs.start"]
     },
     {
       "before": ["c", "a", "v"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.variable"]
+      "commands": ["vscode-textobjects.change.next.outer.variable.start"]
     },
     {
       "before": ["c", "a", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.string"]
+      "commands": ["vscode-textobjects.change.next.outer.string.start"]
     },
     {
       "before": ["c", "i", "s"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.string"]
+      "commands": ["vscode-textobjects.change.next.inner.string.start"]
     },
     {
       "before": ["c", "a", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.class"]
+      "commands": ["vscode-textobjects.change.next.outer.class.start"]
     },
     {
       "before": ["c", "i", "k"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.class"]
+      "commands": ["vscode-textobjects.change.next.inner.class.start"]
     },
     {
       "before": ["c", "a", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.parameters"]
+      "commands": ["vscode-textobjects.change.next.outer.parameters.start"]
     },
     {
       "before": ["c", "i", "a"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.parameters"]
+      "commands": ["vscode-textobjects.change.next.inner.parameters.start"]
     },
     {
       "before": ["c", "a", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.object"]
+      "commands": ["vscode-textobjects.change.next.outer.object.start"]
     },
     {
       "before": ["c", "i", "o"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.object"]
+      "commands": ["vscode-textobjects.change.next.inner.object.start"]
     },
     {
       "before": ["c", "a", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.call"]
+      "commands": ["vscode-textobjects.change.next.outer.call.start"]
     },
     {
       "before": ["c", "i", "m"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.call"]
+      "commands": ["vscode-textobjects.change.next.inner.call.start"]
     },
     {
       "before": ["c", "a", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.type"]
+      "commands": ["vscode-textobjects.change.next.outer.type.start"]
     },
     {
       "before": ["c", "i", "t"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.type"]
+      "commands": ["vscode-textobjects.change.next.inner.type.start"]
     },
     {
       "before": ["c", "a", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.call"]
+      "commands": ["vscode-textobjects.change.next.outer.call.start"]
     },
     {
       "before": ["c", "i", "c"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.inner.call"]
+      "commands": ["vscode-textobjects.change.next.inner.call.start"]
     },
     {
       "before": ["c", "a", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.function"]
+      "commands": ["vscode-textobjects.change.previous.outer.function.start"]
     },
     {
       "before": ["c", "i", "F"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.function"]
+      "commands": ["vscode-textobjects.change.previous.inner.function.start"]
     },
     {
       "before": ["c", "a", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.loop"]
+      "commands": ["vscode-textobjects.change.previous.outer.loop.start"]
     },
     {
       "before": ["c", "i", "L"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.loop"]
+      "commands": ["vscode-textobjects.change.previous.inner.loop.start"]
     },
     {
       "before": ["c", "a", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.conditional"]
+      "commands": ["vscode-textobjects.change.previous.outer.conditional.start"]
     },
     {
       "before": ["c", "i", "I"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.conditional"]
+      "commands": ["vscode-textobjects.change.previous.inner.conditional.start"]
     },
     {
       "before": ["c", "a", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.rhs"]
+      "commands": ["vscode-textobjects.change.previous.outer.rhs.start"]
     },
     {
       "before": ["c", "i", "R"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.rhs"]
+      "commands": ["vscode-textobjects.change.previous.inner.rhs.start"]
     },
     {
       "before": ["c", "a", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.lhs"]
+      "commands": ["vscode-textobjects.change.previous.outer.lhs.start"]
     },
     {
       "before": ["c", "i", "H"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.lhs"]
+      "commands": ["vscode-textobjects.change.previous.inner.lhs.start"]
     },
     {
       "before": ["c", "a", "V"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.variable"]
+      "commands": ["vscode-textobjects.change.previous.outer.variable.start"]
     },
     {
       "before": ["c", "a", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.string"]
+      "commands": ["vscode-textobjects.change.previous.outer.string.start"]
     },
     {
       "before": ["c", "i", "S"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.string"]
+      "commands": ["vscode-textobjects.change.previous.inner.string.start"]
     },
     {
       "before": ["c", "a", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.class"]
+      "commands": ["vscode-textobjects.change.previous.outer.class.start"]
     },
     {
       "before": ["c", "i", "K"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.class"]
+      "commands": ["vscode-textobjects.change.previous.inner.class.start"]
     },
     {
       "before": ["c", "a", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.change.previous.outer.parameters.start"]
     },
     {
       "before": ["c", "i", "A"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.parameters"]
+      "commands": ["vscode-textobjects.change.previous.inner.parameters.start"]
     },
     {
       "before": ["c", "a", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.object"]
+      "commands": ["vscode-textobjects.change.previous.outer.object.start"]
     },
     {
       "before": ["c", "i", "O"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.object"]
+      "commands": ["vscode-textobjects.change.previous.inner.object.start"]
     },
     {
       "before": ["c", "a", "P"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.parameters"]
+      "commands": ["vscode-textobjects.change.previous.outer.parameters.start"]
     },
     {
       "before": ["c", "i", "M"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.call"]
+      "commands": ["vscode-textobjects.change.previous.inner.call.start"]
     },
     {
       "before": ["c", "a", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.type"]
+      "commands": ["vscode-textobjects.change.previous.outer.type.start"]
     },
     {
       "before": ["c", "i", "T"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.type"]
+      "commands": ["vscode-textobjects.change.previous.inner.type.start"]
     },
     {
       "before": ["c", "a", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.outer.call"]
+      "commands": ["vscode-textobjects.change.previous.outer.call.start"]
     },
     {
       "before": ["c", "i", "C"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.call"]
+      "commands": ["vscode-textobjects.change.previous.inner.call.start"]
     },
     {
       "before": ["v", "a", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.outer.node"]
+      "commands": ["vscode-textobjects.select.next.outer.node.start"]
     },
     {
       "before": ["v", "i", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.next.inner.node"]
+      "commands": ["vscode-textobjects.select.next.inner.node.start"]
     },
     {
       "before": ["v", "a", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.outer.node"]
+      "commands": ["vscode-textobjects.select.previous.outer.node.start"]
     },
     {
       "before": ["v", "i", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.select.previous.inner.node"]
+      "commands": ["vscode-textobjects.select.previous.inner.node.start"]
     },
     {
       "before": ["[", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.outer.node"]
+      "commands": ["vscode-textobjects.goTo.next.outer.node.start"]
     },
     {
       "before": ["[", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.next.inner.node"]
+      "commands": ["vscode-textobjects.goTo.next.inner.node.start"]
     },
     {
       "before": ["]", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.outer.node"]
+      "commands": ["vscode-textobjects.goTo.previous.outer.node.start"]
     },
     {
       "before": ["]", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.goTo.previous.inner.node"]
+      "commands": ["vscode-textobjects.goTo.previous.inner.node.start"]
     },
     {
       "before": ["c", "a", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.next.outer.node"]
+      "commands": ["vscode-textobjects.change.next.outer.node.start"]
     },
     {
       "before": ["c", "i", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.change.previous.inner.node"]
+      "commands": ["vscode-textobjects.change.previous.inner.node.start"]
     },
     {
       "before": ["d", "a", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.next.outer.node"]
+      "commands": ["vscode-textobjects.delete.next.outer.node.start"]
     },
     {
       "before": ["d", "i", "N"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.delete.previous.inner.node"]
+      "commands": ["vscode-textobjects.delete.previous.inner.node.start"]
     },
     {
       "before": ["y", "a", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.outer.node"]
+      "commands": ["vscode-textobjects.yank.next.outer.node.start"]
     },
     {
       "before": ["y", "i", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
-      "commands": ["vscode-textobjects.yank.next.inner.node"]
+      "commands": ["vscode-textobjects.yank.next.inner.node.start"]
     }
   ],
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "cursor.composer.shouldAllowCustomModes": true
+  "cursor.composer.shouldAllowCustomModes": true,
+  "cSpell.userWords": [
+    "austinkelleher",
+    "ctdio",
+    "inngest",
+    "lexorank",
+    "lpbonomi",
+    "nuqs",
+    "overscan",
+    "Toastable"
+  ],
+  "cursor-retrieval.canAttemptGithubLogin": false
 }

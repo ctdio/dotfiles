@@ -32,9 +32,12 @@
 [includeIf "gitdir:~/projects/private/opine/"]
   path = ~/projects/private/opine/.gitconfig
 
+[core.excludesfile]
+	path = ~/projects/private/opine/.notes
+
 
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
-	clean = git-lfs clean -- %f
+  clean = git-lfs clean -- %f
