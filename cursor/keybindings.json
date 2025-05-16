@@ -45,20 +45,19 @@
     "command": "cancelRenameInput",
     "when": "renameInputVisible"
   },
-
   {
     "key": "ctrl+c",
     "command": "closeDirtyDiff",
     "when": "dirtyDiffVisible"
   },
 
-  // unbind default ctrl-p ctrl-a. This is added in
+  // unbind default televison keybinds
   {
     "key": "ctrl+p",
     "command": "-television.ToggleFileFinder"
   },
   {
-    "key": "ctrl+a",
+    "key": "cmd+shift+u",
     "command": "-television.ToggleTextFinder"
   },
 
@@ -67,6 +66,13 @@
     "key": ", n n",
     "command": "workbench.action.focusFirstEditorGroup",
     "when": "filesExplorerFocus"
+  },
+
+  // chat
+  {
+    "key": "ctrl+c",
+    "command": "workbench.action.focusFirstEditorGroup",
+    "when": "composerFocused"
   },
 
   // harpoon
