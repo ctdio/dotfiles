@@ -20,7 +20,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'RRethy/nvim-treesitter-textsubjects'
 
   " ai
-  Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
   Plug 'supermaven-inc/supermaven-nvim'
 
   " lsp/completion

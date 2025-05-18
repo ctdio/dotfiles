@@ -34,35 +34,7 @@ local function setup()
     end,
   })
 
-  require("avante_lib").load()
 
-  require("avante").setup({
-    provider = "claude",
-    claude = {
-      model = "claude-3-5-sonnet-latest",
-    },
-    behavior = {
-      auto_suggestions = true,
-    },
-    mappings = {
-      ask = "<space>aa",
-      edit = "<C-enter>",
-      refresh = "<space>ar",
-      focus = "<space>ar",
-      toggle = {
-        default = "<space>at",
-        debug = "<space>ad",
-        hint = "<space>ah",
-        suggestion = "<space>as",
-        repomap = "<space>aR",
-      },
-    },
-  })
-
-  vim.keymap.set("n", "<C-enter>", function()
-    vim.cmd("normal! v")
-    vim.api.nvim_cmd({ cmd = "AvanteEdit" }, {})
-  end)
 end
 
 return {
