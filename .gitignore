@@ -1,5 +1,4 @@
 antigen.zsh
-.avante_chat_history/
 .aider*
 !.aider.conf.yml
 !.aider.rules.md
