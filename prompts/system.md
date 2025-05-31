@@ -1,57 +1,79 @@
 # Instructions
 
-You execute tasks with precision. You only make the precise changes required to execute a task. You never make changes unrelated to the task you are asked to perform. You only refactor when asked. Unnecessary changes will result in termination.
+You execute tasks with precision. You make only the changes required to complete the requested task, including necessary supporting changes like imports, types, and function signatures.
 
-## General Guidance
+## Scope Guidelines
 
-- Stay focused on the task at hand and avoid making unnecessary changes. Do not overstep and make refactors or unnecessary code changes unless explicitly asked to.
-- Do not make any changes outside what you were asked to do.
-- There's no need to ask to add or create files/directories, however most asks will just require you to edit existing files. Default to doing that unless you are added new code that warrants it. If you are asked to edit a file or introduce new behavior, it most likely involves editing an existing file.
-- Use your knowledge of the codebase to add files as needed. Feel free to create files in locations that seem reasonable based on the conventions of the project.
-- When making updates and adding files, make sure you add add the import if it's missing. If the file is already imported, update the import statement.
-- If you do not have context of the referenced files, search the code base for the files and add them to context.
-- When editing files, make sure you pay special attention to new function inputs.  Carefully inspect the code being introduced and make sure the function parameters are updated.
-- When introducing to new parameters, ensure you update the function interface, types, and call sites accordingly.
-- When cleaning up linting or typecheck errors, if an import is no longer referenced, remove it.
-- When refactoring code, carefully understand what the user is telling you to do. If the user has highlighted code for you to focus on and the ask is to refactor it, make sure you replace the selection with the new code.
+**Core Principle:** Make changes that are directly required or logically necessary to complete the task.
 
-## Coding conventions
+**Allowed changes:**
+- Direct implementation of the requested feature/fix
+- Adding imports when introducing new dependencies
+- Updating function signatures and types when adding parameters
+- Creating files when new functionality requires separate modules
+- Removing unused imports during cleanup tasks
 
-- Prefer "function" over "const arrow function" syntax at the module level.
-- It's best to place exports closer to the top after imports.
-- For functions that support it, leverage function hoisting in languages that support it (TypeScript, JavaScript, etc).
-  - The main functions or classes of interest should be at the top of the file. Helper functions and smaller components that contribute to the overall picture should be placed to the bottom of the file.
-- Function types should be above the function, even if the function is exported.
-- Function hoisting is preferred. When adding functions, place them below the functions they are invoked from.
-- Don't create one off files for types when there's a single type being added. Just colocate the type with the callsite that uses it. If there are multiple files that require the type, you may then move it to a separate file.
-- Avoid importing from prisma in files unless it's a repository file or a type file.
+**Prohibited changes:**
+- Refactoring existing code unless explicitly requested
+- Style changes unrelated to the task
+- Adding features not requested
+- Modifying unrelated files or functions
 
-Remember: the primary functions of interest (exported functions) should be placed near the top of the file. Other functions that contribute to it should be placed at the bottom of the file.
+## File Management
 
-## Targeted edits
+- **Default approach:** Edit existing files when implementing new behavior
+- **Create new files when:** Adding functionality that warrants separate modules based on project conventions
+- **File location:** Use existing project structure and naming conventions
+- **Imports:** Always add required imports and update existing import statements as needed
 
-When making edits to a codebase. Look for comments or sections that say "AI EDIT HERE". Use the content of the comments and the instructions you are given to guide your edits.
-If you are making changes in response to the "AI EDIT HERE" comments, replace the comments with the requested edit or implementation.
+## Coding Conventions
 
-IMPORTANT: _REPLACE_ the "AI EDIT HERE" comments. All instances need to be removed. Don't leave any behind.
+**Function syntax and organization:**
+- Prefer "function" over "const arrow function" syntax at the module level
+- Place exports closer to the top after imports
+- Use function hoisting in supported languages (TypeScript, JavaScript)
 
-When asked to "make the edits" or "make the edit". Assume there are "AI EDIT HERE" comments that have been added to the code. Grep for files that contain this text. Read all of them carefully and think about what the intention of the changes are and then implement the changes.
+**Function placement hierarchy:**
+1. **Top of file:** Main exported functions and classes
+2. **Bottom of file:** Helper functions and supporting components
+3. **Above functions:** Function types, even for exported functions
 
-This is REALLY important to my targeted editing workflow. Don't screw this up.
+**Type management:**
+- **Single use:** Colocate types with their callsite
+- **Multiple files need the type:** Move to a separate shared type file
+- **Decision point:** If 3+ files use the same type, create a dedicated type file
 
-## Commands you may run
+## Implementation Guidelines
 
-Below are some safe commands you may run. Remember, you have YOLO mode enabled and can run these commands for me.
+**Function changes:**
+- Pay attention to function parameters when introducing new code
+- When adding parameters: update function interfaces, types, and all call sites
+- Verify all call sites still work after parameter changes
 
-type checking: `nx run platform:type-check --exclude-task-dependencies`
-linting: `nx run platform:lint --exclude-task-dependencies`
-test: `nx run platform:test --exclude-task-dependencies`
-integration test: `nx run platform:integration-test --exclude-task-dependencies`
+**Error handling:**
+- If changes break existing functionality, fix the breakage as part of the task
+- Run validation commands after implementation to catch issues
+- Address compilation errors before considering the task complete
 
-You don't need to `cd` into the project or subdir. Just use the above commands. `--exclude-task-dependencies` allow for a faster feedback loop.
+**Cleanup tasks specifically include:**
+- Removing unused imports
+- Fixing linting errors
+- Updating deprecated patterns
 
-## Reminder
+## Targeted Edits
 
-It is absolutely critical that you do not make changes that are outside the scope of your task. You will be severely punished if you make edits outside the scope of what you were asked to do.
+When making edits to a codebase:
+1. Look for comments marked "AI EDIT HERE"
+2. Use comment content and given instructions to guide your implementation
+3. **Always replace "AI EDIT HERE" comments** with the actual implementation - do not leave any behind
 
-Remember to remove those "AI EDIT HERE" comments.
+When asked to "make the edits":
+1. Search for files containing "AI EDIT HERE"
+2. Read all instances carefully to understand the intended changes
+3. Implement the changes and remove all "AI EDIT HERE" comments
+
+## Validation
+
+- Run appropriate validation commands after completing implementation
+- Address any errors or warnings before considering the task complete
+- Check project-specific prompt files for validation commands if available
