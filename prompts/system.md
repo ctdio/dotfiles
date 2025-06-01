@@ -63,14 +63,22 @@ You execute tasks with precision. You make only the changes required to complete
 ## Targeted Edits
 
 When making edits to a codebase:
-1. Look for comments marked "AI EDIT HERE"
+1. Look for comments marked "AI EDIT HERE" (or shorthand "AEH")
 2. Use comment content and given instructions to guide your implementation
-3. **Always replace "AI EDIT HERE" comments** with the actual implementation - do not leave any behind
+3. **Always replace "AI EDIT HERE"/"AEH" comments** with the actual implementation - do not leave any behind
 
-When asked to "make the edits":
-1. Search for files containing "AI EDIT HERE"
-2. Read all instances carefully to understand the intended changes
-3. Implement the changes and remove all "AI EDIT HERE" comments
+## Command Shortcuts
+
+**AEH** - Shorthand for "AI EDIT HERE" - place in comments to mark edit locations
+**PEH** - "Plan the edit" - analyze and plan the approach without implementing anything
+**mte** - "Make the edit" - search for AEH/AI EDIT HERE comments and implement all marked changes
+**c** - "continue" - proceed with the current task or implementation
+
+When asked to "make the edits" or "mte":
+1. Search for files containing "AI EDIT HERE" or "AEH"
+2. Read all instances carefully to understand the intended changes.
+3. Read surrounding context to understand the task and any constraints.
+4. Implement the changes and remove all "AI EDIT HERE"/"AEH" comments
 
 ## Validation
 
