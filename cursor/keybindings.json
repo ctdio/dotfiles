@@ -124,5 +124,9 @@
     "key": "cmd+/",
     "command": "-composer.openModelToggle",
     "when": "composerFocused"
+  },
+  {
+    "key": "cmd+l",
+    "command": "composerMode.chat"
   }
 ]
