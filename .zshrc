@@ -25,6 +25,10 @@ function zvm_after_init() {
   [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
 
   bindkey '^K' autosuggest-accept
+
+  # AI Agent key bindings
+  bindkey '^A' _start_agent
+  # bindkey '^S' _suggest_command
 }
 
 # Load antidote
@@ -49,6 +53,16 @@ fpath=(~/.zcomp $fpath);
 eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 
 eval "$(starship init zsh)"
+
+# AI Agent functions
+_start_agent() {
+  zle kill-whole line
+  BUFFER="agent"
+  zle accept-line  # Execute as if you typed it normally
+  zle reset-prompt
+}
+
+zle -N _start_agent
 
 # uncomment to profile
 # zprof

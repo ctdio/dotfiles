@@ -13,7 +13,6 @@
     "args": { "text": "\u001b[A" },
     "when": "terminalFocus"
   },
-
   // cancel
   {
     "key": "ctrl+c",

@@ -17,5 +17,5 @@ Run these commands after completing implementation to ensure code quality:
 
 ## Project-Specific Conventions
 
-- Avoid importing from prisma in files unless it's a repository file or a type file
+- **Prisma imports:** Only import from `@prisma/client` in repository layer files (files that directly interact with the database). Do not import Prisma in service, controller, or other layers
 - Follow nx monorepo structure and naming conventions

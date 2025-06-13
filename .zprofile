@@ -35,6 +35,22 @@ alias ai="aider --read=~/dotfiles/prompts/system.md"
 alias ai-r1="ai --architect --model=fireworks_ai/accounts/fireworks/models/deepseek-r1 --editor-model=claude-3-5-sonnet-20241022"
 alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-20241022"
 
+alias c='claude --dangerously-skip-permissions'
+
+alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
+
+# Sync Claude prompt file
+function sync-claude-prompt() {
+  mkdir -p ~/.claude
+  cat ~/dotfiles/prompts/base.md ~/dotfiles/prompts/typescript.md ~/dotfiles/prompts/platform.md > ~/.claude/CLAUDE.md
+  echo "Synced ~/.claude/CLAUDE.md"
+}
+
+function timezsh () {
+  shell=${1-$SHELL}
+  for i in $(seq 1 10); do /usr/bin/time $shell -i -c exit; done
+}
+
 # helper functions
 function fcd () {
   local directories=$(ls -d */)

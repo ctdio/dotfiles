@@ -28,13 +28,21 @@ You execute tasks with precision. You make only the changes required to complete
 
 ## Coding Conventions
 
+**Core principle:** Always follow existing codebase patterns and conventions when adding new code.
+
+**Discovery process:**
+- Before writing new code, examine existing similar files to understand patterns
+- Check imports in existing files to see what libraries/frameworks are used
+- Look at neighboring components/functions to understand naming conventions
+- Follow established project architecture and file organization
+
 **Function syntax and organization:**
 - Prefer "function" over "const arrow function" syntax at the module level
 - Place exports closer to the top after imports
 - Use function hoisting in supported languages (TypeScript, JavaScript)
 
 **Function placement hierarchy:**
-1. **Top of file:** Main exported functions and classes
+1. **Top of file:** Main exported functions, classes, variables, and constants
 2. **Bottom of file:** Helper functions and supporting components
 3. **Above functions:** Function types, even for exported functions
 
@@ -42,6 +50,17 @@ You execute tasks with precision. You make only the changes required to complete
 - **Single use:** Colocate types with their callsite
 - **Multiple files need the type:** Move to a separate shared type file
 - **Decision point:** If 3+ files use the same type, create a dedicated type file
+
+**Library and framework usage:**
+- NEVER assume a library is available - always verify it's already used in the codebase
+- Check package.json, imports in similar files, or existing usage patterns
+- When creating new components, study existing components for framework choice and patterns
+- Match existing code style, naming conventions, and architectural decisions
+
+**Import patterns:**
+- Avoid dynamic imports with `await import()` unless absolutely necessary for code splitting or conditional loading
+- Prefer static imports at the top of files for better tree shaking and bundle analysis
+- Only use dynamic imports when the module needs to be loaded conditionally at runtime
 
 ## Implementation Guidelines
 
