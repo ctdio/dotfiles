@@ -39,6 +39,20 @@ alias c='claude'
 
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
 
+# Vim Claude - open vim to write a prompt, then pipe to claude
+function vc() {
+  local temp_file=$(mktemp /tmp/claude_prompt.XXXXXX)
+  vim "$temp_file"
+  
+  if [ -s "$temp_file" ]; then
+    cat "$temp_file" | claude
+  else
+    echo "No content provided, aborting."
+  fi
+  
+  rm -f "$temp_file"
+}
+
 # Sync Claude prompt file
 function sync-claude-prompt() {
   mkdir -p ~/.claude
