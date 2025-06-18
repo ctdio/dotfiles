@@ -62,6 +62,8 @@ _start_agent() {
   zle reset-prompt
 }
 
+source ~/dotfiles/scripts/wt
+
 zle -N _start_agent
 
 # uncomment to profile

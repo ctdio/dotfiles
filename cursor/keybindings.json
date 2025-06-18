@@ -127,5 +127,9 @@
   {
     "key": "cmd+l",
     "command": "composerMode.chat"
+  },
+  {
+    "key": "cmd+y",
+    "command": "composerMode.plan"
   }
 ]

@@ -1,9 +1,11 @@
 #!/bin/bash
 
-set -e
+# This script should be sourced, not executed directly
+# Add to your shell config: source /path/to/wt
 
-usage() {
-  cat <<EOF
+wt() {
+  usage() {
+    cat <<EOF
 Usage: wt <command> [args]
 
 Commands:
@@ -14,91 +16,100 @@ Commands:
   prune                  Prune stale worktrees
   h, help                Show this help message
 EOF
+  }
+
+  # Get repo dir name
+  repo_dir() {
+    basename "$(git rev-parse --show-toplevel 2>/dev/null)"
+  }
+
+  # Create worktree
+  wt_create() {
+    if [ -z "$1" ]; then
+      echo "Usage: wt create <branch>"
+      return 1
+    fi
+    local branch="$1"
+    local dir="../$(repo_dir)-$branch"
+    git worktree add "$dir" "$branch" 2>/dev/null || git worktree add "$dir" -b "$branch"
+    echo "Created worktree at $dir"
+  }
+
+  # List worktrees
+  wt_list() {
+    git worktree list
+  }
+
+  # Switch to worktree using fzf
+  wt_switch() {
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf is required for interactive switching. Install it and try again."
+      return 1
+    fi
+    local selected
+    selected=$(git worktree list --porcelain | awk '/^worktree / {print $2}' | grep -v "^$(pwd)$" | fzf --prompt="Switch to worktree: ")
+    if [ -n "$selected" ]; then
+      echo "Switching to worktree: $selected"
+      cd "$selected"
+    else
+      echo "No worktree selected."
+    fi
+  }
+
+  # Remove worktree
+  wt_remove() {
+    if [ -z "$1" ]; then
+      echo "Usage: wt remove <branch>"
+      return 1
+    fi
+    local dir="../$(repo_dir)-$1"
+    if [ -d "$dir" ]; then
+      git worktree remove "$dir"
+      echo "Removed worktree $dir"
+    else
+      echo "Worktree $dir does not exist."
+      return 1
+    fi
+  }
+
+  # Prune worktrees
+  wt_prune() {
+    git worktree prune
+    echo "Pruned stale worktrees."
+  }
+
+  case "$1" in
+    c|create)
+      shift
+      wt_create "$@"
+      ;;
+    s|switch)
+      wt_switch
+      ;;
+    l|list)
+      wt_list
+      ;;
+    rm|remove)
+      shift
+      wt_remove "$@"
+      ;;
+    prune)
+      wt_prune
+      ;;
+    h|help|--help|-h)
+      usage
+      ;;
+    *)
+      usage
+      return 1
+      ;;
+  esac
 }
 
-# Get repo dir name
-repo_dir() {
-  basename "$(git rev-parse --show-toplevel 2>/dev/null)"
-}
-
-# Create worktree
-wt_create() {
-  if [ -z "$1" ]; then
-    echo "Usage: wt create <branch>"
-    exit 1
-  fi
-  local branch="$1"
-  local dir="../$(repo_dir)-$branch"
-  git worktree add "$dir" "$branch" 2>/dev/null || git worktree add "$dir" -b "$branch"
-  echo "Created worktree at $dir"
-}
-
-# List worktrees
-wt_list() {
-  git worktree list
-}
-
-# Switch to worktree using fzf
-wt_switch() {
-  if ! command -v fzf >/dev/null 2>&1; then
-    echo "fzf is required for interactive switching. Install it and try again."
-    exit 1
-  fi
-  local selected
-  selected=$(git worktree list --porcelain | awk '/^worktree / {print $2}' | grep -v "^$(pwd)$" | fzf --prompt="Switch to worktree: ")
-  if [ -n "$selected" ]; then
-    cd "$selected" || exit 1
-    exec $SHELL
-  else
-    echo "No worktree selected."
-  fi
-}
-
-# Remove worktree
-wt_remove() {
-  if [ -z "$1" ]; then
-    echo "Usage: wt remove <branch>"
-    exit 1
-  fi
-  local dir="../$(repo_dir)-$1"
-  if [ -d "$dir" ]; then
-    git worktree remove "$dir"
-    echo "Removed worktree $dir"
-  else
-    echo "Worktree $dir does not exist."
-    exit 1
-  fi
-}
-
-# Prune worktrees
-wt_prune() {
-  git worktree prune
-  echo "Pruned stale worktrees."
-}
-
-case "$1" in
-  c|create)
-    shift
-    wt_create "$@"
-    ;;
-  s|switch)
-    wt_switch
-    ;;
-  l|list)
-    wt_list
-    ;;
-  rm|remove)
-    shift
-    wt_remove "$@"
-    ;;
-  prune)
-    wt_prune
-    ;;
-  h|help|--help|-h)
-    usage
-    ;;
-  *)
-    usage
-    exit 1
-    ;;
-esac
+# If script is being executed directly, inform user to source it
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  echo "This script must be sourced to work properly."
+  echo "Add this line to your ~/.bashrc or ~/.zshrc:"
+  echo "  source $(realpath "${BASH_SOURCE[0]}")"
+  exit 1
+fi

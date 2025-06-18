@@ -255,6 +255,10 @@
       "commands": ["copyRelativeFilePath"]
     },
     {
+      "before": ["y", "g"],
+      "commands": ["copyRelativeFilePath"]
+    },
+    {
       "before": [",", "a"],
       "commands": ["composer.addfilestocomposer"]
     },
