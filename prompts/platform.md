@@ -2,10 +2,11 @@
 
 ## Validation Commands
 
-Run these commands after completing implementation to ensure code quality:
+Run these commands after completing implementation to ensure code quality.
+You don't need to run all of them, use the ones that feel most relevant to your work.
 
 - **Type checking:** `nx run platform:type-check --exclude-task-dependencies`
-- **Linting:** `nx run platform:lint --exclude-task-dependencies`  
+- **Linting:** `nx run platform:lint --exclude-task-dependencies`
 - **Testing:** `nx run platform:test --exclude-task-dependencies`
 - **Integration testing:** `nx run platform:integration-test --exclude-task-dependencies`
 
@@ -18,7 +19,7 @@ Run these commands after completing implementation to ensure code quality:
 ## Project-Specific Conventions
 
 - **Server/Client code separation:** Never mix server-side and client-side code. Do not import services or repositories in client components unless the component is explicitly a React Server Component
-- **Prisma imports:** Only import from `@prisma/client` in repository layer files (files that directly interact with the database). Do not import Prisma in service, controller, or other layers  
+- **Prisma imports:** Only import from `@prisma/client` in repository layer files (files that directly interact with the database). Do not import Prisma in service, controller, or other layers
 - Follow nx monorepo structure and naming conventions
 
 ## Architecture: Services and Repositories
@@ -76,7 +77,7 @@ export class UserService {
     if (!email.includes('@')) {
       throw new Error('Invalid email');
     }
-    
+
     return this.userRepository.create({ email, name });
   }
 }
