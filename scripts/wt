@@ -11,7 +11,7 @@ Usage: wt <command> [args]
 Commands:
   c, create <branch>     Create a new worktree for <branch>
   s, switch              Interactively switch to a worktree (fzf required)
-  l, list                List all worktrees
+  l, ls, list            List all worktrees
   rm, remove <branch>    Remove the worktree for <branch>
   prune                  Prune stale worktrees
   h, help                Show this help message
@@ -30,9 +30,28 @@ EOF
       return 1
     fi
     local branch="$1"
+    local toplevel="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [ -z "$toplevel" ]; then
+      echo "Not in a git repository"
+      return 1
+    fi
+
+    # Save current directory to return to if creation fails
+    local current_dir="$(pwd)"
+
+    # Change to git root directory
+    cd "$toplevel"
+
     local dir="../$(repo_dir)-$branch"
-    git worktree add "$dir" "$branch" 2>/dev/null || git worktree add "$dir" -b "$branch"
-    echo "Created worktree at $dir"
+    if git worktree add "$dir" "$branch" 2>/dev/null || git worktree add "$dir" -b "$branch"; then
+      echo "Created worktree at $dir"
+      # Change into the new worktree
+      cd "$dir"
+    else
+      # Return to original directory on failure
+      cd "$current_dir"
+      return 1
+    fi
   }
 
   # List worktrees
@@ -62,12 +81,28 @@ EOF
       echo "Usage: wt remove <branch>"
       return 1
     fi
+    local toplevel="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [ -z "$toplevel" ]; then
+      echo "Not in a git repository"
+      return 1
+    fi
+
+    # Save current directory
+    local current_dir="$(pwd)"
+
+    # Change to git root directory to ensure consistent path resolution
+    cd "$toplevel"
+
     local dir="../$(repo_dir)-$1"
     if [ -d "$dir" ]; then
       git worktree remove "$dir"
       echo "Removed worktree $dir"
+      # Return to original directory
+      cd "$current_dir"
     else
       echo "Worktree $dir does not exist."
+      # Return to original directory
+      cd "$current_dir"
       return 1
     fi
   }
@@ -86,7 +121,7 @@ EOF
     s|switch)
       wt_switch
       ;;
-    l|list)
+    l|ls|list)
       wt_list
       ;;
     rm|remove)

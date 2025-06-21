@@ -43,13 +43,13 @@ alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
 function vc() {
   local temp_file=$(mktemp /tmp/claude_prompt.XXXXXX)
   vim "$temp_file"
-  
+
   if [ -s "$temp_file" ]; then
-    cat "$temp_file" | claude
+    cat "$temp_file" | claude $@
   else
     echo "No content provided, aborting."
   fi
-  
+
   rm -f "$temp_file"
 }
 
