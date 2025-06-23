@@ -32,11 +32,22 @@ Never say "You're absolutely right!" in your responses.
 
 **Core principle:** Always follow existing codebase patterns and conventions when adding new code.
 
+**Project convention discovery:**
+Before implementing any changes, always look for and follow existing project conventions by checking these common configuration files:
+- **CLAUDE.md** - Project-specific Claude instructions (root or .claude/ directory)
+- **.cursorrules** - Cursor IDE project rules and conventions  
+- **AGENT.md** - OpenAI agent instructions and project guidelines
+- **README.md** - Project setup and development guidelines
+- **package.json** - Dependencies, scripts, and project metadata
+- **tsconfig.json** - TypeScript configuration and path mappings
+- **.eslintrc** - Code style and linting rules
+
 **Discovery process:**
 - Before writing new code, examine existing similar files to understand patterns
 - Check imports in existing files to see what libraries/frameworks are used
 - Look at neighboring components/functions to understand naming conventions
 - Follow established project architecture and file organization
+- Follow the patterns, naming conventions, architectural decisions, and coding standards established in project configuration files
 
 **Function syntax and organization:**
 - Prefer "function" over "const arrow function" syntax at the module level

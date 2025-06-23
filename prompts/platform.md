@@ -1,4 +1,4 @@
-# Platform Project Commands
+# Platform Project Rules
 
 ## Validation Commands
 
@@ -15,6 +15,20 @@ You don't need to run all of them, use the ones that feel most relevant to your 
 - Run commands from the project root directory
 - `--exclude-task-dependencies` flag enables faster feedback loops
 - Address any errors or warnings before considering tasks complete
+
+## Project Convention Discovery
+
+Before implementing any changes, always look for and follow existing project conventions by checking these common configuration files:
+
+- **CLAUDE.md** - Project-specific Claude instructions (root or .claude/ directory)
+- **.cursorrules** - Cursor IDE project rules and conventions
+- **AGENT.md** - OpenAI agent instructions and project guidelines
+- **README.md** - Project setup and development guidelines
+- **package.json** - Dependencies, scripts, and project metadata
+- **tsconfig.json** - TypeScript configuration and path mappings
+- **.eslintrc** - Code style and linting rules
+
+Follow the patterns, naming conventions, architectural decisions, and coding standards established in these files.
 
 ## Project-Specific Conventions
 
@@ -91,3 +105,48 @@ export const userService = new UserService(userRepository);
 - Services handle business logic and validation
 - Repositories handle pure data access operations
 - Both layers should be easily testable through dependency injection
+
+## Error Handling and Telemetry
+
+**Exception Capture Guidelines:**
+- Import the `captureException` function from `@/lib/telemetry`: `import { captureException } from '@/lib/telemetry'`
+- Capture exceptions using `captureException(err)` in scenarios where:
+  - The exception is being thrown but NOT being propagated (rethrown)
+  - The error represents a meaningful failure worth collecting feedback on
+  - Consider the caller or callsite context before capturing
+
+**When to capture exceptions:**
+- Terminal error handlers (errors that end a process flow)
+- Business logic failures that should be monitored
+- Infrastructure errors (database, external API failures)
+- Validation errors that indicate data integrity issues
+
+**When NOT to capture exceptions:**
+- If the error is being rethrown (`throw err`) - let the upstream handler capture it
+- Transient errors that are expected and handled gracefully
+- Control flow exceptions (like breaking out of loops)
+
+```typescript
+try {
+  await riskyOperation();
+} catch (err) {
+  logger.error({ err, context }, 'Operation failed');
+  
+  // Capture if this is a terminal error (not being rethrown)
+  captureException(err);
+  
+  // Return graceful response instead of rethrowing
+  return { success: false, error: 'Operation failed' };
+}
+
+// vs.
+
+try {
+  await riskyOperation();
+} catch (err) {
+  logger.error({ err, context }, 'Operation failed');
+  
+  // Don't capture here - let upstream handler decide
+  throw err; // Being rethrown
+}
+```
