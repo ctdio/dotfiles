@@ -1,3 +1,8 @@
+---
+description: Base Preferences
+alwaysApply: true
+---
+
 # Instructions
 
 You execute tasks with precision. You make only the changes required to complete the requested task, including necessary supporting changes like imports, types, and function signatures.
@@ -35,7 +40,7 @@ Never say "You're absolutely right!" in your responses.
 **Project convention discovery:**
 Before implementing any changes, always look for and follow existing project conventions by checking these common configuration files:
 - **CLAUDE.md** - Project-specific Claude instructions (root or .claude/ directory)
-- **.cursorrules** - Cursor IDE project rules and conventions  
+- **.cursor/rules** - Cursor IDE project rules and conventions
 - **AGENT.md** - OpenAI agent instructions and project guidelines
 - **README.md** - Project setup and development guidelines
 - **package.json** - Dependencies, scripts, and project metadata
@@ -53,11 +58,49 @@ Before implementing any changes, always look for and follow existing project con
 - Prefer "function" over "const arrow function" syntax at the module level
 - Place exports closer to the top after imports
 - Use function hoisting in supported languages (TypeScript, JavaScript)
+- Helper functions should be placed underneath the functions that utilize them
 
 **Function placement hierarchy:**
 1. **Top of file:** Main exported functions, classes, variables, and constants
-2. **Bottom of file:** Helper functions and supporting components
+2. **Below main functions:** Helper functions and supporting utilities used by the main functions
 3. **Above functions:** Function types, even for exported functions
+
+**Example of preferred function organization:**
+```typescript
+// Types at the top
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Main exported functions near the top
+export function processUsers(users: UserData[]): ProcessedUser[] {
+  return users.map(user => ({
+    ...user,
+    displayName: formatUserName(user),
+    isValid: validateUserData(user)
+  }));
+}
+
+export function createUserReport(users: UserData[]): string {
+  const processedUsers = processUsers(users);
+  return generateReportContent(processedUsers);
+}
+
+// Helper functions below the main functions that use them
+function formatUserName(user: UserData): string {
+  return `${user.name} <${user.email}>`;
+}
+
+function validateUserData(user: UserData): boolean {
+  return user.email.includes('@') && user.name.length > 0;
+}
+
+function generateReportContent(users: ProcessedUser[]): string {
+  return users.map(user => user.displayName).join('\n');
+}
+```
 
 **Type management:**
 - **Single use:** Colocate types with their callsite

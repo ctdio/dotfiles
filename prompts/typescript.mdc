@@ -1,0 +1,519 @@
+---
+description: TypeScript Preferences
+include: "**/*.{ts,tsx}"
+---
+
+# TypeScript Rules
+
+## Try-Catch Guidelines
+
+**CRITICAL: Variable naming in catch blocks is MANDATORY:**
+- **ALWAYS** use `err` in catch blocks (never `error`, `e`, `ex`, or other variations)
+- This is a REQUIRED convention - no exceptions
+- Violating this rule is considered a critical error
+
+```typescript
+try {
+  // code that might throw
+} catch (err) {
+  // handle error using 'err'
+}
+```
+
+**INCORRECT examples (NEVER use these):**
+```typescript
+// ❌ WRONG - Do not use 'error'
+try {
+  await operation();
+} catch (error) {
+  logger.error(error);
+}
+
+// ❌ WRONG - Do not use 'e'
+try {
+  await operation();
+} catch (e) {
+  console.log(e);
+}
+
+// ❌ WRONG - Do not use 'ex'
+try {
+  await operation();
+} catch (ex) {
+  throw ex;
+}
+```
+
+**CORRECT example (ALWAYS use this):**
+```typescript
+// ✅ CORRECT - Always use 'err'
+try {
+  await operation();
+} catch (err) {
+  logger.error({ err }, 'Operation failed');
+}
+```
+
+## Logger Integration
+
+**MANDATORY: Structured logging pattern:**
+- **ALWAYS** use bunyan/pino/winston style loggers that accept an object first, then message
+- **ALWAYS** place the error in the object as-is under the `err` key
+- **NEVER** extract error properties like `err.message` or `err.stack`
+- Error objects will be automatically serialized by the logger
+
+```typescript
+try {
+  await riskyOperation();
+} catch (err) {
+  logger.error({ err, userId, operationType: 'create' }, 'Failed to create user');
+  throw err; // or handle appropriately
+}
+```
+
+**CRITICAL RULES for error logging:**
+- **ALWAYS** use the `err` key in the log object (not `error` or other names)
+- **ALWAYS** pass the complete error object intact to the logger
+- **NEVER** destructure or extract properties from the error for logging
+- **ALWAYS** include relevant context alongside the error
+
+**Exception: Type casting for error handling logic is allowed:**
+- You may cast the error to a specific type to safely check properties for business logic
+- This is acceptable for conditional error handling, but still log the complete error object
+
+```typescript
+try {
+  await operation();
+} catch (err) {
+  // ✅ ALLOWED - Type casting for business logic
+  if ((err as { code?: string }).code === 'ENOENT') {
+    // Handle file not found specifically
+    logger.error({ err, path }, 'File not found');
+    return null;
+  }
+
+  // ✅ CORRECT - Still log complete error
+  logger.error({ err, operation: 'file-read' }, 'Operation failed');
+  throw err;
+}
+```
+
+**INCORRECT logging examples (NEVER do this):**
+```typescript
+// ❌ WRONG - Don't extract error message
+catch (err) {
+  logger.error({ message: err.message }, 'Failed');
+}
+
+// ❌ WRONG - Don't use 'error' key
+catch (err) {
+  logger.error({ error: err }, 'Failed');
+}
+
+// ❌ WRONG - Don't pass error as string
+catch (err) {
+  logger.error('Failed: ' + err.message);
+}
+```
+
+**CORRECT logging examples (ALWAYS do this):**
+```typescript
+// ✅ CORRECT - Pass complete error under 'err' key
+catch (err) {
+  logger.error({ err, userId, action: 'delete' }, 'Failed to delete user');
+}
+
+// ✅ CORRECT - Include business context
+catch (err) {
+  logger.error({ err, orderId, customerId }, 'Order processing failed');
+}
+```
+
+## Type Safety Rules
+
+**CRITICAL: Never use `any` types as a solution to type errors:**
+- Using `any` defeats the purpose of TypeScript and removes all type safety
+- `any` is a cop-out solution that creates technical debt and runtime risks
+- **ALWAYS** find the proper type solution instead of defaulting to `any`
+
+**FORBIDDEN patterns (NEVER do this):**
+```typescript
+// ❌ WRONG - Don't use 'any' to bypass type errors
+const data: any = await fetchData();
+const result: any = processData(data);
+
+// ❌ WRONG - Don't cast to 'any' to fix type issues
+const user = (userData as any).profile.settings;
+
+// ❌ WRONG - Don't use 'any' for function parameters
+function handleEvent(event: any) {
+  return event.target.value;
+}
+```
+
+**CORRECT solutions (ALWAYS do this instead):**
+```typescript
+// ✅ CORRECT - Define proper interfaces
+interface ApiResponse {
+  data: UserData[];
+  status: number;
+}
+const response: ApiResponse = await fetchData();
+
+// ✅ CORRECT - Use proper type assertions with specific types
+interface UserProfile {
+  profile: {
+    settings: UserSettings;
+  };
+}
+const user = (userData as UserProfile).profile.settings;
+
+// ✅ CORRECT - Define specific event types
+function handleEvent(event: React.ChangeEvent<HTMLInputElement>) {
+  return event.target.value;
+}
+
+// ✅ CORRECT - Use unknown for truly unknown data, then narrow
+function processUnknownData(data: unknown) {
+  if (typeof data === 'object' && data !== null && 'id' in data) {
+    // Now TypeScript knows data has an 'id' property
+    return (data as { id: string }).id;
+  }
+  throw new Error('Invalid data format');
+}
+```
+
+**Acceptable alternatives to `any`:**
+- `unknown` - for truly unknown data that needs runtime type checking
+- Specific type assertions with interfaces
+- Union types for multiple possible types
+- Generic types for reusable components
+- `object` or `Record<string, unknown>` for loose object types
+
+**When encountering type errors:**
+1. **First**: Understand what the actual type should be
+2. **Second**: Define proper interfaces or types
+3. **Third**: Use type assertions with specific types
+4. **Last resort**: Use `unknown` and add proper type guards
+5. **NEVER**: Use `any` as a solution
+
+## Array Iteration Performance Guidelines
+
+**CRITICAL: Choose the right array method for optimal performance:**
+- Understanding the performance characteristics of different array methods is essential for writing efficient code
+- The choice of iteration method can significantly impact performance, especially with large datasets
+- **ALWAYS** consider the size of your data and the operation you're performing
+
+### Performance Hierarchy (Fastest to Slowest)
+
+**1. Traditional for loop (FASTEST):**
+```typescript
+// ✅ BEST - Fastest for pure iteration and transformations
+const results: string[] = [];
+for (let i = 0; i < items.length; i++) {
+  results.push(items[i].name);
+}
+
+// ✅ BEST - For-of loop (nearly as fast, more readable)
+const results: string[] = [];
+for (const item of items) {
+  results.push(item.name);
+}
+```
+
+**2. forEach (AVOID - Use for-of instead):**
+```typescript
+// ⚠️ AVOID - forEach has poor performance and limited control flow
+const results: string[] = [];
+items.forEach(item => {
+  results.push(item.name);
+});
+
+// ✅ BETTER - Use for-of loop instead
+const results: string[] = [];
+for (const item of items) {
+  results.push(item.name);
+}
+```
+
+**3. map (GOOD for transformations):**
+```typescript
+// ✅ GOOD - Ideal for transformations, creates new array
+const names = items.map(item => item.name);
+```
+
+**4. filter (GOOD for filtering):**
+```typescript
+// ✅ GOOD - Ideal for filtering, but creates new array
+const activeItems = items.filter(item => item.active);
+```
+
+**5. reduce (SLOWER - avoid when possible):**
+```typescript
+// ⚠️ SLOWER - Avoid reduce for performance reasons
+const total = items.reduce((sum, item) => sum + item.value, 0);
+
+// ✅ BETTER - Use traditional loop with mutable accumulator
+let total = 0;
+for (const item of items) {
+  total += item.value;
+}
+```
+
+**6. find/findIndex (VARIABLE):**
+```typescript
+// ⚠️ VARIABLE - Fast for early matches, slow for no matches
+const user = users.find(u => u.id === targetId);
+```
+
+**7. some/every (VARIABLE):**
+```typescript
+// ⚠️ VARIABLE - Fast for early matches, slower for full scans
+const hasActive = items.some(item => item.active);
+const allActive = items.every(item => item.active);
+```
+
+### Method Selection Guidelines
+
+**Use traditional for/for-of loops when:**
+- Performance is critical and you're working with large arrays (>10,000 items)
+- You need maximum control over iteration (breaking, continuing, custom logic)
+- You're doing simple transformations or accumulations
+
+**AVOID forEach - Use for-of loops instead:**
+- forEach has worse performance than traditional loops
+- Cannot use break/continue/return to control flow
+- Creates unnecessary function call overhead
+- **PREFER**: for-of loops for better performance and control flow
+
+**Use map when:**
+- You need to transform every element into a new array
+- The transformation is pure (no side effects)
+- You want functional programming style
+
+**Use filter when:**
+- You need to create a new array with only some elements
+- The filtering condition is pure
+- You're working with reasonably sized datasets
+
+**Use reduce when:**
+- No alternative exists for complex transformations
+- You're working with very small datasets (<100 items)
+- The operation is rarely executed
+- **PREFER**: Traditional loops with mutable accumulators for better performance
+
+**Use find/findIndex when:**
+- You only need the first matching element
+- You can break early (don't need to scan the entire array)
+- The condition is likely to match early in the array
+
+### Performance Anti-Patterns
+
+**FORBIDDEN: Chaining multiple array methods unnecessarily:**
+```typescript
+// ❌ WRONG - Multiple iterations over the same data
+const result = items
+  .filter(item => item.active)
+  .map(item => item.name)
+  .filter(name => name.length > 3);
+
+// ✅ CORRECT - Single iteration with traditional loop
+const result: string[] = [];
+for (const item of items) {
+  if (item.active && item.name.length > 3) {
+    result.push(item.name);
+  }
+}
+```
+
+**FORBIDDEN: Using reduce when alternatives exist:**
+```typescript
+// ❌ WRONG - Reduce is slower and unnecessary
+const names = items.reduce((acc, item) => {
+  acc.push(item.name);
+  return acc;
+}, [] as string[]);
+
+// ❌ WRONG - Reduce for grouping is slow
+const grouped = items.reduce((acc, item) => {
+  if (!acc[item.category]) acc[item.category] = [];
+  acc[item.category].push(item);
+  return acc;
+}, {} as Record<string, Item[]>);
+
+// ✅ CORRECT - Use map for transformations
+const names = items.map(item => item.name);
+
+// ✅ CORRECT - Use traditional loop with mutable object for grouping
+const grouped: Record<string, Item[]> = {};
+for (const item of items) {
+  if (!grouped[item.category]) grouped[item.category] = [];
+  grouped[item.category].push(item);
+}
+```
+
+**FORBIDDEN: forEach for any use case:**
+```typescript
+// ❌ WRONG - forEach for transformations (use map)
+const names: string[] = [];
+items.forEach(item => {
+  names.push(item.name); // Side effect
+});
+
+// ❌ WRONG - forEach for side effects (use for-of)
+items.forEach(item => {
+  console.log(item);
+  updateUI(item);
+});
+
+// ❌ WRONG - forEach loses control flow capabilities
+items.forEach(item => {
+  if (item.invalid) {
+    return; // Only exits this iteration, not the whole loop!
+  }
+  process(item);
+});
+
+// ✅ CORRECT - Use map for pure transformations
+const names = items.map(item => item.name);
+
+// ✅ CORRECT - Use for-of for side effects
+for (const item of items) {
+  console.log(item);
+  updateUI(item);
+}
+
+// ✅ CORRECT - Use for-of for control flow
+for (const item of items) {
+  if (item.invalid) {
+    break; // Actually exits the loop
+  }
+  process(item);
+}
+```
+
+### Large Dataset Considerations
+
+**For arrays with >10,000 items:**
+- Prefer traditional for loops over array methods
+- Consider breaking large operations into chunks
+- Use early returns and breaks when possible
+- Monitor performance with profiling tools
+
+**For arrays with >100,000 items:**
+- Always use traditional for loops
+- Consider using Set or Map for lookups instead of find()
+- Implement pagination or virtualization for UI
+- Consider Web Workers for heavy processing
+
+### Memory Efficiency Guidelines
+
+**CRITICAL: Avoid creating unnecessary intermediate arrays:**
+```typescript
+// ❌ MEMORY INEFFICIENT - Creates multiple intermediate arrays
+const result = largeArray
+  .filter(item => item.active)
+  .map(item => ({ ...item, processed: true }))
+  .slice(0, 100);
+
+// ✅ MEMORY EFFICIENT - Single pass with early termination
+const result: ProcessedItem[] = [];
+let count = 0;
+for (const item of largeArray) {
+  if (item.active && count < 100) {
+    result.push({ ...item, processed: true });
+    count++;
+  }
+  if (count >= 100) break;
+}
+```
+
+**When working with large datasets:**
+- Reuse arrays when possible instead of creating new ones
+- Use `Array.from()` with length for pre-sized arrays
+- Consider streaming or pagination instead of loading everything
+- Profile memory usage during development
+
+### Accumulator Pattern Guidelines
+
+**CRITICAL: Prefer mutable accumulators over reduce for performance:**
+- Mutating accumulator objects/arrays is significantly faster than reduce
+- Traditional loops with mutation avoid function call overhead
+- More readable and easier to debug than reduce chains
+
+**PREFERRED patterns for common operations:**
+
+```typescript
+// ✅ GROUPING - Use mutable object
+const itemsByCategory: Record<string, Item[]> = {};
+for (const item of items) {
+  const category = item.category;
+  if (!itemsByCategory[category]) {
+    itemsByCategory[category] = [];
+  }
+  itemsByCategory[category].push(item);
+}
+
+// ✅ COUNTING - Use mutable object
+const counts: Record<string, number> = {};
+for (const item of items) {
+  counts[item.type] = (counts[item.type] || 0) + 1;
+}
+
+// ✅ SUMMING - Use mutable variable
+let totalPrice = 0;
+for (const item of items) {
+  totalPrice += item.price;
+}
+
+// ✅ FILTERING AND TRANSFORMING - Use mutable array
+const processedActiveItems: ProcessedItem[] = [];
+for (const item of items) {
+  if (item.active) {
+    processedActiveItems.push({
+      id: item.id,
+      name: item.name.toUpperCase(),
+      processed: true
+    });
+  }
+}
+
+// ✅ BUILDING COMPLEX OBJECTS - Use mutable accumulator
+const summary = {
+  totalItems: 0,
+  totalValue: 0,
+  categories: new Set<string>(),
+  activeCount: 0
+};
+
+for (const item of items) {
+  summary.totalItems++;
+  summary.totalValue += item.value;
+  summary.categories.add(item.category);
+  if (item.active) summary.activeCount++;
+}
+```
+
+**AVOID these reduce patterns:**
+
+```typescript
+// ❌ SLOW - Reduce for grouping
+const grouped = items.reduce((acc, item) => {
+  if (!acc[item.category]) acc[item.category] = [];
+  acc[item.category].push(item);
+  return acc;
+}, {} as Record<string, Item[]>);
+
+// ❌ SLOW - Reduce for counting
+const counts = items.reduce((acc, item) => {
+  acc[item.type] = (acc[item.type] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+
+// ❌ SLOW - Reduce for complex objects
+const summary = items.reduce((acc, item) => ({
+  ...acc, // Spread creates new object each iteration!
+  totalItems: acc.totalItems + 1,
+  totalValue: acc.totalValue + item.value
+}), { totalItems: 0, totalValue: 0 });
+```

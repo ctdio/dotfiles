@@ -34,35 +34,30 @@ local function setup()
     end,
   })
 
-  require("avante_lib").load()
-
-  require("avante").setup({
-    provider = "claude",
-    claude = {
-      model = "claude-3-5-sonnet-latest",
+  require("mcphub").setup()
+  require("codecompanion").setup({
+    strategies = {
+      chat = {
+        adapter = "anthropic",
+      },
+      inline = {
+        adapter = "anthropic",
+      },
     },
-    behavior = {
-      auto_suggestions = true,
-    },
-    mappings = {
-      ask = "<space>aa",
-      edit = "<C-enter>",
-      refresh = "<space>ar",
-      focus = "<space>ar",
-      toggle = {
-        default = "<space>at",
-        debug = "<space>ad",
-        hint = "<space>ah",
-        suggestion = "<space>as",
-        repomap = "<space>aR",
+    extensions = {
+      mcphub = {
+        callback = "mcphub.extensions.codecompanion",
+        opts = {
+          show_result_in_chat = true, -- Show mcp tool results in chat
+          make_vars = true, -- Convert resources to #variables
+          make_slash_commands = true, -- Add prompts as /slash commands
+        },
       },
     },
   })
 
-  vim.keymap.set("n", "<C-enter>", function()
-    vim.cmd("normal! v")
-    vim.api.nvim_cmd({ cmd = "AvanteEdit" }, {})
-  end)
+  vim.keymap.set("n", "<leader>i", "<cmd>CodeCompanionChat<cr>")
+  vim.keymap.set({ "v" }, "<C-k>", "<cmd>'<,'>CodeCompanion<cr>")
 end
 
 return {

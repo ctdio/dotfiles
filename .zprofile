@@ -56,7 +56,7 @@ function vc() {
 # Sync Claude prompt file
 function sync-claude-prompt() {
   mkdir -p ~/.claude
-  cat ~/dotfiles/prompts/base.md ~/dotfiles/prompts/typescript.md ~/dotfiles/prompts/platform.md > ~/.claude/CLAUDE.md
+  cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/typescript.mdc > ~/.claude/CLAUDE.md
   echo "Synced ~/.claude/CLAUDE.md"
 }
 

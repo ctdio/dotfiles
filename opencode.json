@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "opencode",
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "autoshare": false,
+  "autoupdate": true,
+  "mcp": {
+    "postgres": {
+      "type": "local",
+      "command": [
+        "mise",
+        "exec",
+        "--",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:postgres@localhost:5432/platform"
+      ]
+    },
+    "context7": {
+      "type": "local",
+      "command": ["mise", "exec", "--", "npx", "-y", "@upstash/context7-mcp"]
+    }
+  }
+}

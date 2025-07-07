@@ -8,11 +8,6 @@
   "editor.rulers": [80],
   "editor.fontFamily": "JetBrains Mono",
   "explorer.openEditors.visible": 1,
-  "find-it-faster.general.showMaximizedTerminal": true,
-  "find-it-faster.findWithinFiles.fuzzRipgrepQuery": true,
-  "find-it-faster.general.hideTerminalAfterFail": true,
-  "find-it-faster.general.hideTerminalAfterSuccess": true,
-  "find-it-faster.general.batTheme": "Nord",
   "notebook.formatOnSave.enabled": true,
   "window.customTitleBarVisibility": "never",
   "window.titleBarStyle": "custom",
@@ -249,10 +244,6 @@
     {
       "before": [",", "c"],
       "commands": ["workbench.panel.composerViewPane2.view.focus"]
-    },
-    {
-      "before": ["y", "<C-g>"],
-      "commands": ["copyRelativeFilePath"]
     },
     {
       "before": ["y", "g"],

@@ -15,6 +15,7 @@
       - typescript-language-server
       - vscode-langservers-extracted
       - nx
+      - node-notifier
       - turbo
       - dotenv-cli
       - "@fsouza/prettierd"
