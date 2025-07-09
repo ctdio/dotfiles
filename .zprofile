@@ -6,8 +6,6 @@ alias cdj='cd ~/work/jupiterone'
 
 alias killn='killall node'
 
-alias oni='~/Onivim2-x86_64.AppImage'
-
 alias l='ls -la'
 alias v='nvim'
 alias vi='nvim'

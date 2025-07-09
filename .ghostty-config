@@ -14,3 +14,4 @@ quick-terminal-screen = main
 quick-terminal-position = right
 
 keybind = global:alt+enter=toggle_quick_terminal
+keybind = shift+enter=text:\n
