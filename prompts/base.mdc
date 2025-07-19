@@ -135,6 +135,13 @@ function generateReportContent(users: ProcessedUser[]): string {
 - Fixing linting errors
 - Updating deprecated patterns
 
+**Linter error resolution:**
+- When fixing "unused variable" linter errors, **ALWAYS remove the unused variable entirely**
+- **NEVER** prefix variables with underscore (_) to bypass linter warnings
+- **NEVER** add linter ignore comments (// eslint-disable-next-line)
+- If a variable is truly needed for destructuring, remove only the unused parts
+- Clean code is better than code with workarounds
+
 ## Targeted Edits
 
 When making edits to a codebase:
