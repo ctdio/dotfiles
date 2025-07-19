@@ -68,3 +68,9 @@ zle -N _start_agent
 
 # uncomment to profile
 # zprof
+
+
+# opencode
+export PATH=/Users/charlieduong/bin:$PATH
+
+. "$HOME/.turso/env"

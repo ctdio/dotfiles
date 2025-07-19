@@ -20,6 +20,7 @@ export PATH=${PATH}:${ANDROID_HOME}/tools/bin
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 export PATH=${PATH}:${HOME}/.fzf/bin
+export PATH=${PATH}:${HOME}/.turso
 
 
 export FPATH="$HOME/.zcomp:$FPATH"
