@@ -197,6 +197,96 @@ function processUnknownData(data: unknown) {
 4. **Last resort**: Use `unknown` and add proper type guards
 5. **NEVER**: Use `any` as a solution
 
+## Import Patterns
+
+**CRITICAL: Avoid dynamic imports almost universally:**
+- Dynamic imports (`await import()`) should be avoided in nearly all cases
+- They complicate bundling, type checking, and code analysis
+- Dynamic imports make it harder to track dependencies and can introduce runtime errors
+- **ONLY** use dynamic imports in these extremely rare cases:
+  - Code splitting for large applications where specific routes need lazy loading
+  - Conditional loading of platform-specific modules (e.g., Node.js vs browser)
+  - Loading optional dependencies that may not be installed
+  - Plugin systems where modules are discovered at runtime
+
+**FORBIDDEN patterns (NEVER do this):**
+```typescript
+// ❌ WRONG - Don't use dynamic imports for regular modules
+const utils = await import('./utils');
+const result = utils.processData(data);
+
+// ❌ WRONG - Don't use dynamic imports to avoid circular dependencies
+async function getData() {
+  const { fetchData } = await import('./api');
+  return fetchData();
+}
+
+// ❌ WRONG - Don't use dynamic imports for type imports
+const { UserType } = await import('./types');
+
+// ❌ WRONG - Don't use dynamic imports just because the module is large
+const heavyLib = await import('heavy-library');
+```
+
+**CORRECT patterns (ALWAYS prefer these):**
+```typescript
+// ✅ CORRECT - Use static imports for all regular dependencies
+import { processData } from './utils';
+const result = processData(data);
+
+// ✅ CORRECT - Use static imports and resolve circular dependencies properly
+import { fetchData } from './api';
+function getData() {
+  return fetchData();
+}
+
+// ✅ CORRECT - Use static type imports
+import type { UserType } from './types';
+
+// ✅ CORRECT - Use static imports even for large libraries
+import * as heavyLib from 'heavy-library';
+```
+
+**EXTREMELY RARE valid use cases for dynamic imports:**
+```typescript
+// ✅ VALID (RARE) - Route-based code splitting in large apps
+const routes = {
+  '/admin': () => import('./pages/AdminDashboard'),
+  '/user': () => import('./pages/UserProfile'),
+};
+
+// ✅ VALID (RARE) - Platform-specific modules
+const crypto = isNode 
+  ? await import('crypto')
+  : await import('./browser-crypto');
+
+// ✅ VALID (RARE) - Optional peer dependencies
+try {
+  const optionalLib = await import('optional-peer-dep');
+  // Use optional functionality
+} catch {
+  // Gracefully handle missing dependency
+}
+
+// ✅ VALID (RARE) - Plugin system with runtime discovery
+async function loadPlugin(pluginName: string) {
+  try {
+    return await import(`./plugins/${pluginName}`);
+  } catch {
+    console.error(`Plugin ${pluginName} not found`);
+  }
+}
+```
+
+**Why static imports are almost always better:**
+- Bundle size optimization through tree shaking
+- Better TypeScript type inference and checking
+- Easier dependency tracking and analysis
+- Compile-time error detection
+- Better IDE support and refactoring capabilities
+- Predictable module loading order
+- No runtime overhead of dynamic loading
+
 ## Array Iteration Performance Guidelines
 
 **CRITICAL: Choose the right array method for optimal performance:**

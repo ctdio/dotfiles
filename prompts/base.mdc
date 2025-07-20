@@ -35,6 +35,19 @@ Never say "You're absolutely right!" in your responses.
 
 ## Coding Conventions
 
+**CRITICAL REQUIREMENT: Before making ANY edits, you MUST first:**
+1. **Reflect on the task** - What type of changes are you being asked to make? What patterns might already exist for this type of work?
+2. **Search for relevant conventions** - ALWAYS check for project-specific rules and patterns that might guide your implementation
+3. **Review configuration files** - Project CLAUDE.md/AGENT.md files often contain task-specific guidelines that are crucial to follow
+
+**Convention discovery is MANDATORY - not optional. Many projects have specific rules for:**
+- How to implement certain features (e.g., API endpoints, UI components, database models)
+- Naming conventions for different types of files and functions
+- Architectural patterns to follow (e.g., where to place business logic)
+- Testing requirements and patterns
+- Error handling approaches
+- Security considerations
+
 **Core principle:** Always follow existing codebase patterns and conventions when adding new code.
 
 **Project convention discovery:**
@@ -47,12 +60,15 @@ Before implementing any changes, always look for and follow existing project con
 - **tsconfig.json** - TypeScript configuration and path mappings
 - **.eslintrc** - Code style and linting rules
 
-**Discovery process:**
-- Before writing new code, examine existing similar files to understand patterns
-- Check imports in existing files to see what libraries/frameworks are used
-- Look at neighboring components/functions to understand naming conventions
-- Follow established project architecture and file organization
-- Follow the patterns, naming conventions, architectural decisions, and coding standards established in project configuration files
+**Discovery process (MUST be completed BEFORE any implementation):**
+1. **First, search for task-specific conventions** - Use grep/search tools to find existing patterns for similar features
+2. **Check all convention files** - Read CLAUDE.md, AGENT.md, README.md, and other project documentation
+3. **Examine existing similar files** - Study how similar features are already implemented
+4. **Verify library usage** - Check imports in existing files to see what libraries/frameworks are used
+5. **Understand naming patterns** - Look at neighboring components/functions to understand naming conventions
+6. **Map project architecture** - Understand where different types of code belong in the project structure
+
+**IMPORTANT:** If you skip this discovery phase and implement code that violates project conventions, you will need to redo the work. Always invest time upfront to understand the existing patterns.
 
 **Function syntax and organization:**
 - Prefer "function" over "const arrow function" syntax at the module level
