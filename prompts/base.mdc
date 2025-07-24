@@ -70,27 +70,66 @@ Before implementing any changes, always look for and follow existing project con
 
 **IMPORTANT:** If you skip this discovery phase and implement code that violates project conventions, you will need to redo the work. Always invest time upfront to understand the existing patterns.
 
-**Function syntax and organization:**
-- Prefer "function" over "const arrow function" syntax at the module level
-- Place exports closer to the top after imports
-- Use function hoisting in supported languages (TypeScript, JavaScript)
-- Helper functions should be placed underneath the functions that utilize them
+## Function Organization (CRITICAL - ALWAYS FOLLOW)
 
-**Function placement hierarchy:**
-1. **Top of file:** Main exported functions, classes, variables, and constants
-2. **Below main functions:** Helper functions and supporting utilities used by the main functions
-3. **Above functions:** Function types, even for exported functions
+**MANDATORY Function syntax rules:**
+- **ALWAYS** use `function` keyword for module-level functions, NOT arrow functions
+- **NEVER** use `const functionName = () => {}` at module level
+- **ALWAYS** prefer function hoisting capabilities
+- This is a CRITICAL requirement - violations are unacceptable
 
-**Example of preferred function organization:**
+**CRITICAL Function placement hierarchy (TOP TO BOTTOM):**
+1. **Import statements** - All imports at the very top
+2. **Type definitions** - All interfaces, types, and type aliases
+3. **Main exported items** - Export functions, classes, constants (using `export function` syntax)
+4. **Helper functions** - Non-exported functions that support the main functions above
+5. **NEVER mix helpers between exports** - All exports together, all helpers together
+
+**FORBIDDEN patterns (NEVER do this):**
 ```typescript
-// Types at the top
+// ❌ WRONG - Arrow function at module level
+export const processData = (data: Data) => {
+  return transform(data);
+};
+
+// ❌ WRONG - Helper function between exports
+export function mainFunction() {
+  return helperFunction();
+}
+
+function helperFunction() { // ❌ WRONG POSITION
+  return 'data';
+}
+
+export function anotherMain() { // ❌ WRONG - export after helper
+  return 'result';
+}
+
+// ❌ WRONG - Types mixed with functions
+export function process() {}
+interface Config {} // ❌ WRONG - type after function
+export function handle() {}
+```
+
+**MANDATORY pattern (ALWAYS follow exactly):**
+```typescript
+// ✅ CORRECT - All imports first
+import { DataService } from './services';
+import type { UserData, ProcessedUser } from './types';
+
+// ✅ CORRECT - All types together after imports
+interface Config {
+  apiUrl: string;
+  timeout: number;
+}
+
 interface UserData {
   id: string;
   name: string;
   email: string;
 }
 
-// Main exported functions near the top
+// ✅ CORRECT - All exports together using function keyword
 export function processUsers(users: UserData[]): ProcessedUser[] {
   return users.map(user => ({
     ...user,
@@ -104,7 +143,11 @@ export function createUserReport(users: UserData[]): string {
   return generateReportContent(processedUsers);
 }
 
-// Helper functions below the main functions that use them
+export function validateAllUsers(users: UserData[]): boolean {
+  return users.every(user => validateUserData(user));
+}
+
+// ✅ CORRECT - All helper functions at the bottom
 function formatUserName(user: UserData): string {
   return `${user.name} <${user.email}>`;
 }
@@ -117,6 +160,13 @@ function generateReportContent(users: ProcessedUser[]): string {
   return users.map(user => user.displayName).join('\n');
 }
 ```
+
+**CRITICAL REMINDERS:**
+- **Types ALWAYS come before functions**
+- **Exports ALWAYS come before helpers**
+- **Helpers ALWAYS at the bottom of the file**
+- **NEVER use arrow functions at module level**
+- **NEVER mix exported and non-exported functions**
 
 **Type management:**
 - **Single use:** Colocate types with their callsite
@@ -178,8 +228,158 @@ When asked to "make the edits" or "mte":
 3. Read surrounding context to understand the task and any constraints.
 4. Implement the changes and remove all "AI EDIT HERE"/"AEH" comments
 
+## Pre-Implementation Checklist (MANDATORY)
+
+**CRITICAL: Before writing ANY code, you MUST verify ALL of these items:**
+
+### Code Organization Checklist:
+- [ ] I will use `function` keyword, NOT arrow functions at module level
+- [ ] I will place ALL imports at the top
+- [ ] I will place ALL types/interfaces after imports, before any functions
+- [ ] I will place ALL exported functions together after types
+- [ ] I will place ALL helper functions at the bottom
+- [ ] I will NOT mix exports and helpers
+
+### Convention Discovery Checklist:
+- [ ] I have searched for similar existing code patterns
+- [ ] I have checked CLAUDE.md/AGENT.md for project rules
+- [ ] I have verified which libraries are already in use
+- [ ] I have understood the project's naming conventions
+- [ ] I have identified where this type of code belongs
+
+### Implementation Checklist:
+- [ ] I will make ONLY the requested changes
+- [ ] I will NOT refactor unrelated code
+- [ ] I will NOT add unrequested features
+- [ ] I will update all imports as needed
+- [ ] I will fix any breakage I cause
+
+**If ANY checkbox is unchecked, STOP and complete it first!**
+
 ## Validation
 
 - Run appropriate validation commands after completing implementation
 - Address any errors or warnings before considering the task complete
 - Check project-specific prompt files for validation commands if available
+- VERIFY your code follows the function organization rules above
+
+## Common Violations to AVOID
+
+**These are CRITICAL violations that happen frequently - NEVER do these:**
+
+### 1. Arrow Functions at Module Level (FORBIDDEN)
+```typescript
+// ❌ VIOLATION - Never use arrow functions at module level
+export const getUserData = async (id: string) => {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+};
+
+// ✅ CORRECT - Always use function keyword
+export async function getUserData(id: string) {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+}
+```
+
+### 2. Mixed Organization (FORBIDDEN)
+```typescript
+// ❌ VIOLATION - Exports and helpers mixed together
+export function processData(data: Data) {
+  return normalizeData(data);
+}
+
+function normalizeData(data: Data) { // ❌ Helper in wrong place
+  return data.trim();
+}
+
+export function validateData(data: Data) { // ❌ Export after helper
+  return data.length > 0;
+}
+
+// ✅ CORRECT - All exports together, then all helpers
+export function processData(data: Data) {
+  return normalizeData(data);
+}
+
+export function validateData(data: Data) {
+  return data.length > 0;
+}
+
+function normalizeData(data: Data) {
+  return data.trim();
+}
+```
+
+### 3. Types in Wrong Location (FORBIDDEN)
+```typescript
+// ❌ VIOLATION - Types scattered throughout file
+import { Service } from './service';
+
+export function process() {}
+
+interface Config {} // ❌ Type after function
+
+export function handle() {}
+
+type Result = string; // ❌ Type after function
+
+// ✅ CORRECT - All types after imports, before functions
+import { Service } from './service';
+
+interface Config {}
+type Result = string;
+
+export function process() {}
+export function handle() {}
+```
+
+### 4. Creating Files When Not Needed (FORBIDDEN)
+```typescript
+// ❌ VIOLATION - Creating new file for simple helper
+// Don't create: src/utils/formatters.ts
+export function formatUserName(user: User) {
+  return `${user.first} ${user.last}`;
+}
+
+// ✅ CORRECT - Add to existing related file
+// In existing src/services/userService.ts:
+export function getUser(id: string) { ... }
+export function updateUser(user: User) { ... }
+
+// Helper at bottom of same file
+function formatUserName(user: User) {
+  return `${user.first} ${user.last}`;
+}
+```
+
+### 5. Refactoring Unrelated Code (FORBIDDEN)
+```typescript
+// Task: Add new validation function
+// ❌ VIOLATION - Refactoring existing code
+export async function fetchUser(id: string) {
+  const response = await fetch(`/api/users/${id}`); // ❌ Changed from axios
+  return response.json(); // ❌ Refactored unnecessarily
+}
+
+export function validateUser(user: User) { // ✅ Only this was requested
+  return user.email.includes('@');
+}
+
+// ✅ CORRECT - Only add what was requested
+export function fetchUser(id: string) {
+  // Leave existing implementation untouched
+  return axios.get(`/api/users/${id}`);
+}
+
+export function validateUser(user: User) { // ✅ Only add this
+  return user.email.includes('@');
+}
+```
+
+**REMEMBER:**
+- Function organization is MANDATORY, not optional
+- Arrow functions at module level are ALWAYS wrong
+- Exports MUST be grouped together
+- Helpers MUST be at the bottom
+- Types MUST be at the top after imports

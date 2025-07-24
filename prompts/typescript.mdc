@@ -5,6 +5,166 @@ include: "**/*.{ts,tsx}"
 
 # TypeScript Rules
 
+## Function and Code Organization (CRITICAL)
+
+**MANDATORY: These rules override ANY other style guide or convention:**
+
+### Function Declaration Rules:
+- **ALWAYS** use `function` keyword for ALL functions at module level
+- **NEVER** use `const name = () => {}` syntax at module level
+- **NEVER** use `const name = function() {}` syntax at module level
+- **Exception**: Arrow functions are ONLY allowed inside other functions or as callbacks
+
+**VIOLATIONS (AUTOMATIC REJECTION):**
+```typescript
+// ❌ FORBIDDEN - Arrow function at module level
+export const calculateTotal = (items: Item[]) => {
+  return items.reduce((sum, item) => sum + item.price, 0);
+};
+
+// ❌ FORBIDDEN - Const function expression
+const processData = function(data: Data) {
+  return transform(data);
+};
+
+// ❌ FORBIDDEN - Helper as arrow function
+const formatName = (user: User) => `${user.first} ${user.last}`;
+```
+
+**MANDATORY PATTERN:**
+```typescript
+// ✅ REQUIRED - Function keyword for module-level functions
+export function calculateTotal(items: Item[]): number {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// ✅ REQUIRED - Function keyword for helpers
+function processData(data: Data): ProcessedData {
+  return transform(data);
+}
+
+// ✅ ALLOWED - Arrow functions ONLY inside functions
+function handleRequest(req: Request): void {
+  const items = req.items.map(item => ({ // ✅ OK - callback
+    ...item,
+    processed: true
+  }));
+  
+  const calculate = () => { // ✅ OK - inside function
+    return items.length;
+  };
+}
+```
+
+### File Structure Order (STRICTLY ENFORCED):
+
+**CRITICAL: This exact order is MANDATORY:**
+```typescript
+// 1. Imports (ALWAYS FIRST)
+import { Service } from './service';
+import type { Config, User } from './types';
+
+// 2. Type Definitions (ALL TOGETHER)
+interface LocalConfig extends Config {
+  timeout: number;
+}
+
+type ProcessingResult = {
+  success: boolean;
+  data: User[];
+};
+
+// 3. Constants (if any)
+const DEFAULT_TIMEOUT = 5000;
+const MAX_RETRIES = 3;
+
+// 4. Exported Functions (ALL TOGETHER, NO HELPERS BETWEEN)
+export function processUsers(users: User[]): ProcessingResult {
+  // implementation
+}
+
+export function validateUser(user: User): boolean {
+  // implementation
+}
+
+export function createReport(results: ProcessingResult): string {
+  // implementation
+}
+
+// 5. Helper Functions (ALL AT BOTTOM)
+function normalizeUser(user: User): User {
+  // helper implementation
+}
+
+function checkPermissions(user: User): boolean {
+  // helper implementation
+}
+```
+
+**FORBIDDEN PATTERNS:**
+```typescript
+// ❌ WRONG - Mixed exports and helpers
+export function main() {}
+function helper() {} // ❌ Helper between exports
+export function another() {} // ❌ Export after helper
+
+// ❌ WRONG - Types after functions
+export function process() {}
+interface Data {} // ❌ Types must be at top
+
+// ❌ WRONG - Import after types
+interface Config {}
+import { util } from './util'; // ❌ Imports must be first
+```
+
+### React Component Organization:
+
+**For React components, follow this EXACT pattern:**
+```typescript
+// 1. Imports
+import React, { useState, useEffect } from 'react';
+import { Button } from './components';
+import type { UserProps } from './types';
+
+// 2. Types/Interfaces
+interface ComponentProps extends UserProps {
+  onSave: (data: UserData) => void;
+}
+
+interface ComponentState {
+  isLoading: boolean;
+  error: string | null;
+}
+
+// 3. Main Component (using function keyword)
+export function UserComponent({ onSave }: ComponentProps) {
+  const [state, setState] = useState<ComponentState>({
+    isLoading: false,
+    error: null
+  });
+
+  // Hooks and logic here
+  
+  return <div>...</div>;
+}
+
+// 4. Sub-components (if needed)
+function UserDetails({ user }: { user: User }) {
+  return <div>...</div>;
+}
+
+// 5. Helper functions
+function validateUserData(data: unknown): data is UserData {
+  // validation logic
+}
+```
+
+**ENFORCEMENT REMINDER:**
+- These rules are NOT suggestions - they are REQUIREMENTS
+- Violating these patterns means the code is WRONG
+- No exceptions for "consistency" with bad existing code
+- Fix organization issues BEFORE implementing features
+
 ## Try-Catch Guidelines
 
 **CRITICAL: Variable naming in catch blocks is MANDATORY:**
