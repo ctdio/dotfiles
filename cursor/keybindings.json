@@ -13,6 +13,19 @@
     "args": { "text": "\u001b[A" },
     "when": "terminalFocus"
   },
+
+  // prevent toggling of panel
+  {
+    "key": "cmd+j",
+    "command": "-workbench.action.togglePanel"
+  },
+  // muscle memory, typically use <space>q to quickly toggle qflist
+  {
+    "key": "q",
+    "command": "workbench.action.togglePanel",
+    "when": "panelFocus && !problemsFilterFocus"
+  },
+
   // cancel
   {
     "key": "ctrl+c",

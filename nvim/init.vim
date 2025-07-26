@@ -44,6 +44,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'rebelot/kanagawa.nvim'
   Plug 'webhooked/kanso.nvim'
   Plug 'EdenEast/nightfox.nvim'
+  Plug 'sainnhe/everforest'
 
   " writing
   Plug 'folke/zen-mode.nvim'
