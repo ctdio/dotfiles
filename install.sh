@@ -69,6 +69,8 @@ function link_dotfiles () {
   echo "Linking starship.toml to ~/.config/starship.toml"
   ln -nsf ${DOTFILES_DIR}/starship.toml ~/.config/starship.toml
 
+  echo "Linking television to ~/.config/television"
+  ln -nsf ${DOTFILES_DIR}/television ~/.config/television
 
   local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
   local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
