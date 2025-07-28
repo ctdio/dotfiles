@@ -1,0 +1,15 @@
+# Git Branches Channel Configuration
+
+[metadata]
+name = "git-branches"
+description = "List and switch between git branches"
+requirements = ["git"]
+
+[source]
+command = "git branch -a --format='%(refname:short)' | sed 's|^origin/||' | sort -u"
+
+[preview]
+command = "git log --oneline --graph --decorate --color=always '{}' | head -20"
+
+[keybindings]
+shortcut = "f2"

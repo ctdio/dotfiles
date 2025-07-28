@@ -1,4 +1,8 @@
 # Television Configuration
 
+[ui]
+theme = "television"
+
 [ui.preview_panel]
 size = 60
+

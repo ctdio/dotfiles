@@ -26,9 +26,7 @@ function zvm_after_init() {
 
   bindkey '^K' autosuggest-accept
 
-  # AI Agent key bindings
-  bindkey '^A' _start_agent
-  # bindkey '^S' _suggest_command
+  bindkey '^G' _tv_git_branches  # Ctrl+G
 }
 
 # Load antidote
@@ -54,17 +52,18 @@ eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 
 eval "$(starship init zsh)"
 
-# AI Agent functions
-_start_agent() {
-  zle kill-whole line
-  BUFFER="agent"
-  zle accept-line  # Execute as if you typed it normally
+# Git branches picker using television
+_tv_git_branches() {
+  local result=$(tv git-branches)
+  if [[ -n "$result" ]]; then
+    LBUFFER+="$result"
+  fi
   zle reset-prompt
 }
 
 source ~/dotfiles/scripts/wt
 
-zle -N _start_agent
+zle -N _tv_git_branches
 
 # uncomment to profile
 # zprof
@@ -74,3 +73,6 @@ zle -N _start_agent
 export PATH=/Users/charlieduong/bin:$PATH
 
 . "$HOME/.turso/env"
+
+alias claude="/Users/charlieduong/.claude/local/claude"
+
