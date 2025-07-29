@@ -72,9 +72,10 @@ function link_dotfiles () {
   echo "Linking television to ~/.config/television"
   ln -nsf ${DOTFILES_DIR}/television ~/.config/television
 
-  echo "Linking claude agents to ~/.claude/agents"
+  echo "Linking claude agents and commands to ~/.claude"
   mkdir -p ~/.claude
   ln -nsf ${DOTFILES_DIR}/claude/agents ~/.claude/agents
+  ln -nsf ${DOTFILES_DIR}/claude/commands ~/.claude/commands
 
   local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
   local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
