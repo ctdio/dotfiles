@@ -5,17 +5,17 @@ include: "**/*.{ts,tsx}"
 
 # TypeScript Rules
 
-## Function and Code Organization (CRITICAL)
+## TypeScript-Specific Requirements
 
-**MANDATORY: These rules override ANY other style guide or convention:**
+**These rules are MANDATORY for all TypeScript code.**
 
-### Function Declaration Rules:
-- **ALWAYS** use `function` keyword for ALL functions at module level
-- **NEVER** use `const name = () => {}` syntax at module level
-- **NEVER** use `const name = function() {}` syntax at module level
-- **Exception**: Arrow functions are ONLY allowed inside other functions or as callbacks
+### Function Declarations (STRICT)
+- **ALWAYS use `function` keyword** at module level
+- **NEVER use arrow functions** except as callbacks/inside functions
+- **NEVER use** `const name = function() {}` 
+- **NO EXCEPTIONS**
 
-**VIOLATIONS (AUTOMATIC REJECTION):**
+**FORBIDDEN patterns:**
 ```typescript
 // ❌ FORBIDDEN - Arrow function at module level
 export const calculateTotal = (items: Item[]) => {
@@ -31,34 +31,33 @@ const processData = function(data: Data) {
 const formatName = (user: User) => `${user.first} ${user.last}`;
 ```
 
-**MANDATORY PATTERN:**
+**REQUIRED patterns:**
 ```typescript
-// ✅ REQUIRED - Function keyword for module-level functions
+// ✅ CORRECT - Function declarations at module level
 export function calculateTotal(items: Item[]): number {
   return items.reduce((sum, item) => sum + item.price, 0);
 }
 
-// ✅ REQUIRED - Function keyword for helpers
+// ✅ CORRECT - Helper functions use function keyword
 function processData(data: Data): ProcessedData {
   return transform(data);
 }
 
-// ✅ ALLOWED - Arrow functions ONLY inside functions
+// ✅ CORRECT - Arrow functions ONLY as callbacks or inside functions
 function handleRequest(req: Request): void {
-  const items = req.items.map(item => ({ // ✅ OK - callback
+  const items = req.items.map(item => ({ // ✅ Callback usage
     ...item,
     processed: true
   }));
   
-  const calculate = () => { // ✅ OK - inside function
+  const calculate = () => { // ✅ Inside function
     return items.length;
   };
 }
 ```
 
-### File Structure Order (STRICTLY ENFORCED):
+### TypeScript File Structure (MANDATORY ORDER)
 
-**CRITICAL: This exact order is MANDATORY:**
 ```typescript
 // 1. Imports (ALWAYS FIRST)
 import { Service } from './service';
@@ -101,21 +100,7 @@ function checkPermissions(user: User): boolean {
 }
 ```
 
-**FORBIDDEN PATTERNS:**
-```typescript
-// ❌ WRONG - Mixed exports and helpers
-export function main() {}
-function helper() {} // ❌ Helper between exports
-export function another() {} // ❌ Export after helper
-
-// ❌ WRONG - Types after functions
-export function process() {}
-interface Data {} // ❌ Types must be at top
-
-// ❌ WRONG - Import after types
-interface Config {}
-import { util } from './util'; // ❌ Imports must be first
-```
+**VIOLATIONS = INCORRECT CODE**
 
 ### React Component Organization:
 
@@ -159,18 +144,16 @@ function validateUserData(data: unknown): data is UserData {
 }
 ```
 
-**ENFORCEMENT REMINDER:**
-- These rules are NOT suggestions - they are REQUIREMENTS
-- Violating these patterns means the code is WRONG
-- No exceptions for "consistency" with bad existing code
-- Fix organization issues BEFORE implementing features
+**ENFORCEMENT:**
+- **New code** = MUST follow these patterns
+- **Existing code** = Match their patterns if different
+- **NO MIXING** styles in the same file
 
-## Try-Catch Guidelines
+## Error Handling (MANDATORY)
 
-**CRITICAL: Variable naming in catch blocks is MANDATORY:**
-- **ALWAYS** use `err` in catch blocks (never `error`, `e`, `ex`, or other variations)
-- This is a REQUIRED convention - no exceptions
-- Violating this rule is considered a critical error
+**REQUIRED: Always use `err` in catch blocks**
+- **NEVER** use `error`, `e`, `ex`, or other names
+- **NO EXCEPTIONS**
 
 ```typescript
 try {
@@ -289,12 +272,12 @@ catch (err) {
 }
 ```
 
-## Type Safety Rules
+## Type Safety (STRICT)
 
-**CRITICAL: Never use `any` types as a solution to type errors:**
-- Using `any` defeats the purpose of TypeScript and removes all type safety
-- `any` is a cop-out solution that creates technical debt and runtime risks
-- **ALWAYS** find the proper type solution instead of defaulting to `any`
+**FORBIDDEN: Using `any` to solve type errors**
+- **`any` is NOT a solution** - it's giving up on type safety
+- **ALWAYS use proper types** or `unknown` with type guards
+- **NO EXCEPTIONS**
 
 **FORBIDDEN patterns (NEVER do this):**
 ```typescript
@@ -357,413 +340,24 @@ function processUnknownData(data: unknown) {
 4. **Last resort**: Use `unknown` and add proper type guards
 5. **NEVER**: Use `any` as a solution
 
-## Import Patterns
+## Import Patterns (STRICT)
+
+**REQUIRED: Use static imports**
+- **ALWAYS use static imports** for regular dependencies
+- **AVOID dynamic imports** (`await import()`) except for:
+  - Route-based code splitting
+  - Platform-specific modules
+  - Optional dependencies
+- **NO dynamic imports** for regular modules
+
+## Summary
+
+**TypeScript code MUST follow these patterns:**
+- Function declarations at module level (NO arrow functions)
+- Strict file organization (imports → types → constants → exports → helpers)
+- `err` in catch blocks (NO other names)
+- NO `any` types as solutions
+- Static imports (NO unnecessary dynamic imports)
+
+**These are REQUIREMENTS, not suggestions.**
 
-**CRITICAL: Avoid dynamic imports almost universally:**
-- Dynamic imports (`await import()`) should be avoided in nearly all cases
-- They complicate bundling, type checking, and code analysis
-- Dynamic imports make it harder to track dependencies and can introduce runtime errors
-- **ONLY** use dynamic imports in these extremely rare cases:
-  - Code splitting for large applications where specific routes need lazy loading
-  - Conditional loading of platform-specific modules (e.g., Node.js vs browser)
-  - Loading optional dependencies that may not be installed
-  - Plugin systems where modules are discovered at runtime
-
-**FORBIDDEN patterns (NEVER do this):**
-```typescript
-// ❌ WRONG - Don't use dynamic imports for regular modules
-const utils = await import('./utils');
-const result = utils.processData(data);
-
-// ❌ WRONG - Don't use dynamic imports to avoid circular dependencies
-async function getData() {
-  const { fetchData } = await import('./api');
-  return fetchData();
-}
-
-// ❌ WRONG - Don't use dynamic imports for type imports
-const { UserType } = await import('./types');
-
-// ❌ WRONG - Don't use dynamic imports just because the module is large
-const heavyLib = await import('heavy-library');
-```
-
-**CORRECT patterns (ALWAYS prefer these):**
-```typescript
-// ✅ CORRECT - Use static imports for all regular dependencies
-import { processData } from './utils';
-const result = processData(data);
-
-// ✅ CORRECT - Use static imports and resolve circular dependencies properly
-import { fetchData } from './api';
-function getData() {
-  return fetchData();
-}
-
-// ✅ CORRECT - Use static type imports
-import type { UserType } from './types';
-
-// ✅ CORRECT - Use static imports even for large libraries
-import * as heavyLib from 'heavy-library';
-```
-
-**EXTREMELY RARE valid use cases for dynamic imports:**
-```typescript
-// ✅ VALID (RARE) - Route-based code splitting in large apps
-const routes = {
-  '/admin': () => import('./pages/AdminDashboard'),
-  '/user': () => import('./pages/UserProfile'),
-};
-
-// ✅ VALID (RARE) - Platform-specific modules
-const crypto = isNode 
-  ? await import('crypto')
-  : await import('./browser-crypto');
-
-// ✅ VALID (RARE) - Optional peer dependencies
-try {
-  const optionalLib = await import('optional-peer-dep');
-  // Use optional functionality
-} catch {
-  // Gracefully handle missing dependency
-}
-
-// ✅ VALID (RARE) - Plugin system with runtime discovery
-async function loadPlugin(pluginName: string) {
-  try {
-    return await import(`./plugins/${pluginName}`);
-  } catch {
-    console.error(`Plugin ${pluginName} not found`);
-  }
-}
-```
-
-**Why static imports are almost always better:**
-- Bundle size optimization through tree shaking
-- Better TypeScript type inference and checking
-- Easier dependency tracking and analysis
-- Compile-time error detection
-- Better IDE support and refactoring capabilities
-- Predictable module loading order
-- No runtime overhead of dynamic loading
-
-## Array Iteration Performance Guidelines
-
-**CRITICAL: Choose the right array method for optimal performance:**
-- Understanding the performance characteristics of different array methods is essential for writing efficient code
-- The choice of iteration method can significantly impact performance, especially with large datasets
-- **ALWAYS** consider the size of your data and the operation you're performing
-
-### Performance Hierarchy (Fastest to Slowest)
-
-**1. Traditional for loop (FASTEST):**
-```typescript
-// ✅ BEST - Fastest for pure iteration and transformations
-const results: string[] = [];
-for (let i = 0; i < items.length; i++) {
-  results.push(items[i].name);
-}
-
-// ✅ BEST - For-of loop (nearly as fast, more readable)
-const results: string[] = [];
-for (const item of items) {
-  results.push(item.name);
-}
-```
-
-**2. forEach (AVOID - Use for-of instead):**
-```typescript
-// ⚠️ AVOID - forEach has poor performance and limited control flow
-const results: string[] = [];
-items.forEach(item => {
-  results.push(item.name);
-});
-
-// ✅ BETTER - Use for-of loop instead
-const results: string[] = [];
-for (const item of items) {
-  results.push(item.name);
-}
-```
-
-**3. map (GOOD for transformations):**
-```typescript
-// ✅ GOOD - Ideal for transformations, creates new array
-const names = items.map(item => item.name);
-```
-
-**4. filter (GOOD for filtering):**
-```typescript
-// ✅ GOOD - Ideal for filtering, but creates new array
-const activeItems = items.filter(item => item.active);
-```
-
-**5. reduce (SLOWER - avoid when possible):**
-```typescript
-// ⚠️ SLOWER - Avoid reduce for performance reasons
-const total = items.reduce((sum, item) => sum + item.value, 0);
-
-// ✅ BETTER - Use traditional loop with mutable accumulator
-let total = 0;
-for (const item of items) {
-  total += item.value;
-}
-```
-
-**6. find/findIndex (VARIABLE):**
-```typescript
-// ⚠️ VARIABLE - Fast for early matches, slow for no matches
-const user = users.find(u => u.id === targetId);
-```
-
-**7. some/every (VARIABLE):**
-```typescript
-// ⚠️ VARIABLE - Fast for early matches, slower for full scans
-const hasActive = items.some(item => item.active);
-const allActive = items.every(item => item.active);
-```
-
-### Method Selection Guidelines
-
-**Use traditional for/for-of loops when:**
-- Performance is critical and you're working with large arrays (>10,000 items)
-- You need maximum control over iteration (breaking, continuing, custom logic)
-- You're doing simple transformations or accumulations
-
-**AVOID forEach - Use for-of loops instead:**
-- forEach has worse performance than traditional loops
-- Cannot use break/continue/return to control flow
-- Creates unnecessary function call overhead
-- **PREFER**: for-of loops for better performance and control flow
-
-**Use map when:**
-- You need to transform every element into a new array
-- The transformation is pure (no side effects)
-- You want functional programming style
-
-**Use filter when:**
-- You need to create a new array with only some elements
-- The filtering condition is pure
-- You're working with reasonably sized datasets
-
-**Use reduce when:**
-- No alternative exists for complex transformations
-- You're working with very small datasets (<100 items)
-- The operation is rarely executed
-- **PREFER**: Traditional loops with mutable accumulators for better performance
-
-**Use find/findIndex when:**
-- You only need the first matching element
-- You can break early (don't need to scan the entire array)
-- The condition is likely to match early in the array
-
-### Performance Anti-Patterns
-
-**FORBIDDEN: Chaining multiple array methods unnecessarily:**
-```typescript
-// ❌ WRONG - Multiple iterations over the same data
-const result = items
-  .filter(item => item.active)
-  .map(item => item.name)
-  .filter(name => name.length > 3);
-
-// ✅ CORRECT - Single iteration with traditional loop
-const result: string[] = [];
-for (const item of items) {
-  if (item.active && item.name.length > 3) {
-    result.push(item.name);
-  }
-}
-```
-
-**FORBIDDEN: Using reduce when alternatives exist:**
-```typescript
-// ❌ WRONG - Reduce is slower and unnecessary
-const names = items.reduce((acc, item) => {
-  acc.push(item.name);
-  return acc;
-}, [] as string[]);
-
-// ❌ WRONG - Reduce for grouping is slow
-const grouped = items.reduce((acc, item) => {
-  if (!acc[item.category]) acc[item.category] = [];
-  acc[item.category].push(item);
-  return acc;
-}, {} as Record<string, Item[]>);
-
-// ✅ CORRECT - Use map for transformations
-const names = items.map(item => item.name);
-
-// ✅ CORRECT - Use traditional loop with mutable object for grouping
-const grouped: Record<string, Item[]> = {};
-for (const item of items) {
-  if (!grouped[item.category]) grouped[item.category] = [];
-  grouped[item.category].push(item);
-}
-```
-
-**FORBIDDEN: forEach for any use case:**
-```typescript
-// ❌ WRONG - forEach for transformations (use map)
-const names: string[] = [];
-items.forEach(item => {
-  names.push(item.name); // Side effect
-});
-
-// ❌ WRONG - forEach for side effects (use for-of)
-items.forEach(item => {
-  console.log(item);
-  updateUI(item);
-});
-
-// ❌ WRONG - forEach loses control flow capabilities
-items.forEach(item => {
-  if (item.invalid) {
-    return; // Only exits this iteration, not the whole loop!
-  }
-  process(item);
-});
-
-// ✅ CORRECT - Use map for pure transformations
-const names = items.map(item => item.name);
-
-// ✅ CORRECT - Use for-of for side effects
-for (const item of items) {
-  console.log(item);
-  updateUI(item);
-}
-
-// ✅ CORRECT - Use for-of for control flow
-for (const item of items) {
-  if (item.invalid) {
-    break; // Actually exits the loop
-  }
-  process(item);
-}
-```
-
-### Large Dataset Considerations
-
-**For arrays with >10,000 items:**
-- Prefer traditional for loops over array methods
-- Consider breaking large operations into chunks
-- Use early returns and breaks when possible
-- Monitor performance with profiling tools
-
-**For arrays with >100,000 items:**
-- Always use traditional for loops
-- Consider using Set or Map for lookups instead of find()
-- Implement pagination or virtualization for UI
-- Consider Web Workers for heavy processing
-
-### Memory Efficiency Guidelines
-
-**CRITICAL: Avoid creating unnecessary intermediate arrays:**
-```typescript
-// ❌ MEMORY INEFFICIENT - Creates multiple intermediate arrays
-const result = largeArray
-  .filter(item => item.active)
-  .map(item => ({ ...item, processed: true }))
-  .slice(0, 100);
-
-// ✅ MEMORY EFFICIENT - Single pass with early termination
-const result: ProcessedItem[] = [];
-let count = 0;
-for (const item of largeArray) {
-  if (item.active && count < 100) {
-    result.push({ ...item, processed: true });
-    count++;
-  }
-  if (count >= 100) break;
-}
-```
-
-**When working with large datasets:**
-- Reuse arrays when possible instead of creating new ones
-- Use `Array.from()` with length for pre-sized arrays
-- Consider streaming or pagination instead of loading everything
-- Profile memory usage during development
-
-### Accumulator Pattern Guidelines
-
-**CRITICAL: Prefer mutable accumulators over reduce for performance:**
-- Mutating accumulator objects/arrays is significantly faster than reduce
-- Traditional loops with mutation avoid function call overhead
-- More readable and easier to debug than reduce chains
-
-**PREFERRED patterns for common operations:**
-
-```typescript
-// ✅ GROUPING - Use mutable object
-const itemsByCategory: Record<string, Item[]> = {};
-for (const item of items) {
-  const category = item.category;
-  if (!itemsByCategory[category]) {
-    itemsByCategory[category] = [];
-  }
-  itemsByCategory[category].push(item);
-}
-
-// ✅ COUNTING - Use mutable object
-const counts: Record<string, number> = {};
-for (const item of items) {
-  counts[item.type] = (counts[item.type] || 0) + 1;
-}
-
-// ✅ SUMMING - Use mutable variable
-let totalPrice = 0;
-for (const item of items) {
-  totalPrice += item.price;
-}
-
-// ✅ FILTERING AND TRANSFORMING - Use mutable array
-const processedActiveItems: ProcessedItem[] = [];
-for (const item of items) {
-  if (item.active) {
-    processedActiveItems.push({
-      id: item.id,
-      name: item.name.toUpperCase(),
-      processed: true
-    });
-  }
-}
-
-// ✅ BUILDING COMPLEX OBJECTS - Use mutable accumulator
-const summary = {
-  totalItems: 0,
-  totalValue: 0,
-  categories: new Set<string>(),
-  activeCount: 0
-};
-
-for (const item of items) {
-  summary.totalItems++;
-  summary.totalValue += item.value;
-  summary.categories.add(item.category);
-  if (item.active) summary.activeCount++;
-}
-```
-
-**AVOID these reduce patterns:**
-
-```typescript
-// ❌ SLOW - Reduce for grouping
-const grouped = items.reduce((acc, item) => {
-  if (!acc[item.category]) acc[item.category] = [];
-  acc[item.category].push(item);
-  return acc;
-}, {} as Record<string, Item[]>);
-
-// ❌ SLOW - Reduce for counting
-const counts = items.reduce((acc, item) => {
-  acc[item.type] = (acc[item.type] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-
-// ❌ SLOW - Reduce for complex objects
-const summary = items.reduce((acc, item) => ({
-  ...acc, // Spread creates new object each iteration!
-  totalItems: acc.totalItems + 1,
-  totalValue: acc.totalValue + item.value
-}), { totalItems: 0, totalValue: 0 });
-```

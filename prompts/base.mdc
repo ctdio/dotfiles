@@ -9,6 +9,28 @@ You execute tasks with precision. You make only the changes required to complete
 
 Never say "You're absolutely right!" in your responses.
 
+## My Code Style: Non-Negotiable Defaults
+
+**These patterns are MANDATORY for all new code. They reflect hard-won lessons from debugging production systems.**
+
+### File Structure (STRICT ORDER - NO EXCEPTIONS)
+
+```
+1. Imports (all at top, no gaps)
+2. Types/Interfaces (all together)  
+3. Constants (if any)
+4. Exported functions (all together, use 'function' keyword)
+5. Helper functions (all at bottom)
+```
+
+### CRITICAL RULES:
+- **ALWAYS use `function` keyword** for module-level functions
+- **NEVER use arrow functions** at module level (they belong in callbacks only)
+- **NEVER mix exports and helpers** - maintain strict separation
+- **NO EXCEPTIONS** for new files or greenfield code
+
+**Why:** Better stack traces, clearer debugging, predictable code organization. These aren't preferences - they're requirements based on production experience.
+
 ## Scope Guidelines
 
 **Core Principle:** Make changes that are directly required or logically necessary to complete the task.
@@ -70,22 +92,37 @@ Before implementing any changes, always look for and follow existing project con
 
 **IMPORTANT:** If you skip this discovery phase and implement code that violates project conventions, you will need to redo the work. Always invest time upfront to understand the existing patterns.
 
-## Function Organization (CRITICAL - ALWAYS FOLLOW)
+## Function Organization (MANDATORY)
 
-**MANDATORY Function syntax rules:**
-- **ALWAYS** use `function` keyword for module-level functions, NOT arrow functions
-- **NEVER** use `const functionName = () => {}` at module level
-- **ALWAYS** prefer function hoisting capabilities
-- This is a CRITICAL requirement - violations are unacceptable
+**STRICT REQUIREMENTS:**
 
-**CRITICAL Function placement hierarchy (TOP TO BOTTOM):**
-1. **Import statements** - All imports at the very top
-2. **Type definitions** - All interfaces, types, and type aliases
-3. **Main exported items** - Export functions, classes, constants (using `export function` syntax)
-4. **Helper functions** - Non-exported functions that support the main functions above
-5. **NEVER mix helpers between exports** - All exports together, all helpers together
+1. **Import statements** - ALL at the very top
+   - Regular imports first, type imports second
+   - NO blank lines between import groups
+   - Violation = WRONG
 
-**FORBIDDEN patterns (NEVER do this):**
+2. **Type definitions** - ALL together after imports
+   - Interfaces before type aliases  
+   - NO functions between types
+   - Violation = WRONG
+
+3. **Constants** - After types (if any)
+   - Only true constants (not functions)
+   - Violation = WRONG
+
+4. **Exported items** - ALL grouped together
+   - MUST use `export function` syntax
+   - NO arrow functions
+   - NO helpers between exports
+   - Violation = WRONG
+
+5. **Helper functions** - ALL at the bottom
+   - NEVER mixed with exports
+   - Violation = WRONG
+
+**ENFORCEMENT: Code that violates this structure is incorrect and must be fixed.**
+
+**FORBIDDEN patterns (NEVER write code like this):**
 ```typescript
 // ❌ WRONG - Arrow function at module level
 export const processData = (data: Data) => {
@@ -113,21 +150,31 @@ export function handle() {}
 
 **MANDATORY pattern (ALWAYS follow exactly):**
 ```typescript
-// ✅ CORRECT - All imports first
+// ✅ CORRECT - All imports first (no blank lines between)
 import { DataService } from './services';
+import { Logger } from './logger';
 import type { UserData, ProcessedUser } from './types';
+import type { Config } from './config';
 
 // ✅ CORRECT - All types together after imports
-interface Config {
+interface LocalConfig extends Config {
   apiUrl: string;
   timeout: number;
 }
 
-interface UserData {
-  id: string;
-  name: string;
-  email: string;
+interface UserRequest {
+  userId: string;
+  action: string;
 }
+
+type ValidationResult = {
+  isValid: boolean;
+  errors: string[];
+};
+
+// ✅ CORRECT - Constants after types (if needed)
+const DEFAULT_TIMEOUT = 5000;
+const MAX_RETRIES = 3;
 
 // ✅ CORRECT - All exports together using function keyword
 export function processUsers(users: UserData[]): ProcessedUser[] {
@@ -143,8 +190,19 @@ export function createUserReport(users: UserData[]): string {
   return generateReportContent(processedUsers);
 }
 
-export function validateAllUsers(users: UserData[]): boolean {
-  return users.every(user => validateUserData(user));
+export function validateAllUsers(users: UserData[]): ValidationResult {
+  const errors: string[] = [];
+  const isValid = users.every(user => {
+    const valid = validateUserData(user);
+    if (!valid) errors.push(`Invalid user: ${user.id}`);
+    return valid;
+  });
+  return { isValid, errors };
+}
+
+export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
+  const users = await fetchUsers(config);
+  return processUsers(users);
 }
 
 // ✅ CORRECT - All helper functions at the bottom
@@ -159,14 +217,19 @@ function validateUserData(user: UserData): boolean {
 function generateReportContent(users: ProcessedUser[]): string {
   return users.map(user => user.displayName).join('\n');
 }
+
+async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
+  // Implementation here
+  return [];
+}
 ```
 
-**CRITICAL REMINDERS:**
-- **Types ALWAYS come before functions**
-- **Exports ALWAYS come before helpers**
-- **Helpers ALWAYS at the bottom of the file**
-- **NEVER use arrow functions at module level**
-- **NEVER mix exported and non-exported functions**
+**Why this structure matters to me:**
+- **Predictable navigation** - I know exactly where to find things
+- **Clear contracts** - Types and exports define the module's interface
+- **Hidden complexity** - Implementation details don't clutter the API
+- **Better debugging** - Function declarations give cleaner stack traces
+- **Easier refactoring** - Clear boundaries between public and private code
 
 **Type management:**
 - **Single use:** Colocate types with their callsite
@@ -228,17 +291,36 @@ When asked to "make the edits" or "mte":
 3. Read surrounding context to understand the task and any constraints.
 4. Implement the changes and remove all "AI EDIT HERE"/"AEH" comments
 
+## Code Style Application Rules
+
+### NEW CODE (MANDATORY)
+When creating new files or working in greenfield projects:
+- **MUST follow my patterns exactly**
+- **NO EXCEPTIONS**
+- **This is the default**
+
+### EXISTING CODEBASES
+When working in files with established patterns:
+1. **Check if they follow my patterns** - if yes, continue with them
+2. **If different** - match their existing style for consistency
+3. **Never mix styles** in the same file or module
+
+**IMPORTANT:** My patterns are the default. Only deviate when working in existing code with different established patterns.
+
 ## Pre-Implementation Checklist (MANDATORY)
 
-**CRITICAL: Before writing ANY code, you MUST verify ALL of these items:**
+**Before writing ANY code, verify:**
 
-### Code Organization Checklist:
-- [ ] I will use `function` keyword, NOT arrow functions at module level
-- [ ] I will place ALL imports at the top
-- [ ] I will place ALL types/interfaces after imports, before any functions
-- [ ] I will place ALL exported functions together after types
-- [ ] I will place ALL helper functions at the bottom
+### Code Structure Requirements:
+- [ ] I will use `function` keyword for ALL module-level functions
+- [ ] I will place imports → types → constants → exports → helpers IN THAT ORDER
+- [ ] I will NOT use arrow functions at module level
 - [ ] I will NOT mix exports and helpers
+
+### Context Check:
+- [ ] New file/greenfield = MUST use my patterns
+- [ ] Existing file = check and match their patterns
+- [ ] I will NOT mix different styles
 
 ### Convention Discovery Checklist:
 - [ ] I have searched for similar existing code patterns
@@ -377,9 +459,77 @@ export function validateUser(user: User) { // ✅ Only add this
 }
 ```
 
-**REMEMBER:**
-- Function organization is MANDATORY, not optional
-- Arrow functions at module level are ALWAYS wrong
-- Exports MUST be grouped together
-- Helpers MUST be at the bottom
-- Types MUST be at the top after imports
+### 6. React Components: My Approach
+
+**Why I use function declarations for components:**
+- Consistent with my overall philosophy
+- Better component names in React DevTools
+- Clearer stack traces in errors
+- Hoisting allows flexible organization when needed
+
+```typescript
+// ❌ The pattern I avoid - unclear debugging and inconsistent style
+import React from 'react';
+
+export const UserCard = ({ user }: Props) => { // Arrow function obscures component name
+  return <div>{user.name}</div>;
+};
+
+interface Props { // Types after implementation
+  user: User;
+}
+
+// ✅ My preferred pattern - clean, consistent, debuggable
+import React, { useState, useEffect } from 'react';
+import { Button } from './components';
+import type { UserData } from './types';
+
+interface UserCardProps {
+  user: UserData;
+  onUpdate: (user: UserData) => void;
+}
+
+interface UserCardState {
+  isEditing: boolean;
+  tempName: string;
+}
+
+export function UserCard({ user, onUpdate }: UserCardProps) {
+  const [state, setState] = useState<UserCardState>({
+    isEditing: false,
+    tempName: user.name
+  });
+
+  // Component logic here
+  
+  return (
+    <div>
+      {/* JSX here */}
+    </div>
+  );
+}
+
+export function UserList({ users }: { users: UserData[] }) {
+  return (
+    <div>
+      {users.map(user => <UserCard key={user.id} user={user} onUpdate={handleUpdate} />)}
+    </div>
+  );
+}
+
+function handleUpdate(user: UserData): void {
+  // Helper function at bottom
+}
+```
+
+## Summary
+
+**These patterns are MANDATORY for new code. They are based on debugging production systems and maintaining large codebases.**
+
+**Key principles:**
+- Function declarations for better stack traces
+- Strict file organization for predictable navigation  
+- Clear separation of API from implementation
+- Consistency enables velocity
+
+**Remember: These are your DEFAULT patterns. Only adapt to different styles when working in existing codebases.**
