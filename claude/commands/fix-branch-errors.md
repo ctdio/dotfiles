@@ -14,24 +14,21 @@ Run linting and typechecking, then fix any errors related to changes in the curr
 # Get changed files
 git diff --name-only $(git merge-base HEAD origin/master)..HEAD
 
-# Run linting (adjust these based on your project)
-bun run lint
-nx run platform:lint
-
-# Run typecheck (adjust these based on your project)
-bun run typecheck
-nx run platform:type-check
+# Run linting and typechecking IN PARALLEL for better performance
+# The commands will be run concurrently using the Bash tool's parallel execution capability
 ```
 
 ## Instructions:
 - First determine what type of project this is by checking for package.json, pyproject.toml, etc.
 - Identify the appropriate lint and typecheck commands for the project
-- Run the commands and capture their output
+- **IMPORTANT: Run linting and typechecking commands IN PARALLEL using multiple Bash tool calls in a single message**
+  - This significantly improves performance by not waiting for each command to complete sequentially
+  - Example: Send both `bun run lint` and `bun run typecheck` as separate tool calls in the same message
 - Parse the output to identify errors
 - Filter to only errors in files changed in the current branch
 - Create a todo list of all errors to fix
 - Systematically fix each error, marking todos as complete
-- After fixing all errors, run the commands again to verify everything passes
+- After fixing all errors, run the commands again IN PARALLEL to verify everything passes
 - If any errors remain, repeat the process
 
 Remember to only fix errors in files that were changed in the current branch, not unrelated errors in other files.
