@@ -533,3 +533,84 @@ function handleUpdate(user: UserData): void {
 - Consistency enables velocity
 
 **Remember: These are your DEFAULT patterns. Only adapt to different styles when working in existing codebases.**
+
+## Comment Guidelines (CRITICAL)
+
+**FORBIDDEN: AI Slop and Unnecessary Comments**
+
+### Never Write These Comments:
+```typescript
+// ❌ FORBIDDEN - Stating the obvious
+function addNumbers(a: number, b: number) {
+  // Add two numbers together
+  return a + b;
+}
+
+// ❌ FORBIDDEN - Explaining what code clearly does
+const users = await fetchUsers(); // Fetch users from database
+
+// ❌ FORBIDDEN - Verbose explanations
+// This function processes the user data by iterating through
+// each user and applying transformations to create a formatted output
+export function processUsers(users: User[]) {
+  return users.map(formatUser);
+}
+
+// ❌ FORBIDDEN - "We/Let's" language
+// Let's create a new user
+// Now we'll validate the input
+// Here we are processing the data
+
+// ❌ FORBIDDEN - Explaining language features
+return users.filter(u => u.active); // Filter to only active users using arrow function
+```
+
+### Only Write Comments When:
+
+1. **Complex algorithms need explanation**
+```typescript
+// Uses Floyd's cycle detection algorithm to find duplicates in O(1) space
+function findDuplicate(nums: number[]): number {
+  let slow = nums[0];
+  let fast = nums[0];
+  // ... complex implementation
+}
+```
+
+2. **Non-obvious business logic**
+```typescript
+// Price must be increased by 15% for EU customers due to VAT
+const finalPrice = basePrice * (isEU ? 1.15 : 1.0);
+```
+
+3. **Workarounds for external issues**
+```typescript
+// Workaround for Chrome bug #12345 - remove when fixed
+element.style.transform = 'translateZ(0)';
+```
+
+4. **Performance optimizations that sacrifice readability**
+```typescript
+// Unrolled loop for 10x performance improvement on large datasets
+for (let i = 0; i < len; i += 4) {
+  result[i] = data[i] * factor;
+  result[i + 1] = data[i + 1] * factor;
+  result[i + 2] = data[i + 2] * factor;
+  result[i + 3] = data[i + 3] * factor;
+}
+```
+
+### Code Should Be Self-Documenting:
+- Use descriptive variable and function names
+- Write small, focused functions
+- Use types to express intent
+- Let the code structure tell the story
+
+### CRITICAL RULES:
+- **NO comments that repeat what code already says**
+- **NO "tutorial-style" explanations**
+- **NO play-by-play descriptions**
+- **Write code so clean that comments aren't needed**
+- **When in doubt, don't comment**
+
+**Remember: Every unnecessary comment is technical debt. Clear code > commented code.**
