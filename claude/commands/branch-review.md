@@ -51,7 +51,10 @@ git log --oneline [parent-branch]..HEAD
    - Comments that repeat what the code already clearly expresses
 
 2. **Code Quality Issues**
-   - Duplicated code blocks
+   - **CRITICAL: Duplicated code blocks** - Any copied/pasted logic should be extracted into shared functions
+   - **DRY violations** - Repeated patterns that should be abstracted
+   - Similar functions that could be parameterized or generalized
+   - Copy-paste programming instead of proper abstraction
    - Unused variables, functions, or imports
    - Dead code paths
    - Console.log statements (should be removed or replaced with proper logging)
@@ -116,8 +119,10 @@ git log --oneline [parent-branch]..HEAD
 - `component.tsx:23` - Verbose explanation that repeats code logic
 
 #### 2. Code Quality
-- `utils.ts:89` - Duplicated logic, same as lines 45-60
+- `utils.ts:89` - **CRITICAL: Duplicated logic**, same as lines 45-60 - Extract into shared function
 - `api.ts:34` - console.log statement left in production code
+- `service.ts:156-178` - **DRY violation**: Similar error handling pattern repeated 5 times
+- `handlers.ts:23` - Copy-pasted validation logic from handlers.ts:67
 
 #### 3. Error Handling
 - `service.ts:78` - Error only logged, not properly handled
@@ -132,11 +137,13 @@ git log --oneline [parent-branch]..HEAD
 - Feature incomplete: missing validation mentioned in commit
 
 ### Recommendations
-1. Remove all console.log statements
-2. Refactor duplicated code into shared function
-3. Implement proper error handling with error reporting
-4. Fix function organization violations
-5. Complete missing features from commits
+1. **Extract all duplicated code into shared functions** - DRY principle is non-negotiable
+2. Remove all console.log statements
+3. Refactor similar functions to use parameters instead of copy-paste
+4. Abstract repeated patterns (error handling, validation, etc.)
+5. Implement proper error handling with error reporting
+6. Fix function organization violations
+7. Complete missing features from commits
 
 ### Verdict
 [PASS/FAIL] - The code [does/does not] meet quality standards and achieve stated intent.

@@ -249,6 +249,14 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 
 ## Implementation Guidelines
 
+**Code Reuse and DRY Principle (CRITICAL):**
+- **NEVER copy and paste code** - if you need similar functionality, extract it into a shared function
+- **ALWAYS look for existing implementations** before writing new code
+- When you see similar patterns repeated 2+ times, refactor into a reusable function
+- Parameterize differences instead of duplicating entire functions
+- Create utility functions for common operations
+- If tempted to copy code, STOP and refactor instead
+
 **Function changes:**
 - Pay attention to function parameters when introducing new code
 - When adding parameters: update function interfaces, types, and all call sites
@@ -328,6 +336,7 @@ When working in files with established patterns:
 - [ ] I have verified which libraries are already in use
 - [ ] I have understood the project's naming conventions
 - [ ] I have identified where this type of code belongs
+- [ ] I have looked for existing functions to reuse instead of creating duplicates
 
 ### Implementation Checklist:
 - [ ] I will make ONLY the requested changes
@@ -457,6 +466,47 @@ export function fetchUser(id: string) {
 export function validateUser(user: User) { // ✅ Only add this
   return user.email.includes('@');
 }
+```
+
+### 6. Code Duplication (FORBIDDEN)
+```typescript
+// ❌ VIOLATION - Copy-pasting similar functions
+export function validateEmail(email: string) {
+  if (!email) return { valid: false, error: 'Email required' };
+  if (!email.includes('@')) return { valid: false, error: 'Invalid format' };
+  return { valid: true };
+}
+
+export function validatePhone(phone: string) {
+  if (!phone) return { valid: false, error: 'Phone required' };
+  if (phone.length < 10) return { valid: false, error: 'Invalid format' };
+  return { valid: true };
+}
+
+// ✅ CORRECT - Extract common pattern
+function createValidator<T>(
+  field: string,
+  validate: (value: T) => boolean,
+  errorMsg: string
+) {
+  return (value: T) => {
+    if (!value) return { valid: false, error: `${field} required` };
+    if (!validate(value)) return { valid: false, error: errorMsg };
+    return { valid: true };
+  };
+}
+
+export const validateEmail = createValidator(
+  'Email',
+  (email: string) => email.includes('@'),
+  'Invalid format'
+);
+
+export const validatePhone = createValidator(
+  'Phone', 
+  (phone: string) => phone.length >= 10,
+  'Invalid format'
+);
 ```
 
 ### 6. React Components: My Approach
