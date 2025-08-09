@@ -1,5 +1,22 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); model=$(echo \"$input\" | jq -r '.model.display_name'); printf \"\\033[1;34m%s\\033[0m\" \"$(basename \"$cwd\")\"; if cd \"$cwd\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1; then branch=$(git branch --show-current 2>/dev/null || echo 'HEAD'); printf \" \\033[32m%s\\033[0m\" \"$branch\"; status=$(git status --porcelain 2>/dev/null); if [ -n \"$status\" ]; then printf \" \\033[36m●\\033[0m\"; fi; fi; printf \" \\033[35m❯\\033[0m %s\" \"$model\""
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/dotfiles/claude/hooks/ultrathink"
+          }
+        ]
+      }
+    ]
+  }
 }
 

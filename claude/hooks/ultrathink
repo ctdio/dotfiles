@@ -1,0 +1,20 @@
+#!/usr/bin/env bun
+
+// Ultrathink hook: Adds systematic thinking instructions when prompt ends with -u
+
+const userMessage = (process.argv[2] || '').trim();
+
+const ultrathinkInstructions = `
+[ultrathink] Use maximum thinking tokens and think systematically through this problem. Break down the request into components, consider edge cases, and reason through each step carefully before implementing.
+`;
+
+if (userMessage.endsWith('-u')) {
+  // Remove the -u suffix and add ultrathink instructions
+  const cleanedMessage = userMessage.trim().slice(0, -2);
+
+  // Output the modified message
+  console.log(cleanedMessage + ultrathinkInstructions);
+} else {
+  // Pass through unchanged
+  console.log(userMessage);
+}
