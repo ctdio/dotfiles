@@ -74,5 +74,12 @@ export PATH=/Users/charlieduong/bin:$PATH
 
 . "$HOME/.turso/env"
 
-alias claude="/Users/charlieduong/.claude/local/claude"
+
+
+# opencode
+export PATH=/Users/charlieduong/.opencode/bin:$PATH
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/charlieduong/.lmstudio/bin"
+# End of LM Studio CLI section
 
