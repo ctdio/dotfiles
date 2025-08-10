@@ -6,7 +6,7 @@
   "editor.formatOnSave": true,
   "editor.lineNumbers": "relative",
   "editor.rulers": [80],
-  "editor.fontFamily": "JetBrains Mono",
+  "editor.fontFamily": "Berkeley Mono",
   "explorer.openEditors.visible": 1,
   "notebook.formatOnSave.enabled": true,
   "window.customTitleBarVisibility": "never",
@@ -1543,5 +1543,5 @@
   ],
   "cursor-retrieval.canAttemptGithubLogin": false,
   "update.releaseTrack": "prerelease",
-  "workbench.colorTheme": "Kanso Ink"
+  "workbench.colorTheme": "Kanso Zen"
 }

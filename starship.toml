@@ -11,20 +11,20 @@ $python\
 $character"""
 
 [directory]
-style = "bright-blue"
+style = "245"  # Medium gray
 
 [character]
-success_symbol = "[❯](purple)"
-error_symbol = "[❯](red)"
-vimcmd_symbol = "[❮](green)"
+success_symbol = "[❯](243)"  # Dark gray
+error_symbol = "[❯](167)"  # Muted red/brown
+vimcmd_symbol = "[❮](71)"  # Dark green
 
 [git_branch]
 format = "[$branch]($style)"
-style = "green"
+style = "71"  # Dark green
 
 [git_status]
-format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
-style = "cyan"
+format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](240) ($ahead_behind$stashed)]($style)"
+style = "243"  # Dark gray
 conflicted = "​"
 untracked = "​"
 modified = "​"
@@ -42,7 +42,7 @@ style = "bright-black"
 
 [cmd_duration]
 format = "[$duration]($style) "
-style = "yellow"
+style = "243"  # Dark gray
 
 [python]
 format = "[$virtualenv]($style) "
