@@ -5,6 +5,9 @@
     "type": "command",
     "command": "bash ~/.claude/statusline-starship.sh"
   },
+  "env": {
+    "MAX_THINKING_TOKENS": 30000
+  },
   "hooks": {
     "UserPromptSubmit": [
       {
