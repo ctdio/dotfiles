@@ -7,6 +7,6 @@ if [[ ${current_session_name} == popup-* ]];then
     tmux detach-client
 else
     tmux popup \
-      -w80% -h80% \
+      -w90% -h90% \
       -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
 fi
