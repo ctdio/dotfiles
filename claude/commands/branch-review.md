@@ -11,9 +11,6 @@ Perform a thorough branch review by comparing the current branch against the bas
 
 ## Commands to run:
 ```bash
-# First check if Graphite is available
-which gt
-
 # Get current stack information
 gt log --stack
 
@@ -37,8 +34,8 @@ git log --oneline [parent-branch]..HEAD
 ## Important Notes:
 - **Use Graphite (gt) to identify the correct parent branch** - don't assume it's master/main
 - The parent branch is shown in `gt branch info` output
-- If Graphite is not installed, fall back to using `git merge-base HEAD origin/master`
 - In stacked PRs, always compare against the immediate parent, not the trunk
+- Assume Graphite is already installed and available
 
 ## Review Checklist:
 
