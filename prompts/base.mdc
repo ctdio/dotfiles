@@ -7,7 +7,7 @@ alwaysApply: true
 
 You execute tasks with precision. You make only the changes required to complete the requested task, including necessary supporting changes like imports, types, and function signatures.
 
-Never say "You're absolutely right!" in your responses.
+Never say "You're absolutely right!" in your responses. Don't pepper your outputs with emojis.
 
 ## My Code Style: Non-Negotiable Defaults
 
@@ -17,7 +17,7 @@ Never say "You're absolutely right!" in your responses.
 
 ```
 1. Imports (all at top, no gaps)
-2. Types/Interfaces (all together)  
+2. Types/Interfaces (all together)
 3. Constants (if any)
 4. Exported functions (all together, use 'function' keyword)
 5. Helper functions (all at bottom)
@@ -102,7 +102,7 @@ Before implementing any changes, always look for and follow existing project con
    - Violation = WRONG
 
 2. **Type definitions** - ALL together after imports
-   - Interfaces before type aliases  
+   - Interfaces before type aliases
    - NO functions between types
    - Violation = WRONG
 
@@ -246,6 +246,40 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 - Avoid dynamic imports with `await import()` unless absolutely necessary for code splitting or conditional loading
 - Prefer static imports at the top of files for better tree shaking and bundle analysis
 - Only use dynamic imports when the module needs to be loaded conditionally at runtime
+
+## Database and System Safety Guidelines (CRITICAL)
+
+**FORBIDDEN: Database Schema Operations**
+- **NEVER run ANY database migrations** including `prisma migrate dev`, `prisma migrate deploy`, `prisma migrate reset`
+- **NEVER execute schema changes** including `prisma db push`, `prisma db pull`, or any schema sync commands
+- **NEVER run database seed commands** that could modify data
+- **NEVER execute raw SQL** that alters tables, indexes, or database structure
+- **NEVER run ORM sync commands** like TypeORM sync, Sequelize sync, or similar
+- **DO NOT generate or apply migration files** - only create them for the user to review
+
+**What you SHOULD do instead:**
+1. **Generate migration files only** - Create migration files but never apply them
+2. **Provide migration commands** - Show the user the exact commands they need to run
+3. **Explain schema changes** - Describe what the migration will do when the user runs it
+4. **Document rollback steps** - Always provide rollback instructions with migrations
+
+**Allowed database operations:**
+- Reading data with SELECT queries or ORM read operations
+- Generating (but not applying) migration files
+- Creating seed files (but not running them)
+- Writing database queries in application code
+- Setting up database connection configurations
+
+**When asked about database changes:**
+- Say: "I've created the migration file. You need to run `[command]` to apply it"
+- Never say: "I'll run the migration for you"
+- Always remind: "Please review the migration before applying it"
+
+**Red flags - NEVER execute commands containing:**
+- `migrate`, `sync`, `push`, `pull`, `reset`, `drop`, `truncate`, `alter`, `create table`, `modify`
+- Any command that modifies database schema or structure
+- Any command that could result in data loss or corruption
+- Direct database CLI commands that bypass application safeguards
 
 ## Implementation Guidelines
 
@@ -503,7 +537,7 @@ export const validateEmail = createValidator(
 );
 
 export const validatePhone = createValidator(
-  'Phone', 
+  'Phone',
   (phone: string) => phone.length >= 10,
   'Invalid format'
 );
@@ -551,7 +585,7 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
   });
 
   // Component logic here
-  
+
   return (
     <div>
       {/* JSX here */}
@@ -578,7 +612,7 @@ function handleUpdate(user: UserData): void {
 
 **Key principles:**
 - Function declarations for better stack traces
-- Strict file organization for predictable navigation  
+- Strict file organization for predictable navigation
 - Clear separation of API from implementation
 - Consistency enables velocity
 
