@@ -59,7 +59,7 @@
   },
   {
     "key": "ctrl+c",
-    "command": "closeDirtyDiff",
+    "command": "closeQuickDiff",
     "when": "dirtyDiffVisible"
   },
 
