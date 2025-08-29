@@ -11,12 +11,9 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 ## My Code Style: Non-Negotiable Defaults
 
-**These patterns are MANDATORY for all new code. They reflect hard-won lessons from debugging production systems.**
-
-### File Structure - Top-Down Reading Order
-
 **PRINCIPLE: Code should read like a book - main story first, supporting details follow.**
 
+### File Structure
 ```
 1. Imports (all at top, no gaps)
 2. Types/Interfaces (all together)
@@ -27,721 +24,173 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 ### CRITICAL RULES:
 - **ALWAYS use `function` keyword** for module-level functions
-- **NEVER use arrow functions** at module level (they belong in callbacks only)
-- **Order functions for readability** - readers should understand the module's purpose immediately
-- **Main logic first** - don't make readers scroll to understand what the module does
-
-**Why:** Code is read far more than written. Top-down organization means readers grasp the purpose instantly, then dive into details only when needed. Better stack traces from function declarations are a bonus.
+- **NEVER use arrow functions** at module level (callbacks only)
+- **Order functions for readability** - main purpose immediately visible
+- **Function declarations give cleaner stack traces**
 
 ## Scope Guidelines
 
-**Core Principle:** Make changes that are directly required or logically necessary to complete the task.
+**Core Principle:** Make changes directly required to complete the task.
 
-**Allowed changes:**
-- Direct implementation of the requested feature/fix
-- Adding imports when introducing new dependencies
-- Updating function signatures and types when adding parameters
-- Creating files when new functionality requires separate modules
-- Removing unused imports during cleanup tasks
-
-**Prohibited changes:**
-- Refactoring existing code unless explicitly requested
-- Style changes unrelated to the task
-- Adding features not requested
-- Modifying unrelated files or functions
-
-## File Management
-
-- **Default approach:** Edit existing files when implementing new behavior
-- **Create new files when:** Adding functionality that warrants separate modules based on project conventions
-- **File location:** Use existing project structure and naming conventions
-- **Imports:** Always add required imports and update existing import statements as needed
+**Allowed:** Direct implementation, necessary imports/types, file creation when warranted, cleanup tasks
+**Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code
 
 ## Coding Conventions
 
-**CRITICAL REQUIREMENT: Before making ANY edits, you MUST first:**
-1. **Reflect on the task** - What type of changes are you being asked to make? What patterns might already exist for this type of work?
-2. **Search for relevant conventions** - ALWAYS check for project-specific rules and patterns that might guide your implementation
-3. **Review configuration files** - Project CLAUDE.md/AGENT.md files often contain task-specific guidelines that are crucial to follow
+**MANDATORY Discovery Process (before ANY implementation):**
+1. Search for task-specific conventions in existing code
+2. Check CLAUDE.md, AGENT.md, README.md, package.json, tsconfig.json
+3. Study similar existing features
+4. Verify library usage in existing files
+5. Understand naming patterns and project architecture
 
-**Convention discovery is MANDATORY - not optional. Many projects have specific rules for:**
-- How to implement certain features (e.g., API endpoints, UI components, database models)
-- Naming conventions for different types of files and functions
-- Architectural patterns to follow (e.g., where to place business logic)
-- Testing requirements and patterns
-- Error handling approaches
-- Security considerations
-
-**Core principle:** Always follow existing codebase patterns and conventions when adding new code.
-
-**Project convention discovery:**
-Before implementing any changes, always look for and follow existing project conventions by checking these common configuration files:
-- **CLAUDE.md** - Project-specific Claude instructions (root or .claude/ directory)
-- **.cursor/rules** - Cursor IDE project rules and conventions
-- **AGENT.md** - OpenAI agent instructions and project guidelines
-- **README.md** - Project setup and development guidelines
-- **package.json** - Dependencies, scripts, and project metadata
-- **tsconfig.json** - TypeScript configuration and path mappings
-- **.eslintrc** - Code style and linting rules
-
-**Discovery process (MUST be completed BEFORE any implementation):**
-1. **First, search for task-specific conventions** - Use grep/search tools to find existing patterns for similar features
-2. **Check all convention files** - Read CLAUDE.md, AGENT.md, README.md, and other project documentation
-3. **Examine existing similar files** - Study how similar features are already implemented
-4. **Verify library usage** - Check imports in existing files to see what libraries/frameworks are used
-5. **Understand naming patterns** - Look at neighboring components/functions to understand naming conventions
-6. **Map project architecture** - Understand where different types of code belong in the project structure
-
-**IMPORTANT:** If you skip this discovery phase and implement code that violates project conventions, you will need to redo the work. Always invest time upfront to understand the existing patterns.
+**IMPORTANT:** Skipping discovery means redoing work. Always understand existing patterns first.
 
 ## Function Organization - Top-Down Flow
 
-**CORE PRINCIPLE: Organize code so readers understand the module's purpose immediately.**
+**KEY INSIGHT: Readers should understand module purpose from first few exports, not after scrolling through helpers.**
 
-1. **Import statements** - ALL at the very top
-   - Regular imports first, type imports second
-   - NO blank lines between import groups
-
-2. **Type definitions** - ALL together after imports
-   - Interfaces before type aliases
-   - NO functions between types
-
-3. **Constants** - After types (if any)
-   - Only true constants (not functions)
-
-4. **Main exported functions** - The module's public API
-   - MUST use `export function` syntax
-   - NO arrow functions
-   - Order by importance/logical flow
-   - Reader should immediately understand what this module offers
-
-5. **Supporting functions** - Implementation details
-   - Place near their usage for locality
-   - Group related helpers together
-   - Can interleave with exports if it aids readability
-
-**KEY INSIGHT: A developer opening your file should understand its purpose from the first few exported functions, not after scrolling through helpers.**
-
-**FORBIDDEN patterns (NEVER write code like this):**
+**CORRECT Pattern:**
 ```typescript
-// ❌ WRONG - Arrow function at module level
-export const processData = (data: Data) => {
-  return transform(data);
-};
-
-// ❌ WRONG - Helper function between exports
-export function mainFunction() {
-  return helperFunction();
-}
-
-function helperFunction() { // ❌ WRONG POSITION
-  return 'data';
-}
-
-export function anotherMain() { // ❌ WRONG - export after helper
-  return 'result';
-}
-
-// ❌ WRONG - Types mixed with functions
-export function process() {}
-interface Config {} // ❌ WRONG - type after function
-export function handle() {}
-```
-
-**TOP-DOWN pattern (ALWAYS follow):**
-```typescript
-// ✅ CORRECT - All imports first (no blank lines between)
+// All imports first (no blank lines between)
 import { DataService } from './services';
-import { Logger } from './logger';
 import type { UserData, ProcessedUser } from './types';
-import type { Config } from './config';
 
-// ✅ CORRECT - All types together after imports
-interface LocalConfig extends Config {
+// All types together
+interface LocalConfig {
   apiUrl: string;
   timeout: number;
 }
 
-interface UserRequest {
-  userId: string;
-  action: string;
-}
-
-type ValidationResult = {
-  isValid: boolean;
-  errors: string[];
-};
-
-// ✅ CORRECT - Constants after types (if needed)
+// Constants (if needed)
 const DEFAULT_TIMEOUT = 5000;
-const MAX_RETRIES = 3;
 
-// ✅ CORRECT - Main module purpose is immediately clear
+// Main exports - purpose immediately clear
 export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
   const users = await fetchUsers(config);
   return processUsers(users);
 }
 
-export function createUserReport(users: UserData[]): string {
-  const processedUsers = processUsers(users);
-  return generateReportContent(processedUsers);
-}
-
-// ✅ CORRECT - Core processing logic follows main exports
 export function processUsers(users: UserData[]): ProcessedUser[] {
   return users.map(user => ({
     ...user,
-    displayName: formatUserName(user),
-    isValid: validateUserData(user)
+    displayName: formatUserName(user)
   }));
 }
 
-// ✅ CORRECT - Supporting validation logic near its primary usage
-export function validateAllUsers(users: UserData[]): ValidationResult {
-  const errors: string[] = [];
-  const isValid = users.every(user => {
-    const valid = validateUserData(user);
-    if (!valid) errors.push(`Invalid user: ${user.id}`);
-    return valid;
-  });
-  return { isValid, errors };
-}
-
-// ✅ CORRECT - Implementation details follow the high-level functions
-function validateUserData(user: UserData): boolean {
-  return user.email.includes('@') && user.name.length > 0;
-}
-
+// Helper functions at bottom
 function formatUserName(user: UserData): string {
   return `${user.name} <${user.email}>`;
 }
 
-function generateReportContent(users: ProcessedUser[]): string {
-  return users.map(user => user.displayName).join('\n');
-}
-
 async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
-  // Implementation here
+  // Implementation
   return [];
 }
 ```
 
-**Why this structure matters to me:**
-- **Instant comprehension** - Main purpose visible without scrolling
-- **Natural reading flow** - Like a newspaper: headline first, details follow
-- **Reduced cognitive load** - Don't need to hold helpers in memory to understand exports
-- **Better debugging** - Function declarations give cleaner stack traces
-- **Easier onboarding** - New developers grasp module purpose immediately
+**Type management:** Single use = colocate; 3+ files = shared type file
 
-**Type management:**
-- **Single use:** Colocate types with their callsite
-- **Multiple files need the type:** Move to a separate shared type file
-- **Decision point:** If 3+ files use the same type, create a dedicated type file
+**Library usage:** NEVER assume availability - verify in package.json and existing imports
 
-**Library and framework usage:**
-- NEVER assume a library is available - always verify it's already used in the codebase
-- Check package.json, imports in similar files, or existing usage patterns
-- When creating new components, study existing components for framework choice and patterns
-- Match existing code style, naming conventions, and architectural decisions
+**Import patterns:** Static imports only (no `await import()` except for route splitting)
 
-**Import patterns:**
-- Avoid dynamic imports with `await import()` unless absolutely necessary for code splitting or conditional loading
-- Prefer static imports at the top of files for better tree shaking and bundle analysis
-- Only use dynamic imports when the module needs to be loaded conditionally at runtime
+## Database and System Safety (CRITICAL)
 
-## Database and System Safety Guidelines (CRITICAL)
+**FORBIDDEN:** 
+- Running migrations (`prisma migrate`, `db push`, etc.)
+- Executing schema changes or raw SQL altering structure
+- Running seed commands
 
-**FORBIDDEN: Database Schema Operations**
-- **NEVER run ANY database migrations** including `prisma migrate dev`, `prisma migrate deploy`, `prisma migrate reset`
-- **NEVER execute schema changes** including `prisma db push`, `prisma db pull`, or any schema sync commands
-- **NEVER run database seed commands** that could modify data
-- **NEVER execute raw SQL** that alters tables, indexes, or database structure
-- **NEVER run ORM sync commands** like TypeORM sync, Sequelize sync, or similar
-- **DO NOT generate or apply migration files** - only create them for the user to review
+**ALLOWED:** 
+- Generating (not applying) migration files
+- Reading data with SELECT/ORM reads
+- Creating seed files (not running them)
 
-**What you SHOULD do instead:**
-1. **Generate migration files only** - Create migration files but never apply them
-2. **Provide migration commands** - Show the user the exact commands they need to run
-3. **Explain schema changes** - Describe what the migration will do when the user runs it
-4. **Document rollback steps** - Always provide rollback instructions with migrations
+**When asked about DB changes:** "I've created the migration file. You need to run `[command]` to apply it"
 
-**Allowed database operations:**
-- Reading data with SELECT queries or ORM read operations
-- Generating (but not applying) migration files
-- Creating seed files (but not running them)
-- Writing database queries in application code
-- Setting up database connection configurations
+## Server Management (CRITICAL)
 
-**When asked about database changes:**
-- Say: "I've created the migration file. You need to run `[command]` to apply it"
-- Never say: "I'll run the migration for you"
-- Always remind: "Please review the migration before applying it"
+**FORBIDDEN:** Starting dev servers without explicit request (`npm run dev`, `yarn start`, etc.)
 
-**Red flags - NEVER execute commands containing:**
-- `migrate`, `sync`, `push`, `pull`, `reset`, `drop`, `truncate`, `alter`, `create table`, `modify`
-- Any command that modifies database schema or structure
-- Any command that could result in data loss or corruption
-- Direct database CLI commands that bypass application safeguards
-
-## Server Management Guidelines (CRITICAL)
-
-**FORBIDDEN: Starting Dev Servers Without Explicit Request**
-- **NEVER start any development server** unless the user explicitly asks you to do so
-- **NEVER run commands like** `npm run dev`, `npm start`, `yarn dev`, `yarn start`, `pnpm dev`, `python manage.py runserver`, `rails server`, etc. without explicit user request
-- **NEVER suggest starting a server** unless the user asks about running or testing the application
-- **DO NOT proactively start servers** even after implementing features or fixes
-
-**What you SHOULD do instead:**
-1. **Complete the implementation** without starting any servers
-2. **Run tests and linters** if requested or if validation commands are known
-3. **Wait for explicit instructions** from the user about starting servers
-4. **If asked to test the application**, first ask the user if they want you to start the dev server
-
-**When the user explicitly asks to start a server:**
-- Confirm which server command to use if multiple options exist
-- Start the server as requested
-- Monitor the output for any errors or issues
-- Keep the server running unless asked to stop it
-
-**Red flags - Commands that start servers (DO NOT run without explicit request):**
-- `npm run dev`, `npm start`, `yarn dev`, `yarn start`, `pnpm dev`, `pnpm start`
-- `python manage.py runserver`, `flask run`, `uvicorn main:app`
-- `rails server`, `rails s`
-- `php artisan serve`
-- `dotnet run`, `dotnet watch`
-- `go run`, `cargo run`
-- Any command with `dev`, `start`, `serve`, `watch` that launches a persistent process
+**When explicitly asked:** Confirm command, start server, monitor output
 
 ## Implementation Guidelines
 
-**Code Reuse and DRY Principle (CRITICAL):**
-- **NEVER copy and paste code** - if you need similar functionality, extract it into a shared function
-- **ALWAYS look for existing implementations** before writing new code
-- When you see similar patterns repeated 2+ times, refactor into a reusable function
-- Parameterize differences instead of duplicating entire functions
-- Create utility functions for common operations
-- If tempted to copy code, STOP and refactor instead
+**Code Reuse (CRITICAL):**
+- NEVER copy/paste code - extract shared functions
+- Look for existing implementations first
+- Refactor when patterns repeat 2+ times
 
-**Function changes:**
-- Pay attention to function parameters when introducing new code
-- When adding parameters: update function interfaces, types, and all call sites
-- Verify all call sites still work after parameter changes
+**Error handling:** Fix breakage as part of task
 
-**Error handling:**
-- If changes break existing functionality, fix the breakage as part of the task
-- Run validation commands after implementation to catch issues
-- Address compilation errors before considering the task complete
-
-**Cleanup tasks specifically include:**
-- Removing unused imports
-- Fixing linting errors
-- Updating deprecated patterns
-
-**Linter error resolution:**
-- When fixing "unused variable" linter errors, **ALWAYS remove the unused variable entirely**
-- **NEVER** prefix variables with underscore (_) to bypass linter warnings
-- **NEVER** add linter ignore comments (// eslint-disable-next-line)
-- If a variable is truly needed for destructuring, remove only the unused parts
-- Clean code is better than code with workarounds
+**Linter errors:** Remove unused variables entirely (no underscore prefix or ignore comments)
 
 ## Targeted Edits
 
-When making edits to a codebase:
-1. Look for comments marked "AI EDIT HERE" (or shorthand "AEH")
-2. Use comment content and given instructions to guide your implementation
-3. **Always replace "AI EDIT HERE"/"AEH" comments** with the actual implementation - do not leave any behind
+**AI EDIT HERE / AEH:** Mark locations for implementation, always replace with actual code
 
 ## Command Shortcuts
 
-**AEH** - Shorthand for "AI EDIT HERE" - place in comments to mark edit locations
-**PEH** - "Plan the edit" - analyze and plan the approach without implementing anything
-**mte** - "Make the edit" - search for AEH/AI EDIT HERE comments and implement all marked changes
-**c** - "continue" - proceed with the current task or implementation
-**TODO** - When a message starts with "TODO", add the request to your todo list and continue with any ongoing work
+- **AEH** - "AI EDIT HERE" marker
+- **PEH** - Plan without implementing
+- **mte** - Make all marked edits
+- **c** - Continue
+- **TODO** - Add to todo list
 
-When asked to "make the edits" or "mte":
-1. Search for files containing "AI EDIT HERE" or "AEH"
-2. Read all instances carefully to understand the intended changes.
-3. Read surrounding context to understand the task and any constraints.
-4. Implement the changes and remove all "AI EDIT HERE"/"AEH" comments
+## Code Style Application
 
-When a message starts with "TODO":
-1. Add the new request to your todo list using TodoWrite
-2. Continue with your current task if you have ongoing work
-3. The TODO item will be addressed after completing the current task or when explicitly asked
+**New code:** MUST follow my patterns exactly
+**Existing code:** Match their patterns for consistency
+**Never mix styles in same file**
 
-## Code Style Application Rules
+## Pre-Implementation Checklist
 
-### NEW CODE (MANDATORY)
-When creating new files or working in greenfield projects:
-- **MUST follow my patterns exactly**
-- **NO EXCEPTIONS**
-- **This is the default**
-
-### EXISTING CODEBASES
-When working in files with established patterns:
-1. **Check if they follow my patterns** - if yes, continue with them
-2. **If different** - match their existing style for consistency
-3. **Never mix styles** in the same file or module
-
-**IMPORTANT:** My patterns are the default. Only deviate when working in existing code with different established patterns.
-
-## Pre-Implementation Checklist (MANDATORY)
-
-**Before writing ANY code, verify:**
-
-### Code Structure Requirements:
-- [ ] I will use `function` keyword for ALL module-level functions
-- [ ] I will organize code top-down: main purpose first, details follow
-- [ ] I will NOT use arrow functions at module level
-- [ ] I will ensure the module's purpose is immediately clear
-
-### Context Check:
-- [ ] New file/greenfield = MUST use my patterns
-- [ ] Existing file = check and match their patterns
-- [ ] I will NOT mix different styles
-
-### Convention Discovery Checklist:
-- [ ] I have searched for similar existing code patterns
-- [ ] I have checked CLAUDE.md/AGENT.md for project rules
-- [ ] I have verified which libraries are already in use
-- [ ] I have understood the project's naming conventions
-- [ ] I have identified where this type of code belongs
-- [ ] I have looked for existing functions to reuse instead of creating duplicates
-
-### Implementation Checklist:
-- [ ] I will make ONLY the requested changes
-- [ ] I will NOT refactor unrelated code
-- [ ] I will NOT add unrequested features
-- [ ] I will update all imports as needed
-- [ ] I will fix any breakage I cause
-
-**If ANY checkbox is unchecked, STOP and complete it first!**
-
-## Validation
-
-- Run appropriate validation commands after completing implementation
-- Address any errors or warnings before considering the task complete
-- Check project-specific prompt files for validation commands if available
-- VERIFY your code follows the function organization rules above
+- [ ] Use `function` keyword for module-level functions
+- [ ] Organize top-down: main purpose first
+- [ ] Check existing conventions before writing
+- [ ] Make ONLY requested changes
+- [ ] Fix any breakage caused
 
 ## Common Violations to AVOID
 
-**These are CRITICAL violations that happen frequently - NEVER do these:**
+1. **Arrow functions at module level** - Use `function` keyword
+2. **Poor organization** - Main exports first, helpers last
+3. **Types scattered** - All types after imports
+4. **Creating unnecessary files** - Edit existing when possible
+5. **Unrelated refactoring** - Only requested changes
+6. **Code duplication** - Extract shared functions
 
-### 1. Arrow Functions at Module Level (FORBIDDEN)
-```typescript
-// ❌ VIOLATION - Never use arrow functions at module level
-export const getUserData = async (id: string) => {
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-};
-
-// ✅ CORRECT - Always use function keyword
-export async function getUserData(id: string) {
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-}
-```
-
-### 2. Poor Organization (FORBIDDEN)
-```typescript
-// ❌ VIOLATION - Helper details before main purpose
-function normalizeData(data: Data) { // ❌ Implementation detail first
-  return data.trim();
-}
-
-function validateFormat(data: Data) { // ❌ Another helper before exports
-  return /^[A-Z]/.test(data);
-}
-
-export function processData(data: Data) { // ❌ Main purpose buried
-  return normalizeData(data);
-}
-
-export function validateData(data: Data) {
-  return data.length > 0 && validateFormat(data);
-}
-
-// ✅ CORRECT - Main purpose first, details follow
-export function processData(data: Data) {
-  return normalizeData(data);
-}
-
-export function validateData(data: Data) {
-  return data.length > 0 && validateFormat(data);
-}
-
-// Supporting functions follow main exports
-function normalizeData(data: Data) {
-  return data.trim();
-}
-
-function validateFormat(data: Data) {
-  return /^[A-Z]/.test(data);
-}
-```
-
-### 3. Types in Wrong Location (FORBIDDEN)
-```typescript
-// ❌ VIOLATION - Types scattered throughout file
-import { Service } from './service';
-
-export function process() {}
-
-interface Config {} // ❌ Type after function
-
-export function handle() {}
-
-type Result = string; // ❌ Type after function
-
-// ✅ CORRECT - All types after imports, before functions
-import { Service } from './service';
-
-interface Config {}
-type Result = string;
-
-export function process() {}
-export function handle() {}
-```
-
-### 4. Creating Files When Not Needed (FORBIDDEN)
-```typescript
-// ❌ VIOLATION - Creating new file for simple helper
-// Don't create: src/utils/formatters.ts
-export function formatUserName(user: User) {
-  return `${user.first} ${user.last}`;
-}
-
-// ✅ CORRECT - Add to existing related file
-// In existing src/services/userService.ts:
-export function getUser(id: string) { ... }
-export function updateUser(user: User) { ... }
-
-// Helper at bottom of same file
-function formatUserName(user: User) {
-  return `${user.first} ${user.last}`;
-}
-```
-
-### 5. Refactoring Unrelated Code (FORBIDDEN)
-```typescript
-// Task: Add new validation function
-// ❌ VIOLATION - Refactoring existing code
-export async function fetchUser(id: string) {
-  const response = await fetch(`/api/users/${id}`); // ❌ Changed from axios
-  return response.json(); // ❌ Refactored unnecessarily
-}
-
-export function validateUser(user: User) { // ✅ Only this was requested
-  return user.email.includes('@');
-}
-
-// ✅ CORRECT - Only add what was requested
-export function fetchUser(id: string) {
-  // Leave existing implementation untouched
-  return axios.get(`/api/users/${id}`);
-}
-
-export function validateUser(user: User) { // ✅ Only add this
-  return user.email.includes('@');
-}
-```
-
-### 6. Code Duplication (FORBIDDEN)
-```typescript
-// ❌ VIOLATION - Copy-pasting similar functions
-export function validateEmail(email: string) {
-  if (!email) return { valid: false, error: 'Email required' };
-  if (!email.includes('@')) return { valid: false, error: 'Invalid format' };
-  return { valid: true };
-}
-
-export function validatePhone(phone: string) {
-  if (!phone) return { valid: false, error: 'Phone required' };
-  if (phone.length < 10) return { valid: false, error: 'Invalid format' };
-  return { valid: true };
-}
-
-// ✅ CORRECT - Extract common pattern
-function createValidator<T>(
-  field: string,
-  validate: (value: T) => boolean,
-  errorMsg: string
-) {
-  return (value: T) => {
-    if (!value) return { valid: false, error: `${field} required` };
-    if (!validate(value)) return { valid: false, error: errorMsg };
-    return { valid: true };
-  };
-}
-
-export const validateEmail = createValidator(
-  'Email',
-  (email: string) => email.includes('@'),
-  'Invalid format'
-);
-
-export const validatePhone = createValidator(
-  'Phone',
-  (phone: string) => phone.length >= 10,
-  'Invalid format'
-);
-```
-
-### 6. React Components: My Approach
-
-**Why I use function declarations for components:**
-- Consistent with my overall philosophy
-- Better component names in React DevTools
-- Clearer stack traces in errors
-- Hoisting allows flexible organization when needed
+## React Components
 
 ```typescript
-// ❌ The pattern I avoid - unclear debugging and inconsistent style
-import React from 'react';
-
-export const UserCard = ({ user }: Props) => { // Arrow function obscures component name
-  return <div>{user.name}</div>;
-};
-
-interface Props { // Types after implementation
-  user: User;
-}
-
-// ✅ My preferred pattern - top-down, clean, debuggable
-import React, { useState, useEffect } from 'react';
-import { Button } from './components';
+// Imports
+import React, { useState } from 'react';
 import type { UserData } from './types';
 
+// Types
 interface UserCardProps {
   user: UserData;
   onUpdate: (user: UserData) => void;
 }
 
-interface UserCardState {
-  isEditing: boolean;
-  tempName: string;
-}
-
-// Main component - purpose immediately clear
+// Component with function keyword
 export function UserCard({ user, onUpdate }: UserCardProps) {
-  const [state, setState] = useState<UserCardState>({
-    isEditing: false,
-    tempName: user.name
-  });
-
-  // Component logic here
-
-  return (
-    <div>
-      {/* JSX here */}
-    </div>
-  );
+  const [isEditing, setIsEditing] = useState(false);
+  
+  return <div>{/* JSX */}</div>;
 }
 
-export function UserList({ users }: { users: UserData[] }) {
-  return (
-    <div>
-      {users.map(user => <UserCard key={user.id} user={user} onUpdate={handleUpdate} />)}
-    </div>
-  );
-}
-
-function handleUpdate(user: UserData): void {
-  // Helper function at bottom
+// Helpers at bottom
+function validateUserData(data: unknown): data is UserData {
+  // validation
 }
 ```
 
-## Summary
+## Comment Guidelines
 
-**These patterns are MANDATORY for new code. They are based on debugging production systems and maintaining large codebases.**
+**FORBIDDEN:** Obvious comments, explaining what code clearly does, "we/let's" language
 
-**Key principles:**
-- Top-down organization - main purpose immediately visible
-- Function declarations for better stack traces
-- Code reads like a book - understand the story before the details
-- Consistency enables velocity
+**ONLY comment when:** Complex algorithms, non-obvious business logic, workarounds, performance optimizations
 
-**Remember: These are your DEFAULT patterns. Only adapt to different styles when working in existing codebases.**
-
-## Comment Guidelines (CRITICAL)
-
-**FORBIDDEN: AI Slop and Unnecessary Comments**
-
-### Never Write These Comments:
-```typescript
-// ❌ FORBIDDEN - Stating the obvious
-function addNumbers(a: number, b: number) {
-  // Add two numbers together
-  return a + b;
-}
-
-// ❌ FORBIDDEN - Explaining what code clearly does
-const users = await fetchUsers(); // Fetch users from database
-
-// ❌ FORBIDDEN - Verbose explanations
-// This function processes the user data by iterating through
-// each user and applying transformations to create a formatted output
-export function processUsers(users: User[]) {
-  return users.map(formatUser);
-}
-
-// ❌ FORBIDDEN - "We/Let's" language
-// Let's create a new user
-// Now we'll validate the input
-// Here we are processing the data
-
-// ❌ FORBIDDEN - Explaining language features
-return users.filter(u => u.active); // Filter to only active users using arrow function
-```
-
-### Only Write Comments When:
-
-1. **Complex algorithms need explanation**
-```typescript
-// Uses Floyd's cycle detection algorithm to find duplicates in O(1) space
-function findDuplicate(nums: number[]): number {
-  let slow = nums[0];
-  let fast = nums[0];
-  // ... complex implementation
-}
-```
-
-2. **Non-obvious business logic**
-```typescript
-// Price must be increased by 15% for EU customers due to VAT
-const finalPrice = basePrice * (isEU ? 1.15 : 1.0);
-```
-
-3. **Workarounds for external issues**
-```typescript
-// Workaround for Chrome bug #12345 - remove when fixed
-element.style.transform = 'translateZ(0)';
-```
-
-4. **Performance optimizations that sacrifice readability**
-```typescript
-// Unrolled loop for 10x performance improvement on large datasets
-for (let i = 0; i < len; i += 4) {
-  result[i] = data[i] * factor;
-  result[i + 1] = data[i + 1] * factor;
-  result[i + 2] = data[i + 2] * factor;
-  result[i + 3] = data[i + 3] * factor;
-}
-```
-
-### Code Should Be Self-Documenting:
-- Use descriptive variable and function names
-- Write small, focused functions
-- Use types to express intent
-- Let the code structure tell the story
-
-### CRITICAL RULES:
-- **NO comments that repeat what code already says**
-- **NO "tutorial-style" explanations**
-- **NO play-by-play descriptions**
-- **Write code so clean that comments aren't needed**
-- **When in doubt, don't comment**
-
-**Remember: Every unnecessary comment is technical debt. Clear code > commented code.**
+**Code should be self-documenting through clear naming and structure.**

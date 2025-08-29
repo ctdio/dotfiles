@@ -8,7 +8,7 @@ include: "**/*.{ts,tsx,js,jsx}"
 **Core Principle:** The behavior of a unit of code should be as obvious as possible by looking only at that unit of code.
 
 ## Why LoB Matters
-Making behavior obvious at the point of inspection reduces cognitive load, prevents bugs, and makes code maintainable. Avoid "spooky action at a distance" where understanding requires searching through multiple files.
+Making behavior obvious at the point of inspection reduces cognitive load, prevents bugs, and makes code maintainable. Avoid "spooky action at a distance."
 
 ## Good LoB in React
 
@@ -38,73 +38,34 @@ export function UserCard({ user }: UserCardProps) {
     </div>
   );
 }
-
-// ✅ GOOD - Data fetching colocated with component
-export function UserList() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    fetchUsers()
-      .then(setUsers)
-      .finally(() => setLoading(false));
-  }, []);
-  
-  if (loading) return <Spinner />;
-  
-  return (
-    <div>
-      {users.map(user => (
-        <UserCard key={user.id} user={user} />
-      ))}
-    </div>
-  );
-}
 ```
 
 ## Poor LoB in React
 
 ```typescript
 // ❌ POOR - Behavior hidden in separate files/abstractions
-// In UserCard.tsx:
 export function UserCard({ user }: UserCardProps) {
-  // What happens when this fires? Need to search the codebase
-  useUserEditHandler(user.id);
-  
+  useUserEditHandler(user.id); // What happens here?
   return <div className="user-card">{user.name}</div>;
 }
 
 // ❌ POOR - Event subscriptions hide behavior
-// Somewhere in effects.ts:
 eventBus.on('user:click', (userId) => {
-  // Hidden side effect
   analytics.track('user_viewed', { userId });
   store.dispatch(loadUserDetails(userId));
 });
-
-// ❌ POOR - Global effects make behavior non-obvious
-// In globalHooks.ts:
-useEffect(() => {
-  // Every component rerenders when this changes, but it's not obvious
-  const unsub = authStore.subscribe(() => {
-    forceGlobalRerender();
-  });
-  return unsub;
-}, []);
 ```
 
 ## Balancing LoB with Other Principles
 
 ### LoB vs DRY
 ```typescript
-// Sometimes repetition aids understanding
-// ✅ GOOD - Obvious what each button does
+// ✅ Sometimes repetition aids understanding
 <button onClick={() => deleteUser(user.id)}>Delete</button>
 <button onClick={() => archiveUser(user.id)}>Archive</button>
 
-// ❌ POOR - Abstraction hides behavior  
+// ❌ Abstraction hides behavior  
 <ActionButton action="delete" target={user} />
-<ActionButton action="archive" target={user} />
 ```
 
 ### LoB vs Separation of Concerns
@@ -126,37 +87,20 @@ export function TodoItem({ todo }: TodoItemProps) {
     </div>
   );
 }
-
-// ❌ POOR - Logic scattered across files
-// In TodoItem.tsx:
-export function TodoItem({ todo }: TodoItemProps) {
-  return (
-    <div>
-      <checkbox checked={todo.complete} />
-      <span>{todo.text}</span>
-    </div>
-  );
-}
-// In todoHandlers.ts:
-export function attachTodoHandlers() {
-  document.querySelectorAll('.todo-checkbox').forEach(cb => {
-    cb.addEventListener('change', handleTodoToggle);
-  });
-}
 ```
 
 ## Practical LoB Rules
 
-1. **Event handlers:** Define inline or immediately above the JSX
-2. **Side effects:** Keep useEffect close to the component it affects
+1. **Event handlers:** Define inline or immediately above JSX
+2. **Side effects:** Keep useEffect close to affected component
 3. **State management:** Prefer local state unless truly global
-4. **Data fetching:** Colocate with components that need the data
-5. **Form handling:** Keep validation and submission logic in the form component
+4. **Data fetching:** Colocate with components needing data
+5. **Form handling:** Keep validation/submission in form component
 
 ## Custom Hooks and LoB
 
 ```typescript
-// ✅ GOOD - Hook makes behavior obvious through naming and return values
+// ✅ Hook makes behavior obvious through naming and return values
 export function useUserSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<User[]>([]);
@@ -172,31 +116,14 @@ export function useUserSearch() {
   
   return { query, results, isSearching, search };
 }
-
-// Usage is obvious:
-export function UserSearch() {
-  const { query, results, isSearching, search } = useUserSearch();
-  
-  return (
-    <div>
-      <input 
-        value={query}
-        onChange={(e) => search(e.target.value)}
-        placeholder="Search users..."
-      />
-      {isSearching && <Spinner />}
-      {results.map(user => <UserCard key={user.id} user={user} />)}
-    </div>
-  );
-}
 ```
 
 ## Distance Hierarchy
 When behavior must be separated, minimize distance:
-1. **Same function** (best)
-2. **Same component** 
-3. **Same file**
-4. **Same directory**
-5. **Separate module** (worst)
+1. Same function (best)
+2. Same component
+3. Same file
+4. Same directory
+5. Separate module (worst)
 
-**Key Insight:** If someone needs to open multiple files to understand what a button does, you've created a maintenance burden. Optimize for the question "What does this do?" being immediately answerable.
+**Key Insight:** If someone needs to open multiple files to understand what a button does, you've created a maintenance burden.

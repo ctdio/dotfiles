@@ -7,68 +7,39 @@ include: "**/*.{ts,tsx}"
 
 ## CRITICAL VIOLATIONS TO AVOID
 
-**These are the most common violations that MUST be prevented:**
 1. **NEVER use dynamic imports** (`await import()`) for regular modules
 2. **NEVER use arrow functions** at module level
 3. **NEVER use `any`** to solve type errors
 4. **NEVER use `error`, `e`, or `ex`** in catch blocks (always use `err`)
 5. **NEVER mix exports and helpers** in file structure
 
-## TypeScript-Specific Requirements
+## Function Declarations (STRICT)
 
-**These rules are MANDATORY for all TypeScript code.**
-
-### Function Declarations (STRICT)
-- **ALWAYS use `function` keyword** at module level
-- **NEVER use arrow functions** except as callbacks/inside functions
-- **NEVER use** `const name = function() {}` 
-- **NO EXCEPTIONS**
-
-**FORBIDDEN patterns:**
+**REQUIRED:**
 ```typescript
-// ❌ FORBIDDEN - Arrow function at module level
-export const calculateTotal = (items: Item[]) => {
-  return items.reduce((sum, item) => sum + item.price, 0);
-};
-
-// ❌ FORBIDDEN - Const function expression
-const processData = function(data: Data) {
-  return transform(data);
-};
-
-// ❌ FORBIDDEN - Helper as arrow function
-const formatName = (user: User) => `${user.first} ${user.last}`;
-```
-
-**REQUIRED patterns:**
-```typescript
-// ✅ CORRECT - Function declarations at module level
+// ✅ CORRECT - Function declarations only
 export function calculateTotal(items: Item[]): number {
   return items.reduce((sum, item) => sum + item.price, 0);
 }
 
-// ✅ CORRECT - Helper functions use function keyword
-function processData(data: Data): ProcessedData {
-  return transform(data);
-}
-
-// ✅ CORRECT - Arrow functions ONLY as callbacks or inside functions
+// ✅ Arrow functions ONLY in callbacks/inside functions
 function handleRequest(req: Request): void {
-  const items = req.items.map(item => ({ // ✅ Callback usage
-    ...item,
-    processed: true
-  }));
-  
-  const calculate = () => { // ✅ Inside function
-    return items.length;
-  };
+  const items = req.items.map(item => ({ ...item, processed: true })); // ✅ Callback
+  const calculate = () => items.length; // ✅ Inside function
 }
 ```
 
-### TypeScript File Structure (MANDATORY ORDER)
+**FORBIDDEN:**
+```typescript
+// ❌ NEVER - Arrow functions at module level
+export const processData = (data: Data) => transform(data);
+const formatName = (user: User) => `${user.first} ${user.last}`;
+```
+
+## TypeScript File Structure (MANDATORY ORDER)
 
 ```typescript
-// 1. Imports (ALWAYS FIRST)
+// 1. Imports
 import { Service } from './service';
 import type { Config, User } from './types';
 
@@ -77,47 +48,25 @@ interface LocalConfig extends Config {
   timeout: number;
 }
 
-type ProcessingResult = {
-  success: boolean;
-  data: User[];
-};
-
-// 3. Constants (if any)
+// 3. Constants
 const DEFAULT_TIMEOUT = 5000;
-const MAX_RETRIES = 3;
 
-// 4. Exported Functions (ALL TOGETHER, NO HELPERS BETWEEN)
+// 4. Exported Functions (NO HELPERS BETWEEN)
 export function processUsers(users: User[]): ProcessingResult {
-  // implementation
-}
-
-export function validateUser(user: User): boolean {
-  // implementation
-}
-
-export function createReport(results: ProcessingResult): string {
   // implementation
 }
 
 // 5. Helper Functions (ALL AT BOTTOM)
 function normalizeUser(user: User): User {
-  // helper implementation
-}
-
-function checkPermissions(user: User): boolean {
-  // helper implementation
+  // helper
 }
 ```
 
-**VIOLATIONS = INCORRECT CODE**
+## React Component Pattern
 
-### React Component Organization:
-
-**For React components, follow this EXACT pattern:**
 ```typescript
 // 1. Imports
-import React, { useState, useEffect } from 'react';
-import { Button } from './components';
+import React, { useState } from 'react';
 import type { UserProps } from './types';
 
 // 2. Types/Interfaces
@@ -125,308 +74,103 @@ interface ComponentProps extends UserProps {
   onSave: (data: UserData) => void;
 }
 
-interface ComponentState {
-  isLoading: boolean;
-  error: string | null;
-}
-
-// 3. Main Component (using function keyword)
+// 3. Main Component (function keyword)
 export function UserComponent({ onSave }: ComponentProps) {
-  const [state, setState] = useState<ComponentState>({
-    isLoading: false,
-    error: null
-  });
-
-  // Hooks and logic here
-  
+  const [isLoading, setIsLoading] = useState(false);
   return <div>...</div>;
 }
 
-// 4. Sub-components (if needed)
-function UserDetails({ user }: { user: User }) {
-  return <div>...</div>;
-}
-
-// 5. Helper functions
+// 4. Helpers
 function validateUserData(data: unknown): data is UserData {
-  // validation logic
+  // validation
 }
 ```
-
-**ENFORCEMENT:**
-- **New code** = MUST follow these patterns
-- **Existing code** = Match their patterns if different
-- **NO MIXING** styles in the same file
 
 ## Error Handling (MANDATORY)
 
-**REQUIRED: Always use `err` in catch blocks**
-- **NEVER** use `error`, `e`, `ex`, or other names
-- **NO EXCEPTIONS**
-
+**ALWAYS use `err` in catch blocks:**
 ```typescript
-try {
-  // code that might throw
-} catch (err) {
-  // handle error using 'err'
-}
-```
-
-**INCORRECT examples (NEVER use these):**
-```typescript
-// ❌ WRONG - Do not use 'error'
-try {
-  await operation();
-} catch (error) {
-  logger.error(error);
-}
-
-// ❌ WRONG - Do not use 'e'
-try {
-  await operation();
-} catch (e) {
-  console.log(e);
-}
-
-// ❌ WRONG - Do not use 'ex'
-try {
-  await operation();
-} catch (ex) {
-  throw ex;
-}
-```
-
-**CORRECT example (ALWAYS use this):**
-```typescript
-// ✅ CORRECT - Always use 'err'
 try {
   await operation();
 } catch (err) {
-  logger.error({ err }, 'Operation failed');
+  logger.error({ err, context }, 'Operation failed');
 }
 ```
+
+**NEVER use `error`, `e`, `ex`**
 
 ## Logger Integration
 
-**MANDATORY: Structured logging pattern:**
-- **ALWAYS** use bunyan/pino/winston style loggers that accept an object first, then message
-- **ALWAYS** place the error in the object as-is under the `err` key
-- **NEVER** extract error properties like `err.message` or `err.stack`
-- Error objects will be automatically serialized by the logger
-
+**Structured logging pattern:**
 ```typescript
-try {
-  await riskyOperation();
-} catch (err) {
-  logger.error({ err, userId, operationType: 'create' }, 'Failed to create user');
-  throw err; // or handle appropriately
-}
-```
-
-**CRITICAL RULES for error logging:**
-- **ALWAYS** use the `err` key in the log object (not `error` or other names)
-- **ALWAYS** pass the complete error object intact to the logger
-- **NEVER** destructure or extract properties from the error for logging
-- **ALWAYS** include relevant context alongside the error
-
-**Exception: Type casting for error handling logic is allowed:**
-- You may cast the error to a specific type to safely check properties for business logic
-- This is acceptable for conditional error handling, but still log the complete error object
-
-```typescript
-try {
-  await operation();
-} catch (err) {
-  // ✅ ALLOWED - Type casting for business logic
+catch (err) {
+  // ✅ CORRECT - Complete error object under 'err' key
+  logger.error({ err, userId, action: 'delete' }, 'Failed to delete user');
+  
+  // Type casting for business logic is allowed
   if ((err as { code?: string }).code === 'ENOENT') {
-    // Handle file not found specifically
-    logger.error({ err, path }, 'File not found');
     return null;
   }
-
-  // ✅ CORRECT - Still log complete error
-  logger.error({ err, operation: 'file-read' }, 'Operation failed');
-  throw err;
 }
 ```
 
-**INCORRECT logging examples (NEVER do this):**
-```typescript
-// ❌ WRONG - Don't extract error message
-catch (err) {
-  logger.error({ message: err.message }, 'Failed');
-}
-
-// ❌ WRONG - Don't use 'error' key
-catch (err) {
-  logger.error({ error: err }, 'Failed');
-}
-
-// ❌ WRONG - Don't pass error as string
-catch (err) {
-  logger.error('Failed: ' + err.message);
-}
-```
-
-**CORRECT logging examples (ALWAYS do this):**
-```typescript
-// ✅ CORRECT - Pass complete error under 'err' key
-catch (err) {
-  logger.error({ err, userId, action: 'delete' }, 'Failed to delete user');
-}
-
-// ✅ CORRECT - Include business context
-catch (err) {
-  logger.error({ err, orderId, customerId }, 'Order processing failed');
-}
-```
+**NEVER extract error properties for logging** (`err.message`, `err.stack`)
 
 ## Type Safety (STRICT)
 
 **FORBIDDEN: Using `any` to solve type errors**
-- **`any` is NOT a solution** - it's giving up on type safety
-- **ALWAYS use proper types** or `unknown` with type guards
-- **NO EXCEPTIONS**
 
-**FORBIDDEN patterns (NEVER do this):**
+**Instead use:**
+- Proper interfaces
+- `unknown` with type guards
+- Specific type assertions
+- Union types
+- Generic types
+
 ```typescript
-// ❌ WRONG - Don't use 'any' to bypass type errors
+// ❌ WRONG
 const data: any = await fetchData();
-const result: any = processData(data);
 
-// ❌ WRONG - Don't cast to 'any' to fix type issues
-const user = (userData as any).profile.settings;
-
-// ❌ WRONG - Don't use 'any' for function parameters
-function handleEvent(event: any) {
-  return event.target.value;
-}
-```
-
-**CORRECT solutions (ALWAYS do this instead):**
-```typescript
-// ✅ CORRECT - Define proper interfaces
+// ✅ CORRECT
 interface ApiResponse {
   data: UserData[];
   status: number;
 }
 const response: ApiResponse = await fetchData();
 
-// ✅ CORRECT - Use proper type assertions with specific types
-interface UserProfile {
-  profile: {
-    settings: UserSettings;
-  };
-}
-const user = (userData as UserProfile).profile.settings;
-
-// ✅ CORRECT - Define specific event types
-function handleEvent(event: React.ChangeEvent<HTMLInputElement>) {
-  return event.target.value;
-}
-
-// ✅ CORRECT - Use unknown for truly unknown data, then narrow
+// ✅ CORRECT - Unknown with narrowing
 function processUnknownData(data: unknown) {
   if (typeof data === 'object' && data !== null && 'id' in data) {
-    // Now TypeScript knows data has an 'id' property
     return (data as { id: string }).id;
   }
   throw new Error('Invalid data format');
 }
 ```
 
-**Acceptable alternatives to `any`:**
-- `unknown` - for truly unknown data that needs runtime type checking
-- Specific type assertions with interfaces
-- Union types for multiple possible types
-- Generic types for reusable components
-- `object` or `Record<string, unknown>` for loose object types
-
-**When encountering type errors:**
-1. **First**: Understand what the actual type should be
-2. **Second**: Define proper interfaces or types
-3. **Third**: Use type assertions with specific types
-4. **Last resort**: Use `unknown` and add proper type guards
-5. **NEVER**: Use `any` as a solution
-
-## Import Patterns (CRITICAL - NO DYNAMIC IMPORTS)
+## Import Patterns (NO DYNAMIC IMPORTS)
 
 **MANDATORY: Static imports ONLY**
-- **ALWAYS use static imports** at the top of files
-- **FORBIDDEN: Dynamic imports** (`await import()`) for regular code
-- **NO EXCEPTIONS** for normal module loading
-- **NEVER use dynamic imports** to lazy-load utilities, helpers, or regular dependencies
 
-**FORBIDDEN patterns (NEVER write this):**
 ```typescript
-// ❌ FORBIDDEN - Dynamic import for regular module
-async function processData() {
-  const { utils } = await import('./utils');
-  return utils.transform(data);
-}
-
-// ❌ FORBIDDEN - Lazy loading regular dependencies
-const loadValidator = async () => {
-  const validator = await import('./validator');
-  return validator.default;
-};
-
-// ❌ FORBIDDEN - Conditional regular imports
-if (needsFeature) {
-  const module = await import('./feature');
-}
-
-// ❌ FORBIDDEN - Dynamic imports in React components for regular code
-function MyComponent() {
-  useEffect(() => {
-    import('./helpers').then(({ helper }) => {
-      helper.doSomething();
-    });
-  }, []);
-}
-```
-
-**CORRECT patterns (ALWAYS do this):**
-```typescript
-// ✅ CORRECT - Static imports at the top
+// ✅ CORRECT - Static imports
 import { utils } from './utils';
 import validator from './validator';
-import { helper } from './helpers';
 
-function processData() {
-  return utils.transform(data);
-}
-
-// ✅ CORRECT - All imports resolved at build time
-import { featureA, featureB } from './features';
-
-function useFeature(type: string) {
-  return type === 'a' ? featureA : featureB;
+// ❌ FORBIDDEN - Dynamic imports (except route splitting)
+async function processData() {
+  const { utils } = await import('./utils'); // ❌ NEVER
 }
 ```
 
-**EXTREMELY RARE exceptions (require explicit justification):**
-- Route-based code splitting in Next.js/React Router
-- Platform-specific modules (Node vs Browser)
-- Truly optional dependencies that may not be installed
-- Explicit user request for code splitting
-
-**DEFAULT RULE: If you're thinking about using `await import()`, DON'T. Use a static import instead.**
+**RARE exceptions:** Route-based code splitting, platform-specific modules
 
 ## Summary
 
-**TypeScript code MUST follow these patterns:**
-- Function declarations at module level (NO arrow functions)
-- Strict file organization (imports → types → constants → exports → helpers)
-- `err` in catch blocks (NO other names)
-- NO `any` types as solutions
-- **STATIC IMPORTS ONLY** (ABSOLUTELY NO dynamic `await import()` for regular code)
+**TypeScript code MUST:**
+- Use function declarations at module level (NO arrow functions)
+- Follow strict file organization (imports → types → constants → exports → helpers)
+- Use `err` in catch blocks
+- Avoid `any` types
+- Use STATIC IMPORTS ONLY
 
-**CRITICAL REMINDERS:**
-- **NEVER use `await import()`** unless for route splitting
-- **NEVER use arrow functions** at module level
-- **NEVER use `any`** to fix type errors
-- **NEVER use variable names other than `err`** in catch blocks
-
-**These are REQUIREMENTS, not suggestions. Violations = incorrect code.**
-
+**These are REQUIREMENTS, not suggestions.**

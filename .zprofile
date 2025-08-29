@@ -52,11 +52,38 @@ function vc() {
   rm -f "$temp_file"
 }
 
-# Sync Claude prompt file
-function sync-claude-prompt() {
-  mkdir -p ~/.claude
-  cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/locality-of-behavior.mdc ~/dotfiles/prompts/typescript.mdc > ~/.claude/CLAUDE.md
-  echo "Synced ~/.claude/CLAUDE.md"
+# Sync agent prompt files
+function sync-agent-prompts() {
+  # Create directories if they don't exist
+  mkdir -p ~/.claude ~/.codex ~/.config/opencode
+  
+  # Combine all prompt files
+  local combined_prompts=$(cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/locality-of-behavior.mdc ~/dotfiles/prompts/typescript.mdc)
+  
+  # Write to all three locations
+  echo "$combined_prompts" > ~/.claude/CLAUDE.md
+  echo "$combined_prompts" > ~/.codex/AGENTS.md
+  echo "$combined_prompts" > ~/.config/opencode/AGENTS.md
+  
+  # Calculate metrics
+  local char_count=$(echo "$combined_prompts" | wc -c | tr -d ' ')
+  local word_count=$(echo "$combined_prompts" | wc -w | tr -d ' ')
+  local line_count=$(echo "$combined_prompts" | wc -l | tr -d ' ')
+  local file_size=$(du -h ~/.claude/CLAUDE.md | cut -f1)
+  # Accurate token count using tiktoken
+  local token_count=$(echo "$combined_prompts" | uvx --from tiktoken-cli tiktoken - 2>/dev/null | wc -l | tr -d ' ')
+  
+  echo "Synced agent prompts to:"
+  echo "  ~/.claude/CLAUDE.md"
+  echo "  ~/.codex/AGENTS.md"
+  echo "  ~/.config/opencode/AGENTS.md"
+  echo ""
+  echo "File stats:"
+  echo "  Size: $file_size"
+  echo "  Lines: $line_count"
+  echo "  Words: $word_count"
+  echo "  Characters: $char_count"
+  echo "  Tokens: $token_count"
 }
 
 function timezsh () {
