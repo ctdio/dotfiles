@@ -147,7 +147,7 @@ function update_deps () {
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
     sudo apt install ansible -y
-    ansible || pip install ansible
+    ansible || uv pip install ansible
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
   fi
@@ -231,7 +231,7 @@ function run_ansible_playbooks () {
   ansible-playbook ./playbooks/install-cargo-packages.yaml
   ansible-playbook ./playbooks/install-golang-packages.yaml
   ansible-playbook ./playbooks/install-npm-packages.yaml
-  ansible-playbook ./playbooks/install-pip-packages.yaml
+  ansible-playbook ./playbooks/install-pypi-packages.yaml
 }
 
 function prepare_neovim () {

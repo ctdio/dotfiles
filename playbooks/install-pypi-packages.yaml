@@ -21,4 +21,4 @@
   tasks:
     - name: Installing python packages
       loop: "{{ packages }}"
-      ansible.builtin.shell: "pip install {{ item }}"
+      ansible.builtin.shell: "uv pip install {{ item }}"
