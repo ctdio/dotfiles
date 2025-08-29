@@ -19,12 +19,12 @@
     "key": "cmd+j",
     "command": "-workbench.action.togglePanel"
   },
-  // muscle memory, typically use <space>q to quickly toggle qflist
-  {
-    "key": "q",
-    "command": "workbench.action.togglePanel",
-    "when": "panelFocus && !problemsFilterFocus"
-  },
+  // // muscle memory, typically use <space>q to quickly toggle qflist
+  // {
+  //   "key": "q",
+  //   "command": "workbench.action.togglePanel",
+  //   "when": "panelFocus && !problemsFilterFocus"
+  // },
 
   // cancel
   {
@@ -99,7 +99,7 @@
     "command": "vscode-harpoon.editorQuickPick"
   },
   {
-    "key": "ctrl+shift+t",
+    "key": "ctrl+f",
     "when": "editorTextFocus && vim.mode == 'Normal'",
     "command": "vscode-harpoon.editEditors"
   },

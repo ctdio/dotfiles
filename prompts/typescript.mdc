@@ -5,6 +5,15 @@ include: "**/*.{ts,tsx}"
 
 # TypeScript Rules
 
+## CRITICAL VIOLATIONS TO AVOID
+
+**These are the most common violations that MUST be prevented:**
+1. **NEVER use dynamic imports** (`await import()`) for regular modules
+2. **NEVER use arrow functions** at module level
+3. **NEVER use `any`** to solve type errors
+4. **NEVER use `error`, `e`, or `ex`** in catch blocks (always use `err`)
+5. **NEVER mix exports and helpers** in file structure
+
 ## TypeScript-Specific Requirements
 
 **These rules are MANDATORY for all TypeScript code.**
@@ -340,15 +349,69 @@ function processUnknownData(data: unknown) {
 4. **Last resort**: Use `unknown` and add proper type guards
 5. **NEVER**: Use `any` as a solution
 
-## Import Patterns (STRICT)
+## Import Patterns (CRITICAL - NO DYNAMIC IMPORTS)
 
-**REQUIRED: Use static imports**
-- **ALWAYS use static imports** for regular dependencies
-- **AVOID dynamic imports** (`await import()`) except for:
-  - Route-based code splitting
-  - Platform-specific modules
-  - Optional dependencies
-- **NO dynamic imports** for regular modules
+**MANDATORY: Static imports ONLY**
+- **ALWAYS use static imports** at the top of files
+- **FORBIDDEN: Dynamic imports** (`await import()`) for regular code
+- **NO EXCEPTIONS** for normal module loading
+- **NEVER use dynamic imports** to lazy-load utilities, helpers, or regular dependencies
+
+**FORBIDDEN patterns (NEVER write this):**
+```typescript
+// ❌ FORBIDDEN - Dynamic import for regular module
+async function processData() {
+  const { utils } = await import('./utils');
+  return utils.transform(data);
+}
+
+// ❌ FORBIDDEN - Lazy loading regular dependencies
+const loadValidator = async () => {
+  const validator = await import('./validator');
+  return validator.default;
+};
+
+// ❌ FORBIDDEN - Conditional regular imports
+if (needsFeature) {
+  const module = await import('./feature');
+}
+
+// ❌ FORBIDDEN - Dynamic imports in React components for regular code
+function MyComponent() {
+  useEffect(() => {
+    import('./helpers').then(({ helper }) => {
+      helper.doSomething();
+    });
+  }, []);
+}
+```
+
+**CORRECT patterns (ALWAYS do this):**
+```typescript
+// ✅ CORRECT - Static imports at the top
+import { utils } from './utils';
+import validator from './validator';
+import { helper } from './helpers';
+
+function processData() {
+  return utils.transform(data);
+}
+
+// ✅ CORRECT - All imports resolved at build time
+import { featureA, featureB } from './features';
+
+function useFeature(type: string) {
+  return type === 'a' ? featureA : featureB;
+}
+```
+
+**EXTREMELY RARE exceptions (require explicit justification):**
+- Route-based code splitting in Next.js/React Router
+- Platform-specific modules (Node vs Browser)
+- Truly optional dependencies that may not be installed
+- Explicit user request for code splitting
+
+**DEFAULT RULE: If you're thinking about using `await import()`, DON'T. Use a static import instead.**
 
 ## Summary
 
@@ -357,7 +420,13 @@ function processUnknownData(data: unknown) {
 - Strict file organization (imports → types → constants → exports → helpers)
 - `err` in catch blocks (NO other names)
 - NO `any` types as solutions
-- Static imports (NO unnecessary dynamic imports)
+- **STATIC IMPORTS ONLY** (ABSOLUTELY NO dynamic `await import()` for regular code)
 
-**These are REQUIREMENTS, not suggestions.**
+**CRITICAL REMINDERS:**
+- **NEVER use `await import()`** unless for route splitting
+- **NEVER use arrow functions** at module level
+- **NEVER use `any`** to fix type errors
+- **NEVER use variable names other than `err`** in catch blocks
+
+**These are REQUIREMENTS, not suggestions. Violations = incorrect code.**
 

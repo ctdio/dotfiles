@@ -1,4 +1,6 @@
 {
+  "python.terminal.activateEnvironment": false,
+  "terminal.integrated.shellIntegration.enabled": false,
   "extensions.experimental.affinity": {
     "vscodevim.vim": 1
   },
@@ -68,6 +70,17 @@
       "commands": ["notifications.clearAll"]
     },
     {
+      "before": ["_"],
+      "commands": [
+        "workbench.action.terminal.new",
+        "workbench.action.toggleMaximizedPanel",
+        {
+          "command": "workbench.action.terminal.sendSequence",
+          "args": { "text": "nvim ${fileDirname}\u000D" }
+        }
+      ]
+    },
+    {
       "before": ["-"],
       "commands": ["vsnetrw.open"]
     },
@@ -94,11 +107,13 @@
     // },
     {
       "before": ["<C-a>"],
-      "commands": ["television.ToggleTextFinder"]
+      // "commands": ["television.ToggleTextFinder"]
+      "commands": ["workbench.action.quickTextSearch"]
     },
     {
       "before": ["<C-p>"],
-      "commands": ["television.ToggleFileFinder"]
+      // "commands": ["television.ToggleFileFinder"]
+      "commands": ["workbench.action.quickOpen"]
     },
     {
       "before": ["<leader>", "f"],
@@ -1535,6 +1550,9 @@
     "austinkelleher",
     "ctdio",
     "inngest",
+    "langchain",
+    "langgraph",
+    "langsmith",
     "lexorank",
     "lpbonomi",
     "nuqs",
@@ -1543,5 +1561,6 @@
   ],
   "cursor-retrieval.canAttemptGithubLogin": false,
   "update.releaseTrack": "prerelease",
-  "workbench.colorTheme": "Kanso Zen"
+  "workbench.colorTheme": "Kanso Zen",
+  "workbench.editor.enablePreviewFromQuickOpen": true
 }

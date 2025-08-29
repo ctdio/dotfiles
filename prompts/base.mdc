@@ -13,23 +13,25 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 **These patterns are MANDATORY for all new code. They reflect hard-won lessons from debugging production systems.**
 
-### File Structure (STRICT ORDER - NO EXCEPTIONS)
+### File Structure - Top-Down Reading Order
+
+**PRINCIPLE: Code should read like a book - main story first, supporting details follow.**
 
 ```
 1. Imports (all at top, no gaps)
 2. Types/Interfaces (all together)
 3. Constants (if any)
-4. Exported functions (all together, use 'function' keyword)
-5. Helper functions (all at bottom)
+4. Main exports - the "what" this module does
+5. Implementation details - the "how" it works
 ```
 
 ### CRITICAL RULES:
 - **ALWAYS use `function` keyword** for module-level functions
 - **NEVER use arrow functions** at module level (they belong in callbacks only)
-- **NEVER mix exports and helpers** - maintain strict separation
-- **NO EXCEPTIONS** for new files or greenfield code
+- **Order functions for readability** - readers should understand the module's purpose immediately
+- **Main logic first** - don't make readers scroll to understand what the module does
 
-**Why:** Better stack traces, clearer debugging, predictable code organization. These aren't preferences - they're requirements based on production experience.
+**Why:** Code is read far more than written. Top-down organization means readers grasp the purpose instantly, then dive into details only when needed. Better stack traces from function declarations are a bonus.
 
 ## Scope Guidelines
 
@@ -92,35 +94,33 @@ Before implementing any changes, always look for and follow existing project con
 
 **IMPORTANT:** If you skip this discovery phase and implement code that violates project conventions, you will need to redo the work. Always invest time upfront to understand the existing patterns.
 
-## Function Organization (MANDATORY)
+## Function Organization - Top-Down Flow
 
-**STRICT REQUIREMENTS:**
+**CORE PRINCIPLE: Organize code so readers understand the module's purpose immediately.**
 
 1. **Import statements** - ALL at the very top
    - Regular imports first, type imports second
    - NO blank lines between import groups
-   - Violation = WRONG
 
 2. **Type definitions** - ALL together after imports
    - Interfaces before type aliases
    - NO functions between types
-   - Violation = WRONG
 
 3. **Constants** - After types (if any)
    - Only true constants (not functions)
-   - Violation = WRONG
 
-4. **Exported items** - ALL grouped together
+4. **Main exported functions** - The module's public API
    - MUST use `export function` syntax
    - NO arrow functions
-   - NO helpers between exports
-   - Violation = WRONG
+   - Order by importance/logical flow
+   - Reader should immediately understand what this module offers
 
-5. **Helper functions** - ALL at the bottom
-   - NEVER mixed with exports
-   - Violation = WRONG
+5. **Supporting functions** - Implementation details
+   - Place near their usage for locality
+   - Group related helpers together
+   - Can interleave with exports if it aids readability
 
-**ENFORCEMENT: Code that violates this structure is incorrect and must be fixed.**
+**KEY INSIGHT: A developer opening your file should understand its purpose from the first few exported functions, not after scrolling through helpers.**
 
 **FORBIDDEN patterns (NEVER write code like this):**
 ```typescript
@@ -148,7 +148,7 @@ interface Config {} // ❌ WRONG - type after function
 export function handle() {}
 ```
 
-**MANDATORY pattern (ALWAYS follow exactly):**
+**TOP-DOWN pattern (ALWAYS follow):**
 ```typescript
 // ✅ CORRECT - All imports first (no blank lines between)
 import { DataService } from './services';
@@ -176,7 +176,18 @@ type ValidationResult = {
 const DEFAULT_TIMEOUT = 5000;
 const MAX_RETRIES = 3;
 
-// ✅ CORRECT - All exports together using function keyword
+// ✅ CORRECT - Main module purpose is immediately clear
+export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
+  const users = await fetchUsers(config);
+  return processUsers(users);
+}
+
+export function createUserReport(users: UserData[]): string {
+  const processedUsers = processUsers(users);
+  return generateReportContent(processedUsers);
+}
+
+// ✅ CORRECT - Core processing logic follows main exports
 export function processUsers(users: UserData[]): ProcessedUser[] {
   return users.map(user => ({
     ...user,
@@ -185,11 +196,7 @@ export function processUsers(users: UserData[]): ProcessedUser[] {
   }));
 }
 
-export function createUserReport(users: UserData[]): string {
-  const processedUsers = processUsers(users);
-  return generateReportContent(processedUsers);
-}
-
+// ✅ CORRECT - Supporting validation logic near its primary usage
 export function validateAllUsers(users: UserData[]): ValidationResult {
   const errors: string[] = [];
   const isValid = users.every(user => {
@@ -200,18 +207,13 @@ export function validateAllUsers(users: UserData[]): ValidationResult {
   return { isValid, errors };
 }
 
-export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
-  const users = await fetchUsers(config);
-  return processUsers(users);
-}
-
-// ✅ CORRECT - All helper functions at the bottom
-function formatUserName(user: UserData): string {
-  return `${user.name} <${user.email}>`;
-}
-
+// ✅ CORRECT - Implementation details follow the high-level functions
 function validateUserData(user: UserData): boolean {
   return user.email.includes('@') && user.name.length > 0;
+}
+
+function formatUserName(user: UserData): string {
+  return `${user.name} <${user.email}>`;
 }
 
 function generateReportContent(users: ProcessedUser[]): string {
@@ -225,11 +227,11 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 ```
 
 **Why this structure matters to me:**
-- **Predictable navigation** - I know exactly where to find things
-- **Clear contracts** - Types and exports define the module's interface
-- **Hidden complexity** - Implementation details don't clutter the API
+- **Instant comprehension** - Main purpose visible without scrolling
+- **Natural reading flow** - Like a newspaper: headline first, details follow
+- **Reduced cognitive load** - Don't need to hold helpers in memory to understand exports
 - **Better debugging** - Function declarations give cleaner stack traces
-- **Easier refactoring** - Clear boundaries between public and private code
+- **Easier onboarding** - New developers grasp module purpose immediately
 
 **Type management:**
 - **Single use:** Colocate types with their callsite
@@ -281,6 +283,35 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 - Any command that could result in data loss or corruption
 - Direct database CLI commands that bypass application safeguards
 
+## Server Management Guidelines (CRITICAL)
+
+**FORBIDDEN: Starting Dev Servers Without Explicit Request**
+- **NEVER start any development server** unless the user explicitly asks you to do so
+- **NEVER run commands like** `npm run dev`, `npm start`, `yarn dev`, `yarn start`, `pnpm dev`, `python manage.py runserver`, `rails server`, etc. without explicit user request
+- **NEVER suggest starting a server** unless the user asks about running or testing the application
+- **DO NOT proactively start servers** even after implementing features or fixes
+
+**What you SHOULD do instead:**
+1. **Complete the implementation** without starting any servers
+2. **Run tests and linters** if requested or if validation commands are known
+3. **Wait for explicit instructions** from the user about starting servers
+4. **If asked to test the application**, first ask the user if they want you to start the dev server
+
+**When the user explicitly asks to start a server:**
+- Confirm which server command to use if multiple options exist
+- Start the server as requested
+- Monitor the output for any errors or issues
+- Keep the server running unless asked to stop it
+
+**Red flags - Commands that start servers (DO NOT run without explicit request):**
+- `npm run dev`, `npm start`, `yarn dev`, `yarn start`, `pnpm dev`, `pnpm start`
+- `python manage.py runserver`, `flask run`, `uvicorn main:app`
+- `rails server`, `rails s`
+- `php artisan serve`
+- `dotnet run`, `dotnet watch`
+- `go run`, `cargo run`
+- Any command with `dev`, `start`, `serve`, `watch` that launches a persistent process
+
 ## Implementation Guidelines
 
 **Code Reuse and DRY Principle (CRITICAL):**
@@ -326,12 +357,18 @@ When making edits to a codebase:
 **PEH** - "Plan the edit" - analyze and plan the approach without implementing anything
 **mte** - "Make the edit" - search for AEH/AI EDIT HERE comments and implement all marked changes
 **c** - "continue" - proceed with the current task or implementation
+**TODO** - When a message starts with "TODO", add the request to your todo list and continue with any ongoing work
 
 When asked to "make the edits" or "mte":
 1. Search for files containing "AI EDIT HERE" or "AEH"
 2. Read all instances carefully to understand the intended changes.
 3. Read surrounding context to understand the task and any constraints.
 4. Implement the changes and remove all "AI EDIT HERE"/"AEH" comments
+
+When a message starts with "TODO":
+1. Add the new request to your todo list using TodoWrite
+2. Continue with your current task if you have ongoing work
+3. The TODO item will be addressed after completing the current task or when explicitly asked
 
 ## Code Style Application Rules
 
@@ -355,9 +392,9 @@ When working in files with established patterns:
 
 ### Code Structure Requirements:
 - [ ] I will use `function` keyword for ALL module-level functions
-- [ ] I will place imports → types → constants → exports → helpers IN THAT ORDER
+- [ ] I will organize code top-down: main purpose first, details follow
 - [ ] I will NOT use arrow functions at module level
-- [ ] I will NOT mix exports and helpers
+- [ ] I will ensure the module's purpose is immediately clear
 
 ### Context Check:
 - [ ] New file/greenfield = MUST use my patterns
@@ -407,32 +444,41 @@ export async function getUserData(id: string) {
 }
 ```
 
-### 2. Mixed Organization (FORBIDDEN)
+### 2. Poor Organization (FORBIDDEN)
 ```typescript
-// ❌ VIOLATION - Exports and helpers mixed together
-export function processData(data: Data) {
-  return normalizeData(data);
-}
-
-function normalizeData(data: Data) { // ❌ Helper in wrong place
+// ❌ VIOLATION - Helper details before main purpose
+function normalizeData(data: Data) { // ❌ Implementation detail first
   return data.trim();
 }
 
-export function validateData(data: Data) { // ❌ Export after helper
-  return data.length > 0;
+function validateFormat(data: Data) { // ❌ Another helper before exports
+  return /^[A-Z]/.test(data);
 }
 
-// ✅ CORRECT - All exports together, then all helpers
+export function processData(data: Data) { // ❌ Main purpose buried
+  return normalizeData(data);
+}
+
+export function validateData(data: Data) {
+  return data.length > 0 && validateFormat(data);
+}
+
+// ✅ CORRECT - Main purpose first, details follow
 export function processData(data: Data) {
   return normalizeData(data);
 }
 
 export function validateData(data: Data) {
-  return data.length > 0;
+  return data.length > 0 && validateFormat(data);
 }
 
+// Supporting functions follow main exports
 function normalizeData(data: Data) {
   return data.trim();
+}
+
+function validateFormat(data: Data) {
+  return /^[A-Z]/.test(data);
 }
 ```
 
@@ -563,7 +609,7 @@ interface Props { // Types after implementation
   user: User;
 }
 
-// ✅ My preferred pattern - clean, consistent, debuggable
+// ✅ My preferred pattern - top-down, clean, debuggable
 import React, { useState, useEffect } from 'react';
 import { Button } from './components';
 import type { UserData } from './types';
@@ -578,6 +624,7 @@ interface UserCardState {
   tempName: string;
 }
 
+// Main component - purpose immediately clear
 export function UserCard({ user, onUpdate }: UserCardProps) {
   const [state, setState] = useState<UserCardState>({
     isEditing: false,
@@ -611,9 +658,9 @@ function handleUpdate(user: UserData): void {
 **These patterns are MANDATORY for new code. They are based on debugging production systems and maintaining large codebases.**
 
 **Key principles:**
+- Top-down organization - main purpose immediately visible
 - Function declarations for better stack traces
-- Strict file organization for predictable navigation
-- Clear separation of API from implementation
+- Code reads like a book - understand the story before the details
 - Consistency enables velocity
 
 **Remember: These are your DEFAULT patterns. Only adapt to different styles when working in existing codebases.**

@@ -2,7 +2,7 @@ bun 1.2.18
 elixir 1.14.0-otp-25
 erlang 25.0.4
 gleam 0.22.1
-golang 1.21.1
+golang 1.25.0
 helm 3.15.1
 helmfile 0.165.0
 nodejs 22.18.0
