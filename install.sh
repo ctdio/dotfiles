@@ -140,14 +140,22 @@ function install_fzf_git () {
 
 function update_deps () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    sudo apt update -y
+    if [[ -f /etc/arch-release ]]; then
+      yay -Sy
+    else
+      sudo apt update -y
+    fi
   fi
 }
 
 function install_ansible () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    sudo apt install ansible -y
-    ansible || uv pip install ansible
+    if [[ -f /etc/arch-release ]]; then
+      yay -S ansible --noconfirm
+    else
+      sudo apt install ansible -y
+      ansible || uv pip install ansible
+    fi
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
   fi
@@ -157,7 +165,11 @@ function install_ansible () {
 
 function install_ninja () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    sudo apt install ninja-build -y
+    if [[ -f /etc/arch-release ]]; then
+      yay -S ninja --noconfirm
+    else
+      sudo apt install ninja-build -y
+    fi
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ninja
   fi
