@@ -85,6 +85,10 @@
       "commands": ["vsnetrw.open"]
     },
     {
+      "before": ["<leader>", "a"],
+      "commands": ["composer.addfilestocomposer"]
+    },
+    {
       "before": ["<leader>", "b"],
       "commands": ["workbench.action.quickOpen"]
     },
