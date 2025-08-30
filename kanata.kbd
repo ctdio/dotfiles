@@ -46,7 +46,7 @@
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
   z    x    c    v    b    n    m    ,    .    /
-  fn   spc  bspc bksl
+  spc  bspc bksl
 )
 
 (deflayer default
@@ -54,7 +54,7 @@
   q     w     e    r    t    y    u    i    o    p
   a     s     d    f    g    h    j    k    l    ;
   z     x     c    v    b    n    m    ,    .    /
-  fn spc   bspc  bksl
+  spc   bspc  bksl
 )
 
 
@@ -63,7 +63,7 @@
   q     w     e    r    t    y    u    i    o    p
   a     s     d    f    g    h    j    k    l    ;
   z     x     c    v    b    n    m    ,    .    /
-  fn spc   bksl  bspc
+  spc   bksl  bspc
 )
 
 (deflayer symbols
@@ -71,7 +71,7 @@
   _        lbrc      S-lbrc   S-9      S-grv    S-6    S-0    S-rbrc   rbrc    grv
   min      S-8       eql      S-min    S-5      S-3    _      _        _       _
   S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
-  fn       esc       _         _
+  esc       _         _
 )
 
 (deflayer arrow
@@ -79,7 +79,7 @@
   _    _    _    _    _    down    right   _    _    _
   _    _    _    _    _    left    _       _    _    _
   _    _    _    _    _    up      _       _    _    _
-  fn   esc  _    _
+  esc  _    _
 )
 
 (deflayer number
@@ -87,5 +87,5 @@
   _    _    _    _    _    _    7   8   9    _
   _    _    _    _    _    _    4   5   6    _
   _    _    _    _    _    _    1   2   3    _
-  fn   0    _    _
+  0    _    _
 )
