@@ -45,6 +45,8 @@ export PATH="$PNPM_HOME:$PATH"
 export MODULAR_HOME="/Users/charlieduong/.modular"
 export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
 
+export EDITOR="nvim"
+
 RG_IGNORE=$(cat <<EOM
 .Trash
 .ansible
