@@ -11,13 +11,19 @@ if type zoxide &> /dev/null; then
 fi
 
 # Mise (runtime version manager)
-eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
+if [[ "$uname()" == "Linux" ]]; then
+  eval "$(/usr/bin/mise activate zsh)"
+elif [[ "$(uname)" == "Darwin" ]]; then
+  eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
+fi
 
 # Starship prompt
 eval "$(starship init zsh)"
 
-# Turso CLI
-. "$HOME/.turso/env"
+if [ -f ${HOME}/.turso/env ]; then
+  # Turso CLI
+  . "${HOME}/.turso/env"
+fi
 
 # Additional PATH entries
 export PATH="/Users/charlieduong/.opencode/bin:$PATH"

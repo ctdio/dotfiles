@@ -248,13 +248,9 @@ function run_ansible_playbooks () {
 
 function prepare_neovim () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    rm -f ~/nvim.appimage
-
-    curl -L \
-      https://github.com/neovim/neovim/releases/download/stable/nvim.appimage \
-      -o ~/nvim.appimage
-
-    chmod +x ~/nvim.appimage
+    yay -S neovim
+  elif [[ "$(uname)" = 'Darwin' ]]; then
+    brew install neovim
   fi
 }
 
