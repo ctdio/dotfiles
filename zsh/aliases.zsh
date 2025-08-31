@@ -38,6 +38,3 @@ alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-202
 alias cc='claude --dangerously-skip-permissions'
 alias ca='cursor-agent -f --fullscreen'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
-
-# Tmux (better colors)
-alias tmux='TERM=screen-256color tmux'
