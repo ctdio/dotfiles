@@ -1,85 +1,35 @@
 # uncomment to profile
 # zmodload zsh/zprof
 
-# history
+# =====================================
+# Base Configuration
+# =====================================
+
+# History settings
 SAVEHIST=5000
 HISTFILE=~/.zsh_history
 setopt SHARE_HISTORY
 
-# Use -C to only check for completion fields when .zompdump is missing or
-# outdated. Necessary for making shell
+# Prevent accidental exit with Ctrl+D
+set -o ignoreeof
+
+# Use -C to only check for completion fields when .zompdump is missing or outdated
 autoload -Uz compinit && compinit -C
 
-if [ -f '/opt/homebrew/bin/brew' ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+# Add custom completions to fpath
+fpath=(~/.zcomp $fpath)
 
-# hack to get better colors in tmux
-alias tmux='TERM=screen-256color tmux'
+# =====================================
+# Source Modular Configuration
+# =====================================
 
-function zvm_after_init() {
-  # install fzf keybindings
-  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+DOTFILES_DIR=~/dotfiles
 
-  # enable fzf-git
-  [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
-
-  bindkey '^K' autosuggest-accept
-
-  bindkey '^G' _tv_git_branches  # Ctrl+G
-}
-
-# Load antidote
-source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
-
-# Check if plugins cache exists, regenerate if needed
-if [[ ! -f ${ZDOTDIR:-$HOME}/.zsh_plugins.zsh || ${ZDOTDIR:-$HOME}/.zsh_plugins.txt -nt ${ZDOTDIR:-$HOME}/.zsh_plugins.zsh ]]; then
-  antidote bundle < ${ZDOTDIR:-$HOME}/.zsh_plugins.txt > ${ZDOTDIR:-$HOME}/.zsh_plugins.zsh
-fi
-
-# Source plugins
-source ${ZDOTDIR:-$HOME}/.zsh_plugins.zsh
-
-bindkey -v
-
-if type zoxide &> /dev/null; then
-  eval "$(zoxide init zsh)"
-fi
-
-fpath=(~/.zcomp $fpath);
-
-eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
-
-eval "$(starship init zsh)"
-
-# Git branches picker using television
-_tv_git_branches() {
-  local result=$(tv git-branches)
-  if [[ -n "$result" ]]; then
-    LBUFFER+="$result"
-  fi
-  zle reset-prompt
-}
-
-source ~/dotfiles/scripts/wt
-
-zle -N _tv_git_branches
+# Load all modular zsh configurations
+source ${DOTFILES_DIR}/zsh/plugins.zsh
+source ${DOTFILES_DIR}/zsh/tools.zsh
+source ${DOTFILES_DIR}/zsh/aliases.zsh
+source ${DOTFILES_DIR}/zsh/functions.zsh
 
 # uncomment to profile
 # zprof
-
-
-# opencode
-export PATH=/Users/charlieduong/bin:$PATH
-
-. "$HOME/.turso/env"
-
-
-
-# opencode
-export PATH=/Users/charlieduong/.opencode/bin:$PATH
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/charlieduong/.lmstudio/bin"
-# End of LM Studio CLI section
-
