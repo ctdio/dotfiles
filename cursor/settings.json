@@ -76,13 +76,11 @@
         "workbench.action.toggleMaximizedPanel",
         {
           "command": "workbench.action.terminal.sendSequence",
-          "args": { "text": "nvim ${fileDirname}\u000D" }
+          "args": {
+            "text": "nvim ${fileDirname}\r"
+          }
         }
       ]
-    },
-    {
-      "before": ["-"],
-      "commands": ["vsnetrw.open"]
     },
     {
       "before": ["<leader>", "a"],
@@ -101,23 +99,15 @@
       "commands": ["workbench.files.action.focusFilesExplorer"],
       "when": "vim.mode === 'Normal' && editorTextFocus"
     },
-    // {
-    //   "before": ["<C-a>"],
-    //   "commands": ["find-it-faster.findWithinFiles"]
-    // },
-    // {
-    //   "before": ["<C-p>"],
-    //   "commands": ["find-it-faster.findFiles"]
-    // },
     {
       "before": ["<C-a>"],
-      // "commands": ["television.ToggleTextFinder"]
-      "commands": ["workbench.action.quickTextSearch"]
+      // "commands": ["workbench.action.quickTextSearch"]
+      "commands": ["periscope.search"]
     },
     {
       "before": ["<C-p>"],
-      // "commands": ["television.ToggleFileFinder"]
       "commands": ["workbench.action.quickOpen"]
+      // "commands": ["periscope.searchFiles"]
     },
     {
       "before": ["<leader>", "f"],
@@ -1546,6 +1536,38 @@
       "before": ["y", "i", "n"],
       "when": " editorTextFocus  && vscode-textobjects.vimEnabled  && !inDebugRepl && vim.mode != 'Insert'",
       "commands": ["vscode-textobjects.yank.next.inner.node.start"]
+    },
+    {
+      "before": ["-"],
+      "commands": [
+        {
+          "command": "oil-code.open"
+        }
+      ]
+    },
+    {
+      "before": ["<cr>"],
+      "commands": [
+        {
+          "command": "oil-code.select"
+        }
+      ]
+    },
+    {
+      "before": ["<c-l>"],
+      "commands": [
+        {
+          "command": "oil-code.refresh"
+        }
+      ]
+    },
+    {
+      "before": ["`"],
+      "commands": [
+        {
+          "command": "oil-code.cd"
+        }
+      ]
     }
   ],
   "cursor.composer.shouldChimeAfterChatFinishes": true,
