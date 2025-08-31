@@ -16,15 +16,15 @@ function vc() {
 function sync-agent-prompts() {
   # Create directories if they don't exist
   mkdir -p ~/.claude ~/.codex ~/.config/opencode
-  
+
   # Combine all prompt files
   local combined_prompts=$(cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/locality-of-behavior.mdc ~/dotfiles/prompts/typescript.mdc)
-  
+
   # Write to all three locations
   echo "$combined_prompts" > ~/.claude/CLAUDE.md
   echo "$combined_prompts" > ~/.codex/AGENTS.md
   echo "$combined_prompts" > ~/.config/opencode/AGENTS.md
-  
+
   # Calculate metrics
   local char_count=$(echo "$combined_prompts" | wc -c | tr -d ' ')
   local word_count=$(echo "$combined_prompts" | wc -w | tr -d ' ')
@@ -32,7 +32,7 @@ function sync-agent-prompts() {
   local file_size=$(du -h ~/.claude/CLAUDE.md | cut -f1)
   # Accurate token count using tiktoken
   local token_count=$(echo "$combined_prompts" | uvx --from tiktoken-cli tiktoken - 2>/dev/null | wc -l | tr -d ' ')
-  
+
   echo "Synced agent prompts to:"
   echo "  ~/.claude/CLAUDE.md"
   echo "  ~/.codex/AGENTS.md"
@@ -109,23 +109,3 @@ function fnvim () {
   nvim ${file_path}
 }
 
-# Git branches picker using television
-_tv_git_branches() {
-  local result=$(tv git-branches)
-  if [[ -n "$result" ]]; then
-    LBUFFER+="$result"
-  fi
-  zle reset-prompt
-}
-
-# ZVM after init hook (for keybindings)
-function zvm_after_init() {
-  # install fzf keybindings
-  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-  # enable fzf-git
-  [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
-
-  bindkey '^K' autosuggest-accept
-  bindkey '^G' _tv_git_branches  # Ctrl+G
-}

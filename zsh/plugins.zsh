@@ -18,3 +18,24 @@ bindkey -v
 
 # Register the TV git branches widget
 zle -N _tv_git_branches
+
+# Git branches picker using television
+_tv_git_branches() {
+  local result=$(tv git-branches)
+  if [[ -n "$result" ]]; then
+    LBUFFER+="$result"
+  fi
+  zle reset-prompt
+}
+
+# ZVM after init hook (for keybindings)
+function zvm_after_init() {
+  # install fzf keybindings
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+  # enable fzf-git
+  [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
+
+  bindkey '^K' autosuggest-accept
+  bindkey '^G' _tv_git_branches  # Ctrl+G
+}
