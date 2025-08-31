@@ -26,8 +26,8 @@ fpath=(~/.zcomp $fpath)
 DOTFILES_DIR=~/dotfiles
 
 # Load all modular zsh configurations
-source ${DOTFILES_DIR}/zsh/plugins.zsh
 source ${DOTFILES_DIR}/zsh/tools.zsh
+source ${DOTFILES_DIR}/zsh/plugins.zsh
 source ${DOTFILES_DIR}/zsh/aliases.zsh
 source ${DOTFILES_DIR}/zsh/functions.zsh
 
