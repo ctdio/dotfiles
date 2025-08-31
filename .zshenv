@@ -100,13 +100,6 @@ elif [[ "$(uname)" = 'Linux' ]]; then
   alias pbcopy='xclip -selection clipboard'
 fi
 
-if [[ "$(uname)" = 'Linux' ]]; then
-  export EDITOR=~/nvim.appimage
-  alias nvim='~/nvim.appimage'
-else
-  export EDITOR=nvim
-fi
-
 if [ -f "$HOME/.env" ]; then
   export $(grep -v '^#' $HOME/.env | xargs)
 fi
