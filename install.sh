@@ -58,7 +58,19 @@ function link_dotfiles () {
     mkdir -p ~/Library/Application\ Support/Cursor/User
     ln -nsf ${DOTFILES_DIR}/cursor/settings.json ~/Library/Application\ Support/Cursor/User/settings.json
     ln -nsf ${DOTFILES_DIR}/cursor/keybindings.json ~/Library/Application\ Support/Cursor/User/keybindings.json
+  elif [[ "$(uname)" = 'Linux' ]]; then
+    echo "Linking cursor settings to ~/.config/Cursor/User"
+    mkdir -p ~/.config/Cursor
+    ln -nsf ${DOTFILES_DIR}/cursor/settings.json ~/.config/Cursor/User/settings.json
+    ln -nsf ${DOTFILES_DIR}/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
   fi
+
+  echo "Linking hypr files to ~/.config/hypr"
+  ln -nsf ${DOTFILES_DIR}/hypr/autostart.conf ~/.config/hypr/autostart.conf
+  ln -nsf ${DOTFILES_DIR}/hypr/bindings.conf ~/.config/hypr/bindings.conf
+  ln -nsf ${DOTFILES_DIR}/hypr/envs.conf ~/.config/hypr/envs.conf
+  ln -nsf ${DOTFILES_DIR}/hypr/input.conf ~/.config/hypr/input.conf
+  ln -nsf ${DOTFILES_DIR}/hypr/monitors.conf ~/.config/hypr/monitors.conf
 
   echo "Linking .sketchybarrc to ~/.config/sketchybar/sketchybarrc"
   ln -nsf ${DOTFILES_DIR}/sketchybar ~/.config/sketchybar
