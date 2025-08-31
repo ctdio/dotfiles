@@ -328,6 +328,10 @@ local function setup()
         ["ctrl-q"] = "select-all+accept",
       },
     },
+    grep = {
+      hidden = true,
+      ignore = true,
+    },
   })
 
   vim.keymap.set("n", "<C-p>", function()
@@ -335,7 +339,7 @@ local function setup()
   end, {})
 
   vim.keymap.set("n", "<C-a>", function()
-    fzf.live_grep()
+    fzf.live_grep({})
   end, {})
 
   vim.keymap.set("n", "<leader>b", function()
