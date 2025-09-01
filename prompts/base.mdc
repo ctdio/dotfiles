@@ -115,6 +115,14 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 
 **When explicitly asked:** Confirm command, start server, monitor output
 
+## Git Commit Management (CRITICAL)
+
+**FORBIDDEN:** Creating git commits without explicit request (`git commit`, `git add`, etc.)
+
+**NEVER commit changes unless the user explicitly asks you to.** It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive.
+
+**When explicitly asked to commit:** Follow proper commit message conventions, stage appropriate files, create commit
+
 ## Implementation Guidelines
 
 **Code Reuse (CRITICAL):**
