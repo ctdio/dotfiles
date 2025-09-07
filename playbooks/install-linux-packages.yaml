@@ -24,11 +24,11 @@
       - cmake
       - clang
       - llvm
-      
+      - neovim
+
     # Arch-specific packages
     arch_packages:
       - base-devel
-      - neovim
       - ninja
       - fzf
       - github-cli
@@ -57,7 +57,7 @@
       - terraform
       - aws-cli-v2
       - direnv
-      
+
     # Ubuntu-specific packages
     ubuntu_packages:
       - build-essential
@@ -84,7 +84,7 @@
       apt:
         update_cache: yes
       when: ansible_distribution == "Ubuntu"
-      
+
     - name: Update package cache for Arch
       pacman:
         update_cache: yes
@@ -95,7 +95,7 @@
         name: "{{ common_packages }}"
         state: present
       when: ansible_distribution == "Ubuntu"
-      
+
     - name: Install Ubuntu-specific packages
       apt:
         name: "{{ ubuntu_packages }}"
@@ -108,7 +108,7 @@
         name: "{{ common_packages }}"
         state: present
       when: ansible_os_family == "Archlinux"
-      
+
     - name: Install Arch-specific packages
       pacman:
         name: "{{ arch_packages }}"
@@ -123,7 +123,7 @@
           register: yay_check
           failed_when: false
           changed_when: false
-          
+
         - name: Clone yay repository
           git:
             repo: https://aur.archlinux.org/yay.git
@@ -131,14 +131,14 @@
             depth: 1
           when: yay_check.rc != 0
           become: no
-          
+
         - name: Build and install yay
           shell: |
             cd /tmp/yay
             makepkg -si --noconfirm
           when: yay_check.rc != 0
           become: no
-          
+
         - name: Clean up yay build directory
           file:
             path: /tmp/yay
