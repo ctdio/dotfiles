@@ -1,6 +1,6 @@
 # Load antidote plugin manager
 if [[ "$(uname)" == "Linux" ]]; then
-  source /usr/share/zsh-antidote/antidote.zsh
+  source ~/.antidote/antidote.zsh
 elif [[ "$(uname)" == "Darwin" ]]; then
   source ${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh
 fi
