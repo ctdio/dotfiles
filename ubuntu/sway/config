@@ -10,7 +10,7 @@ input type:keyboard {
 # Variables
 set $mod Mod4
 set $alt Mod1
-set $term foot
+set $term ghostty --gtk-single-instance=true
 
 # Default font
 font pango:monospace 10
@@ -45,9 +45,8 @@ bindsym $alt+Shift+c reload
 # Exit sway
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 
-# Application launcher (using wofi)
-bindsym $mod+space exec wofi --show drun -I
-bindsym $mod+d exec wofi --show drun -I
+# Application launcher (using wofi) - toggle if already open
+bindsym $mod+space exec pkill wofi || wofi --show drun -I
 
 # Focus navigation (hjkl with alt - matching aerospace)
 bindsym $alt+h focus left
