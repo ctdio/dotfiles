@@ -11,8 +11,8 @@ if type zoxide &> /dev/null; then
 fi
 
 # Mise (runtime version manager)
-if [[ "$uname()" == "Linux" ]]; then
-  eval "$(/usr/bin/mise activate zsh)"
+if [[ "$(uname)" == "Linux" ]]; then
+  eval "$(~/.local/bin/mise activate zsh)"
 elif [[ "$(uname)" == "Darwin" ]]; then
   eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
 fi
