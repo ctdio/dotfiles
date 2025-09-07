@@ -23,7 +23,6 @@
   "files.trimFinalNewlines": true,
   // 2 allows for vsnetrw to play nicely
   "workbench.editor.limit.value": 2,
-  "workbench.editor.showTabs": "single",
   "workbench.preferredDarkColorTheme": "Kanagawa Dragon",
   "workbench.preferredLightColorTheme": "Kanagawa Lotus",
   "zenMode.showTabs": "none",
@@ -1574,8 +1573,11 @@
   "cursor.composer.shouldAllowCustomModes": true,
   "cSpell.userWords": [
     "austinkelleher",
+    "checkpointed",
+    "checkpointer",
     "ctdio",
     "inngest",
+    "kwargs",
     "langchain",
     "langgraph",
     "langsmith",
@@ -1583,10 +1585,13 @@
     "lpbonomi",
     "nuqs",
     "overscan",
+    "Presales",
     "Toastable"
   ],
   "cursor-retrieval.canAttemptGithubLogin": false,
   "update.releaseTrack": "prerelease",
   "workbench.colorTheme": "Kanso Zen",
-  "workbench.editor.enablePreviewFromQuickOpen": true
+  "workbench.editor.enablePreviewFromQuickOpen": true,
+  "workbench.editor.showTabs": "single",
+  "cursor.composer.queueMessageDefaultBehavior": "queue"
 }

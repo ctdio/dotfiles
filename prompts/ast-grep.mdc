@@ -1,0 +1,172 @@
+---
+description: AST-based Code Search and Refactoring
+include: "**/*.{ts,tsx,js,jsx,py,rs,go,lua,java,rb,cpp,c}"
+---
+
+# AST-grep Usage Guide
+
+**CRITICAL:** Use ast-grep for code searching and refactoring instead of regex-based tools when you need structural understanding of code.
+
+## When to Use ast-grep
+
+**PREFER ast-grep over grep/rg when:**
+- Searching for function definitions, class declarations, or method calls
+- Finding specific code patterns regardless of formatting/whitespace
+- Refactoring code patterns across multiple files
+- Searching for AST nodes like imports, exports, conditionals
+- Need to match code structure rather than text patterns
+
+**Use regular grep/rg when:**
+- Searching for simple text strings, comments, or documentation
+- Looking for file names or non-code content
+- Quick searches where exact text matching is sufficient
+
+## Essential ast-grep Patterns
+
+### JavaScript/TypeScript Patterns
+
+```bash
+# Find all function declarations
+ast-grep --pattern 'function $NAME($$$) { $$$ }' --lang javascript
+
+# Find arrow functions assigned to variables
+ast-grep --pattern 'const $NAME = ($$$) => $$$' --lang javascript
+
+# Find all console.log statements
+ast-grep --pattern 'console.log($$$)' --lang javascript
+
+# Find React component definitions
+ast-grep --pattern 'export function $COMPONENT($$$) { $$$ return $JSX }' --lang typescript
+
+# Find useState hooks
+ast-grep --pattern 'const [$STATE, $SETTER] = useState($$$)' --lang typescript
+
+# Find async functions
+ast-grep --pattern 'async function $NAME($$$) { $$$ }' --lang javascript
+
+# Find class method definitions
+ast-grep --pattern 'class $CLASS { $$$ $METHOD($$$) { $$$ } $$$ }' --lang javascript
+
+# Find imports from specific module
+ast-grep --pattern 'import { $$$ } from "react"' --lang javascript
+
+# Find all try-catch blocks
+ast-grep --pattern 'try { $$$ } catch ($ERR) { $$$ }' --lang javascript
+```
+
+### Python Patterns
+
+```bash
+# Find function definitions
+ast-grep --pattern 'def $FUNC($$$): $$$' --lang python
+
+# Find class definitions
+ast-grep --pattern 'class $NAME($$$): $$$' --lang python
+
+# Find all decorators on functions
+ast-grep --pattern '@$DECORATOR
+def $FUNC($$$): $$$' --lang python
+
+# Find async functions
+ast-grep --pattern 'async def $FUNC($$$): $$$' --lang python
+
+# Find list comprehensions
+ast-grep --pattern '[$EXPR for $VAR in $ITER]' --lang python
+```
+
+### Go Patterns
+
+```bash
+# Find function definitions
+ast-grep --pattern 'func $NAME($$$) $$$' --lang go
+
+# Find method definitions
+ast-grep --pattern 'func ($RECV $TYPE) $METHOD($$$) $$$' --lang go
+
+# Find error checks
+ast-grep --pattern 'if err != nil { $$$ }' --lang go
+
+# Find struct definitions
+ast-grep --pattern 'type $NAME struct { $$$ }' --lang go
+```
+
+### Lua Patterns (for Neovim configs)
+
+```bash
+# Find function definitions
+ast-grep --pattern 'function $NAME($$$) $$$ end' --lang lua
+
+# Find local functions
+ast-grep --pattern 'local function $NAME($$$) $$$ end' --lang lua
+
+# Find require statements
+ast-grep --pattern 'require("$MODULE")' --lang lua
+
+# Find vim.keymap.set calls
+ast-grep --pattern 'vim.keymap.set($MODE, $KEY, $ACTION)' --lang lua
+```
+
+## Refactoring Examples
+
+```bash
+# Convert var to let/const
+ast-grep --pattern 'var $NAME = $INIT' --rewrite 'let $NAME = $INIT' --lang javascript
+
+# Convert function to arrow function
+ast-grep --pattern 'function $NAME($$$PARAMS) { return $EXPR }' \
+  --rewrite 'const $NAME = ($$$PARAMS) => $EXPR' --lang javascript
+
+# Add async to functions
+ast-grep --pattern 'function $NAME($$$) { $$$ await $$$ }' \
+  --rewrite 'async function $NAME($$$) { $$$ await $$$ }' --lang javascript
+
+# Update import paths
+ast-grep --pattern 'import $WHAT from "@old/package"' \
+  --rewrite 'import $WHAT from "@new/package"' --lang javascript
+```
+
+## Pattern Syntax Guide
+
+**Metavariables:**
+- `$NAME` - Matches single identifier/node
+- `$$$` - Matches zero or more nodes (greedy)
+- `$_` - Matches any single node (wildcard)
+
+**Important Notes:**
+- Patterns must be syntactically valid in target language
+- Use `--lang` to specify language (required for most operations)
+- Use `--strictness` to control matching precision (cst/smart/ast)
+- Add `-A`/`-B`/`-C` flags for context lines like grep
+
+## Complex Search Examples
+
+```bash
+# Find all functions that call setState
+ast-grep --pattern 'function $FUNC($$$) { $$$ setState($$$) $$$ }' --lang javascript
+
+# Find all components with useEffect
+ast-grep --pattern 'function $COMP($$$) { $$$ useEffect($$$) $$$ return $$$ }' --lang javascript
+
+# Find promise chains
+ast-grep --pattern '$PROMISE.then($$$).catch($$$)' --lang javascript
+
+# Find all exports
+ast-grep --pattern 'export { $$$ }' --lang javascript
+ast-grep --pattern 'export default $$$' --lang javascript
+```
+
+## Performance Tips
+
+1. **Always specify `--lang`** for faster parsing
+2. **Use specific patterns** - more specific = faster
+3. **Combine with path filters** to narrow search scope
+4. For large codebases, **start with directory-specific searches**
+
+## When NOT to Use ast-grep
+
+- Shell scripts (limited AST support)
+- Configuration files (JSON, YAML, TOML)
+- Markdown or documentation files
+- When you need regex features like lookahead/lookbehind
+
+**Remember:** ast-grep understands code structure, not just text patterns. Use it when structure matters!
