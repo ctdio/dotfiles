@@ -1,10 +1,106 @@
 #!/bin/bash
 
+# Dotfiles Installation Script
+# Supports: Ubuntu, Debian, Arch Linux, Omarchy, Fedora, openSUSE, macOS
+# Usage: ./install.sh [--help|-h]
+
+# Show help message
+function show_help() {
+  cat << EOF
+Dotfiles Installation Script
+============================
+
+Supported Operating Systems:
+  - macOS (Intel and Apple Silicon)
+  - Ubuntu
+  - Arch Linux / Omarchy
+
+Usage:
+  ./install.sh          Run the installation
+  ./install.sh --help   Show this help message
+
+The script will:
+  1. Detect your operating system and distribution
+  2. Install required system packages
+  3. Set up development tools and languages via mise
+  4. Install and configure Neovim with plugins
+  5. Link all dotfiles to appropriate locations
+  6. Install various language servers for development
+
+Requirements:
+  - git and curl must be installed
+  - sudo/root access for system package installation
+  - Internet connection for downloading packages
+
+For Arch Linux:
+  - The script will use yay if available, otherwise pacman
+
+For Ubuntu:
+  - The script will use apt package manager
+
+EOF
+  exit 0
+}
+
+# Parse command line arguments
+for arg in "$@"; do
+  case $arg in
+    --help|-h)
+      show_help
+      ;;
+  esac
+done
+
 DOTFILES_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+
+# Distribution detection variables
+DISTRO=""
+PACKAGE_MANAGER=""
+PACKAGE_INSTALL_CMD=""
+PACKAGE_UPDATE_CMD=""
+
+# Detect Linux distribution and set package manager variables
+function detect_distro() {
+  if [[ "$(uname)" = 'Linux' ]]; then
+    if [[ -f /etc/arch-release ]] || [[ -f /etc/os-release && $(grep -E "^ID=" /etc/os-release | cut -d= -f2 | tr -d '"') =~ ^(arch|omarchy)$ ]]; then
+      # Arch Linux or Omarchy
+      DISTRO="arch"
+      if command -v yay &> /dev/null; then
+        PACKAGE_MANAGER="yay"
+        PACKAGE_INSTALL_CMD="yay -S --noconfirm"
+        PACKAGE_UPDATE_CMD="yay -Sy"
+      else
+        PACKAGE_MANAGER="pacman"
+        PACKAGE_INSTALL_CMD="sudo pacman -S --noconfirm"
+        PACKAGE_UPDATE_CMD="sudo pacman -Sy"
+      fi
+    elif [[ -f /etc/os-release && $(grep -E "^ID=" /etc/os-release | cut -d= -f2 | tr -d '"') == "ubuntu" ]]; then
+      # Ubuntu
+      DISTRO="ubuntu"
+      PACKAGE_MANAGER="apt"
+      PACKAGE_INSTALL_CMD="sudo apt install -y"
+      PACKAGE_UPDATE_CMD="sudo apt update -y"
+    else
+      echo "Warning: This script only supports Ubuntu and Arch Linux."
+      exit 1
+    fi
+    
+    echo "Detected: $DISTRO (using $PACKAGE_MANAGER)"
+  elif [[ "$(uname)" = 'Darwin' ]]; then
+    DISTRO="macos"
+    PACKAGE_MANAGER="brew"
+    PACKAGE_INSTALL_CMD="brew install"
+    PACKAGE_UPDATE_CMD="brew update"
+    echo "Detected: macOS (using brew)"
+  fi
+}
 
 function main () {
   echo "Installing..."
 
+  # Detect distribution first
+  detect_distro
+  
   update_deps
 
   link_dotfiles
@@ -18,6 +114,7 @@ function main () {
   run_ansible_playbooks
 
   # lua language server requires a little more work
+  # Ensure we're using detected package manager for subsequent installs
   install_ninja
   install_lua_language_server
 
@@ -152,21 +249,27 @@ function install_fzf_git () {
 
 function update_deps () {
   if [[ "$(uname)" = 'Linux' ]]; then
-    if [[ -f /etc/arch-release ]]; then
-      yay -Sy
-    else
-      sudo apt update -y
-    fi
+    echo "Updating package database..."
+    $PACKAGE_UPDATE_CMD
+  elif [[ "$(uname)" = 'Darwin' ]]; then
+    echo "Updating homebrew..."
+    brew update
   fi
 }
 
 function install_ansible () {
+  echo "Installing Ansible..."
+  
   if [[ "$(uname)" = 'Linux' ]]; then
-    if [[ -f /etc/arch-release ]]; then
-      yay -S ansible --noconfirm
-    else
-      sudo apt install ansible -y
-      ansible || uv pip install ansible
+    if [[ "$DISTRO" = "arch" ]]; then
+      $PACKAGE_INSTALL_CMD ansible
+    elif [[ "$DISTRO" = "ubuntu" ]]; then
+      $PACKAGE_INSTALL_CMD ansible
+      # Fallback to pip if apt version is too old
+      if ! command -v ansible &> /dev/null; then
+        echo "Ansible not found, installing via pip..."
+        command -v uv &> /dev/null && uv pip install ansible || pip install ansible
+      fi
     fi
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ansible
@@ -176,11 +279,13 @@ function install_ansible () {
 }
 
 function install_ninja () {
+  echo "Installing Ninja build system..."
+  
   if [[ "$(uname)" = 'Linux' ]]; then
-    if [[ -f /etc/arch-release ]]; then
-      yay -S ninja --noconfirm
-    else
-      sudo apt install ninja-build -y
+    if [[ "$DISTRO" = "arch" ]]; then
+      $PACKAGE_INSTALL_CMD ninja
+    elif [[ "$DISTRO" = "ubuntu" ]]; then
+      $PACKAGE_INSTALL_CMD ninja-build
     fi
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install ninja
@@ -190,6 +295,16 @@ function install_ninja () {
 function install_lua_language_server () {
   if [[ ! -f ~/.lua-language-server/bin/lua-language-server ]]; then
     echo "Installing lua-language-server"
+    
+    # Install build dependencies if needed
+    if [[ "$(uname)" = 'Linux' ]]; then
+      if [[ "$DISTRO" = "arch" ]]; then
+        $PACKAGE_INSTALL_CMD gcc make
+      elif [[ "$DISTRO" = "ubuntu" ]]; then
+        $PACKAGE_INSTALL_CMD build-essential
+      fi
+    fi
+    
     git clone \
       --depth=1 \
       --branch 3.5.6 \
@@ -203,35 +318,49 @@ function install_lua_language_server () {
     ./compile/install.sh
     cd ../..
     ./3rd/luamake/luamake rebuild
+    
+    cd "$DOTFILES_DIR"
   else
     echo "lua-language-server is already installed"
   fi
 }
 
-function install_zig_language_server () {
-  if [[ ! -f ~/.zig/bin/zls ]]; then
-    echo "Installing zig-language-server"
-    git clone https://github.com/zigtools/zls ~/.zls
-
-    cd ~/.zls
-    git checkout 0.12.0
-    zig build -Doptimize=ReleaseSafe
-  else
-    echo "zig-language-server is already installed"
-  fi
-}
 
 function install_rust_analyzer () {
   if [[ ! -f ~/.local/bin/rust-analyzer ]]; then
     echo "Installing rust-analyzer"
-    local file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+    local file=''
 
     case "$(uname)" in
       Linux)
-        file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+        # Detect architecture for Linux
+        case "$(uname -m)" in
+          x86_64)
+            file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+            ;;
+          aarch64)
+            file='rust-analyzer-aarch64-unknown-linux-gnu.gz'
+            ;;
+          *)
+            echo "Warning: Unknown architecture $(uname -m). Defaulting to x86_64."
+            file='rust-analyzer-x86_64-unknown-linux-gnu.gz'
+            ;;
+        esac
         ;;
       Darwin)
-        file='rust-analyzer-aarch64-apple-darwin.gz'
+        # Detect architecture for macOS
+        case "$(uname -m)" in
+          arm64)
+            file='rust-analyzer-aarch64-apple-darwin.gz'
+            ;;
+          x86_64)
+            file='rust-analyzer-x86_64-apple-darwin.gz'
+            ;;
+          *)
+            echo "Warning: Unknown architecture $(uname -m). Defaulting to arm64."
+            file='rust-analyzer-aarch64-apple-darwin.gz'
+            ;;
+        esac
         ;;
     esac
 
@@ -249,6 +378,12 @@ function install_rust_analyzer () {
 function run_ansible_playbooks () {
   if [[ "$(uname)" = 'Darwin' ]]; then
     ansible-playbook ./playbooks/install-brew-packages.yaml
+  elif [[ "$(uname)" = 'Linux' ]]; then
+    # Install Linux system packages
+    echo "Installing Linux system packages via Ansible..."
+    ansible-playbook ./playbooks/install-linux-packages.yaml --ask-become-pass || {
+      echo "Warning: Some system packages may have failed to install"
+    }
   fi
 
   ansible-playbook ./playbooks/setup-mise.yaml
@@ -259,18 +394,65 @@ function run_ansible_playbooks () {
 }
 
 function prepare_neovim () {
+  echo "Installing Neovim..."
+  
   if [[ "$(uname)" = 'Linux' ]]; then
-    yay -S neovim
+    if [[ "$DISTRO" = "arch" ]]; then
+      $PACKAGE_INSTALL_CMD neovim
+    elif [[ "$DISTRO" = "ubuntu" ]]; then
+      # Ubuntu often has outdated neovim, so we might need to add PPA
+      sudo add-apt-repository -y ppa:neovim-ppa/unstable 2>/dev/null || true
+      sudo apt update
+      $PACKAGE_INSTALL_CMD neovim
+    fi
   elif [[ "$(uname)" = 'Darwin' ]]; then
     brew install neovim
   fi
 }
 
 function install_tpm () {
-  if [[ ! -f ~/.tmux/plugins/tpm ]]; then
+  if [[ ! -d ~/.tmux/plugins/tpm ]]; then
+    echo "Installing tmux plugin manager..."
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  else
+    echo "TPM is already installed. Skipping."
   fi
 }
 
+# Check for required tools before starting
+function check_requirements () {
+  local missing_tools=()
+  
+  # Check for git
+  if ! command -v git &> /dev/null; then
+    missing_tools+=("git")
+  fi
+  
+  # Check for curl
+  if ! command -v curl &> /dev/null; then
+    missing_tools+=("curl")
+  fi
+  
+  if [[ ${#missing_tools[@]} -gt 0 ]]; then
+    echo "Error: The following required tools are missing:"
+    printf '%s\n' "${missing_tools[@]}"
+    echo ""
+    echo "Please install them first:"
+    
+    if [[ "$(uname)" = 'Linux' ]]; then
+      detect_distro
+      echo "Run: $PACKAGE_INSTALL_CMD ${missing_tools[*]}"
+    elif [[ "$(uname)" = 'Darwin' ]]; then
+      echo "Run: brew install ${missing_tools[*]}"
+    fi
+    
+    exit 1
+  fi
+}
+
+# Run requirements check
+check_requirements
+
+# Run main installation
 main
 

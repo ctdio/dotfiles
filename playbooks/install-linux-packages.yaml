@@ -1,0 +1,177 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  become: yes
+  vars:
+    # Common packages that have the same name across distributions
+    common_packages:
+      - git
+      - curl
+      - wget
+      - htop
+      - tmux
+      - zsh
+      - ripgrep
+      - fd-find
+      - bat
+      - jq
+      - tree
+      - unzip
+      - zip
+      - gcc
+      - make
+      - cmake
+      - clang
+      - llvm
+      
+    # Arch-specific packages
+    arch_packages:
+      - base-devel
+      - neovim
+      - ninja
+      - fzf
+      - github-cli
+      - docker
+      - docker-compose
+      - nodejs
+      - npm
+      - yarn
+      - python
+      - python-pip
+      - rust
+      - go
+      - starship
+      - eza
+      - zoxide
+      - tokei
+      - hyperfine
+      - procs
+      - dust
+      - bottom
+      - tealdeer
+      - lazygit
+      - lazydocker
+      - kubectl
+      - helm
+      - terraform
+      - aws-cli-v2
+      - direnv
+      
+    # Ubuntu-specific packages
+    ubuntu_packages:
+      - build-essential
+      - neovim
+      - ninja-build
+      - fzf
+      - gh
+      - docker.io
+      - docker-compose
+      - nodejs
+      - npm
+      - yarnpkg
+      - python3
+      - python3-pip
+      - rustc
+      - cargo
+      - golang-go
+      - eza
+      - zoxide
+      - direnv
+
+  tasks:
+    - name: Update package cache for Ubuntu
+      apt:
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      
+    - name: Update package cache for Arch
+      pacman:
+        update_cache: yes
+      when: ansible_os_family == "Archlinux"
+
+    - name: Install common packages on Ubuntu
+      apt:
+        name: "{{ common_packages }}"
+        state: present
+      when: ansible_distribution == "Ubuntu"
+      
+    - name: Install Ubuntu-specific packages
+      apt:
+        name: "{{ ubuntu_packages }}"
+        state: present
+      when: ansible_distribution == "Ubuntu"
+      ignore_errors: yes
+
+    - name: Install common packages on Arch
+      pacman:
+        name: "{{ common_packages }}"
+        state: present
+      when: ansible_os_family == "Archlinux"
+      
+    - name: Install Arch-specific packages
+      pacman:
+        name: "{{ arch_packages }}"
+        state: present
+      when: ansible_os_family == "Archlinux"
+      ignore_errors: yes
+
+    - name: Install AUR helper (yay) on Arch
+      block:
+        - name: Check if yay is installed
+          command: which yay
+          register: yay_check
+          failed_when: false
+          changed_when: false
+          
+        - name: Clone yay repository
+          git:
+            repo: https://aur.archlinux.org/yay.git
+            dest: /tmp/yay
+            depth: 1
+          when: yay_check.rc != 0
+          become: no
+          
+        - name: Build and install yay
+          shell: |
+            cd /tmp/yay
+            makepkg -si --noconfirm
+          when: yay_check.rc != 0
+          become: no
+          
+        - name: Clean up yay build directory
+          file:
+            path: /tmp/yay
+            state: absent
+          when: yay_check.rc != 0
+      when: ansible_os_family == "Archlinux"
+
+    - name: Install Starship prompt on Ubuntu (via script)
+      shell: |
+        curl -sS https://starship.rs/install.sh | sh -s -- -y
+      when: ansible_distribution == "Ubuntu"
+      ignore_errors: yes
+
+    - name: Enable and start Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+      ignore_errors: yes
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_env.USER }}"
+        groups: docker
+        append: yes
+      ignore_errors: yes
+
+    - name: Install Python packages via pip
+      pip:
+        name:
+          - pynvim
+          - pip-autoremove
+          - virtualenv
+        state: present
+        executable: pip3
+      ignore_errors: yes
