@@ -1,0 +1,168 @@
+# Sway Configuration - Minimal setup matching aerospace.toml
+
+# Input configuration
+input type:keyboard {
+    xkb_layout "us"
+    xkb_variant "colemak"
+    xkb_options "ctrl:nocaps"
+}
+
+# Variables
+set $mod Mod4
+set $alt Mod1
+set $term foot
+
+# Default font
+font pango:monospace 10
+
+# Gaps (similar to aerospace)
+gaps inner 10
+gaps outer 5
+smart_gaps on
+
+# Focus follows mouse
+focus_follows_mouse yes
+
+# Window borders
+default_border pixel 2
+default_floating_border pixel 2
+
+# Colors (minimal theme)
+client.focused          #4c7899 #285577 #ffffff #2e9ef4   #285577
+client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
+client.unfocused        #333333 #222222 #888888 #292d2e   #222222
+client.urgent           #2f343a #900000 #ffffff #900000   #900000
+
+# Terminal
+bindsym $mod+Return exec $term
+
+# Kill focused window
+bindsym $mod+Shift+q kill
+
+# Reload configuration
+bindsym $alt+Shift+c reload
+
+# Exit sway
+bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
+
+# Application launcher (using wofi)
+bindsym $mod+space exec wofi --show drun -I
+bindsym $mod+d exec wofi --show drun -I
+
+# Focus navigation (hjkl with alt - matching aerospace)
+bindsym $alt+h focus left
+bindsym $alt+j focus down
+bindsym $alt+k focus up
+bindsym $alt+l focus right
+
+# Alternative with arrow keys
+bindsym $alt+Left focus left
+bindsym $alt+Down focus down
+bindsym $alt+Up focus up
+bindsym $alt+Right focus right
+
+# Move windows (hjkl with alt+shift - matching aerospace)
+bindsym $alt+Shift+h move left
+bindsym $alt+Shift+j move down
+bindsym $alt+Shift+k move up
+bindsym $alt+Shift+l move right
+
+# Alternative with arrow keys
+bindsym $alt+Shift+Left move left
+bindsym $alt+Shift+Down move down
+bindsym $alt+Shift+Up move up
+bindsym $alt+Shift+Right move right
+
+# Monitor focus (alt+ctrl - matching aerospace)
+bindsym $alt+Ctrl+h focus output left
+bindsym $alt+Ctrl+l focus output right
+
+# Move to monitor
+bindsym $mod+Shift+h move container to output left
+bindsym $mod+Shift+l move container to output right
+
+# Fullscreen toggle
+bindsym $alt+f fullscreen toggle
+
+# Layout modes (matching aerospace)
+bindsym $alt+s layout stacking
+bindsym $alt+w layout tabbed
+bindsym $alt+e layout toggle split
+
+# Split orientation
+bindsym $mod+h splith
+bindsym $mod+v splitv
+
+# Toggle floating
+bindsym $alt+Shift+space floating toggle
+
+# Toggle focus between tiling and floating
+bindsym $alt+space focus mode_toggle
+
+# Focus parent container
+bindsym $alt+a focus parent
+
+# Workspace switching (mod+number - matching aerospace cmd+number)
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+# Move container to workspace
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10
+
+# Resize mode (matching aerospace)
+mode "resize" {
+    # Resize with hjkl
+    bindsym h resize shrink width 50px
+    bindsym j resize grow height 50px
+    bindsym k resize shrink height 50px
+    bindsym l resize grow width 50px
+
+    # Alternative with arrow keys
+    bindsym Left resize shrink width 50px
+    bindsym Down resize grow height 50px
+    bindsym Up resize shrink height 50px
+    bindsym Right resize grow width 50px
+
+    # Exit resize mode
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $alt+r mode "resize"
+
+# Scratchpad
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus scratchpad show
+
+# Status bar (using waybar)
+bar swaybar_command waybar
+
+# Auto-start applications
+exec --no-startup-id nm-applet
+exec --no-startup-id waybar
+
+# Window rules (examples - customize as needed)
+# Make certain windows floating by default
+for_window [app_id="pavucontrol"] floating enable
+for_window [app_id="nm-connection-editor"] floating enable
+for_window [title="Picture-in-Picture"] floating enable
+
+# Include additional config files (optional)
+# include /etc/sway/config.d/*

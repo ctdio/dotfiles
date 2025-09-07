@@ -26,6 +26,7 @@ The script will:
   4. Install and configure Neovim with plugins
   5. Link all dotfiles to appropriate locations
   6. Install various language servers for development
+  7. Install Sway, Waybar, and Wofi for Wayland desktop (Linux only)
 
 Requirements:
   - git and curl must be installed
@@ -109,6 +110,7 @@ function main () {
   install_fzf_git
   install_ansible
   install_tpm
+  install_sway_components
 
   # most language servers will be installed via playbooks
   run_ansible_playbooks
@@ -162,12 +164,16 @@ function link_dotfiles () {
     ln -nsf ${DOTFILES_DIR}/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
   fi
 
-  echo "Linking hypr files to ~/.config/hypr"
-  ln -nsf ${DOTFILES_DIR}/hypr/autostart.conf ~/.config/hypr/autostart.conf
-  ln -nsf ${DOTFILES_DIR}/hypr/bindings.conf ~/.config/hypr/bindings.conf
-  ln -nsf ${DOTFILES_DIR}/hypr/envs.conf ~/.config/hypr/envs.conf
-  ln -nsf ${DOTFILES_DIR}/hypr/input.conf ~/.config/hypr/input.conf
-  ln -nsf ${DOTFILES_DIR}/hypr/monitors.conf ~/.config/hypr/monitors.conf
+  # Link Hyprland configs for Arch/Omarchy
+  if [[ "$(uname)" = 'Linux' && "$DISTRO" = "arch" ]]; then
+    echo "Linking hypr files to ~/.config/hypr"
+    mkdir -p ~/.config/hypr
+    ln -nsf ${DOTFILES_DIR}/omarchy/hypr/autostart.conf ~/.config/hypr/autostart.conf
+    ln -nsf ${DOTFILES_DIR}/omarchy/hypr/bindings.conf ~/.config/hypr/bindings.conf
+    ln -nsf ${DOTFILES_DIR}/omarchy/hypr/envs.conf ~/.config/hypr/envs.conf
+    ln -nsf ${DOTFILES_DIR}/omarchy/hypr/input.conf ~/.config/hypr/input.conf
+    ln -nsf ${DOTFILES_DIR}/omarchy/hypr/monitors.conf ~/.config/hypr/monitors.conf
+  fi
 
   echo "Linking .sketchybarrc to ~/.config/sketchybar/sketchybarrc"
   ln -nsf ${DOTFILES_DIR}/sketchybar ~/.config/sketchybar
@@ -180,6 +186,23 @@ function link_dotfiles () {
 
   echo "Linking television to ~/.config/television"
   ln -nsf ${DOTFILES_DIR}/television ~/.config/television
+
+  # Link Sway, Waybar, and Wofi configs for Ubuntu
+  if [[ "$(uname)" = 'Linux' && "$DISTRO" = "ubuntu" ]]; then
+    echo "Linking sway config to ~/.config/sway"
+    mkdir -p ~/.config/sway
+    ln -nsf ${DOTFILES_DIR}/ubuntu/sway/config ~/.config/sway/config
+
+    echo "Linking waybar config to ~/.config/waybar"
+    mkdir -p ~/.config/waybar
+    ln -nsf ${DOTFILES_DIR}/ubuntu/waybar/config ~/.config/waybar/config
+    ln -nsf ${DOTFILES_DIR}/ubuntu/waybar/style.css ~/.config/waybar/style.css
+
+    echo "Linking wofi config to ~/.config/wofi"
+    mkdir -p ~/.config/wofi
+    ln -nsf ${DOTFILES_DIR}/ubuntu/wofi/config ~/.config/wofi/config
+    ln -nsf ${DOTFILES_DIR}/ubuntu/wofi/style.css ~/.config/wofi/style.css
+  fi
 
   echo "Linking claude agents and commands to ~/.claude"
   mkdir -p ~/.claude
@@ -416,6 +439,19 @@ function install_tpm () {
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
   else
     echo "TPM is already installed. Skipping."
+  fi
+}
+
+function install_sway_components () {
+  # Only install Sway for Ubuntu (Arch/Omarchy uses Hyprland)
+  if [[ "$(uname)" = 'Linux' && "$DISTRO" = "ubuntu" ]]; then
+    echo "Installing Sway and Wayland components for Ubuntu..."
+    
+    $PACKAGE_INSTALL_CMD sway swaylock swayidle swaybg waybar wofi \
+      wl-clipboard grim slurp mako-notifier foot xwayland \
+      fonts-font-awesome fonts-jetbrains-mono pavucontrol network-manager-gnome
+    
+    echo "Sway components installed successfully!"
   fi
 }
 
