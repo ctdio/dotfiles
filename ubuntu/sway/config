@@ -37,7 +37,7 @@ client.urgent           #2f343a #900000 #ffffff #900000   #900000
 bindsym $mod+Return exec $term
 
 # Kill focused window
-bindsym $mod+Shift+q kill
+bindsym $mod+w kill
 
 # Reload configuration
 bindsym $alt+Shift+c reload

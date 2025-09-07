@@ -26,7 +26,9 @@ The script will:
   4. Install and configure Neovim with plugins
   5. Link all dotfiles to appropriate locations
   6. Install various language servers for development
-  7. Install Sway, Waybar, and Wofi for Wayland desktop (Linux only)
+  7. Install and configure:
+     - Sway, Waybar, and Wofi (Ubuntu)
+     - Hyprland configs (Arch/Omarchy)
 
 Requirements:
   - git and curl must be installed
