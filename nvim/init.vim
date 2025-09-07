@@ -13,7 +13,7 @@ endif
 " ╭──────────────────────────────────────────────────────────╮
 " │                     Install Plugins                      │
 " ╰──────────────────────────────────────────────────────────╯
-call plug#begin('~/.vim/plugged')
+call plug#begin()
   " Updating the parsers on treesitter update is recommended
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
