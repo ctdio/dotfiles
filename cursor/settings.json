@@ -225,6 +225,22 @@
       "commands": ["workbench.action.focusAboveGroup"]
     },
     {
+      "before": ["<C-w>", "H"],
+      "commands": ["workbench.action.moveActiveEditorGroupLeft"]
+    },
+    {
+      "before": ["<C-w>", "L"],
+      "commands": ["workbench.action.moveActiveEditorGroupRight"]
+    },
+    {
+      "before": ["<C-w>", "J"],
+      "commands": ["workbench.action.moveActiveEditorGroupDown"]
+    },
+    {
+      "before": ["<C-w>", "K"],
+      "commands": ["workbench.action.moveActiveEditorGroupUp"]
+    },
+    {
       "before": ["<C-w>", "<C-h>"],
       "commands": ["workbench.action.focusLeftGroup"]
     },

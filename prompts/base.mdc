@@ -32,6 +32,8 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 **Core Principle:** Make changes directly required to complete the task.
 
+**SURGICAL EDITING:** When modifying existing code, make the smallest possible change that achieves the goal. Touch only the specific lines/functions that need modification.
+
 **Allowed:** Direct implementation, necessary imports/types, file creation when warranted, cleanup tasks
 **Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code
 
