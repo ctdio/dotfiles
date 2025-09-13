@@ -83,6 +83,11 @@
   // chat
   {
     "key": "ctrl+c",
+    "command": "composer.cancelChat",
+    "when": "composerFocused"
+  },
+  {
+    "key": "ctrl+[",
     "command": "workbench.action.focusFirstEditorGroup",
     "when": "composerFocused"
   },
@@ -144,9 +149,5 @@
   {
     "key": "cmd+y",
     "command": "composerMode.plan"
-  },
-  {
-    "key": "cmd+e",
-    "command": "composerMode.background"
   }
 ]

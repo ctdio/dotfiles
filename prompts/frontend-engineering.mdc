@@ -1,0 +1,139 @@
+---
+description: Frontend Engineering Patterns
+include: "**/*.{ts,tsx,js,jsx}"
+---
+
+# Frontend Engineering Patterns
+
+## API Integration (CRITICAL)
+
+**MANDATORY: Use generated API hooks when available**
+
+```typescript
+// ✅ CORRECT - Use generated hooks
+import { useGetUser, useUpdateUser } from '@/api/hooks';
+
+export function UserProfile({ userId }: UserProfileProps) {
+  const { data: user, isLoading } = useGetUser(userId);
+  const updateMutation = useUpdateUser();
+  
+  const handleUpdate = async (updates: UserUpdate) => {
+    await updateMutation.mutateAsync({ id: userId, ...updates });
+  };
+}
+```
+
+```typescript
+// ❌ FORBIDDEN - Direct fetch calls when hooks exist
+export function UserProfile({ userId }: UserProfileProps) {
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    fetch(`/api/users/${userId}`)  // ❌ NEVER
+      .then(r => r.json())
+      .then(setUser);
+  }, [userId]);
+}
+```
+
+## API Discovery Process
+
+**Before ANY API integration:**
+1. Check for generated API hooks in `@/api`, `@/hooks`, or similar directories
+2. Look for OpenAPI/Swagger generated clients
+3. Search for existing API patterns in the codebase
+4. ONLY use direct fetch if no generated solutions exist
+
+## Data Fetching Patterns
+
+**Prefer in order:**
+1. Generated API hooks (e.g., from OpenAPI/tRPC/GraphQL codegen)
+2. Existing data fetching utilities/wrappers
+3. Framework-specific patterns (Next.js server components, Remix loaders)
+4. Direct fetch as last resort
+
+## State Management
+
+**Component state hierarchy:**
+1. Server state via API hooks (React Query, SWR, generated hooks)
+2. Local component state for UI-only concerns
+3. Context for cross-component sharing
+4. Global state sparingly (Zustand, Redux)
+
+## Form Handling
+
+**Use existing form libraries:**
+```typescript
+// ✅ Prefer existing patterns
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { userSchema } from '@/schemas';
+import { useUpdateUser } from '@/api/hooks';
+
+export function UserForm({ user }: UserFormProps) {
+  const updateUser = useUpdateUser();
+  const form = useForm({
+    resolver: zodResolver(userSchema),
+    defaultValues: user
+  });
+  
+  const onSubmit = form.handleSubmit((data) => 
+    updateUser.mutate(data)
+  );
+}
+```
+
+## Component Patterns
+
+**Smart/Container components:**
+- Handle data fetching via hooks
+- Manage business logic
+- Pass data to presentational components
+
+**Presentational components:**
+- Pure rendering logic
+- No direct API calls
+- Props-driven behavior
+
+## Error Boundaries
+
+```typescript
+// Place near data fetching components
+export function DataBoundary({ children }: DataBoundaryProps) {
+  return (
+    <ErrorBoundary fallback={ErrorFallback}>
+      <Suspense fallback={<LoadingSpinner />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+```
+
+## Performance Patterns
+
+**Optimization hierarchy:**
+1. Use framework optimizations first (React.memo, useMemo, useCallback)
+2. Virtualization for large lists
+3. Code splitting at route boundaries
+4. Lazy loading for heavy components
+
+**AVOID premature optimization**
+
+## Testing Patterns
+
+**Mock at the API hook level:**
+```typescript
+// ✅ Mock the hook, not fetch
+jest.mock('@/api/hooks', () => ({
+  useGetUser: () => ({ data: mockUser, isLoading: false })
+}));
+```
+
+## Summary
+
+**Frontend code MUST:**
+- Use generated API hooks when available
+- Follow existing data fetching patterns
+- Avoid direct fetch() calls unless necessary
+- Keep components focused and testable

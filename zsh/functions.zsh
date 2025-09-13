@@ -18,7 +18,7 @@ function sync-agent-prompts() {
   mkdir -p ~/.claude ~/.codex ~/.config/opencode
 
   # Combine all prompt files
-  local combined_prompts=$(cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/locality-of-behavior.mdc ~/dotfiles/prompts/typescript.mdc ~/dotfiles/prompts/ast-grep.mdc)
+  local combined_prompts=$(cat ~/dotfiles/prompts/base.mdc ~/dotfiles/prompts/locality-of-behavior.mdc ~/dotfiles/prompts/typescript.mdc ~/dotfiles/prompts/frontend-engineering.mdc ~/dotfiles/prompts/ast-grep.mdc)
 
   # Write to all three locations
   echo "$combined_prompts" > ~/.claude/CLAUDE.md

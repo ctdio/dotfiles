@@ -1,9 +1,6 @@
 {
   "python.terminal.activateEnvironment": false,
   "terminal.integrated.shellIntegration.enabled": false,
-  "extensions.experimental.affinity": {
-    "vscodevim.vim": 1
-  },
   "editor.accessibilitySupport": "off",
   "editor.formatOnSave": true,
   "editor.lineNumbers": "relative",
@@ -84,6 +81,10 @@
     {
       "before": ["<leader>", "a"],
       "commands": ["composer.addfilestocomposer"]
+    },
+    {
+      "before": ["<leader>", "p"],
+      "commands": ["projectManager.listProjects"]
     },
     {
       "before": ["<leader>", "b"],
@@ -1609,5 +1610,6 @@
   "workbench.colorTheme": "Kanso Zen",
   "workbench.editor.enablePreviewFromQuickOpen": true,
   "workbench.editor.showTabs": "single",
-  "cursor.composer.queueMessageDefaultBehavior": "queue"
+  "cursor.composer.queueMessageDefaultBehavior": "queue",
+  "cursor.enable_agent_window_setting": true
 }
