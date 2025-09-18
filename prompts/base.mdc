@@ -37,6 +37,29 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 **Allowed:** Direct implementation, necessary imports/types, file creation when warranted, cleanup tasks
 **Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code
 
+## Refactoring and Backwards Compatibility (CRITICAL)
+
+**DEFAULT BEHAVIOR: NO backwards compatibility preservation**
+
+**When refactoring exports:**
+- **REMOVE old exports** when replacing with new ones
+- **DO NOT maintain deprecated exports** for backwards compatibility
+- **DO NOT create compatibility shims or aliases**
+- **ONLY preserve old exports if explicitly requested**
+
+**Examples:**
+```typescript
+// ❌ WRONG - Don't do this unless asked
+export function newFunction() { ... }
+export const oldFunction = newFunction; // Backwards compat
+
+// ✅ CORRECT - Clean refactor
+export function newFunction() { ... }
+// Old export removed entirely
+```
+
+**If backwards compatibility is needed, user will explicitly say:** "maintain backwards compatibility", "keep old exports", "preserve existing API"
+
 ## Coding Conventions
 
 **MANDATORY Discovery Process (before ANY implementation):**
@@ -170,6 +193,7 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 4. **Creating unnecessary files** - Edit existing when possible
 5. **Unrelated refactoring** - Only requested changes
 6. **Code duplication** - Extract shared functions
+7. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
 
 ## React Components
 
