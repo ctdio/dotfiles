@@ -278,19 +278,19 @@
       "commands": ["composer.addfilestocomposer"]
     },
     {
-      "before": ["<C-h>"],
+      "before": ["<C-h>", "<C-h>"],
       "commands": ["vscode-harpoon.gotoEditor1"]
     },
     {
-      "before": ["<C-n>"],
+      "before": ["<C-h>", "<C-k>"],
       "commands": ["vscode-harpoon.gotoEditor2"]
     },
     {
-      "before": ["<C-e>"],
+      "before": ["<C-h>", "<C-e>"],
       "commands": ["vscode-harpoon.gotoEditor3"]
     },
     {
-      "before": ["<C-i>"],
+      "before": ["<C-h>", "<C-j>"],
       "commands": ["vscode-harpoon.gotoEditor4"]
     },
     {

@@ -26,6 +26,16 @@
   //   "when": "panelFocus && !problemsFilterFocus"
   // },
 
+  // completion
+  {
+    "key": "ctrl+k",
+    "command": "-quickInput.previous"
+  },
+  {
+    "key": "ctrl+j",
+    "command": "-quickInput.next"
+  },
+
   // cancel
   {
     "key": "ctrl+c",
