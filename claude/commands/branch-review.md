@@ -55,7 +55,11 @@ git log --oneline [parent-branch]..HEAD
    - Unused variables, functions, or imports
    - Dead code paths
    - Console.log statements (should be removed or replaced with proper logging)
-   - Commented out code without explanation
+   - **Commented out code** - Should be removed entirely unless there's a clear TODO/FIXME with explanation
+     * No commented function definitions
+     * No commented import statements
+     * No commented blocks of implementation
+     * If code might be needed later, use version control history instead
 
 3. **Error Handling Problems**
    - Simply logging errors without proper handling
@@ -120,6 +124,9 @@ git log --oneline [parent-branch]..HEAD
 - `api.ts:34` - console.log statement left in production code
 - `service.ts:156-178` - **DRY violation**: Similar error handling pattern repeated 5 times
 - `handlers.ts:23` - Copy-pasted validation logic from handlers.ts:67
+- `components.tsx:45-67` - **Commented out code block** - Remove entirely, use git history if needed
+- `api.ts:12` - Commented out import statements should be removed
+- `helpers.ts:89-92` - Commented function with no explanation - delete or add TODO with reason
 
 #### 3. Error Handling
 - `service.ts:78` - Error only logged, not properly handled
