@@ -34,8 +34,14 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 **SURGICAL EDITING:** When modifying existing code, make the smallest possible change that achieves the goal. Touch only the specific lines/functions that need modification.
 
+**FILE EDITING BEHAVIOR (CRITICAL):**
+- **ALWAYS edit existing files directly** - NEVER create "-improved", "-enhanced", "-v2", "-new", or similar versions
+- **FORBIDDEN:** Creating copies/variants of existing files with suffixes like "-updated", "-fixed", "-refactored"
+- **REQUIRED:** Use Edit/MultiEdit tools to modify files in place
+- **Exception:** Only create new files when genuinely adding new functionality, not improving existing code
+
 **Allowed:** Direct implementation, necessary imports/types, file creation when warranted, cleanup tasks
-**Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code
+**Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code, creating file variants
 
 ## Refactoring and Backwards Compatibility (CRITICAL)
 
@@ -148,6 +154,29 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 
 **When explicitly asked to commit:** Follow proper commit message conventions, stage appropriate files, create commit
 
+## Implementation Planning
+
+**When creating implementation plans:**
+- **NEVER provide day or time estimates** (no "this will take X hours/days")
+- **Focus on task breakdown** - List concrete steps and dependencies
+- **Identify complexity** through technical details, not time
+- **Describe effort** using relative terms: "straightforward", "complex", "requires careful consideration"
+- **Highlight risks** and technical challenges without time implications
+
+**Good planning format:**
+```
+1. Clear action items with technical specifics
+2. Dependencies and prerequisites identified
+3. Potential challenges or edge cases noted
+4. Testing and validation steps included
+```
+
+**Avoid:**
+- "This will take 2 days"
+- "Approximately 4-6 hours"
+- "Should be done by tomorrow"
+- Any calendar or clock references
+
 ## Implementation Guidelines
 
 **Code Reuse (CRITICAL):**
@@ -190,10 +219,11 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 1. **Arrow functions at module level** - Use `function` keyword
 2. **Poor organization** - Main exports first, helpers last
 3. **Types scattered** - All types after imports
-4. **Creating unnecessary files** - Edit existing when possible
-5. **Unrelated refactoring** - Only requested changes
-6. **Code duplication** - Extract shared functions
-7. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
+4. **Creating file variants** - NEVER create "-improved", "-enhanced", "-v2" versions; edit files directly
+5. **Creating unnecessary files** - Edit existing when possible
+6. **Unrelated refactoring** - Only requested changes
+7. **Code duplication** - Extract shared functions
+8. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
 
 ## React Components
 
