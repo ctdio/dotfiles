@@ -60,6 +60,31 @@ export function UserProfile({ userId }: UserProfileProps) {
 3. Context for cross-component sharing
 4. Global state sparingly (Zustand, Redux)
 
+## Computed Values Over Effects
+
+**Rule: Derive state during render, not with useEffect**
+
+```typescript
+// ❌ WRONG - useEffect for derived state
+const [filteredProducts, setFilteredProducts] = useState(products);
+useEffect(() => {
+  setFilteredProducts(products.filter(p => p.category === filter));
+}, [products, filter]);
+
+// ✅ CORRECT - Compute during render
+const filteredProducts = products.filter(p => p.category === filter);
+
+// ✅ CORRECT - Memoize only expensive computations
+const sortedData = useMemo(() =>
+  performExpensiveSort(data, sortConfig),
+  [data, sortConfig]
+);
+```
+
+**Valid useEffect uses:** External systems (DOM, subscriptions), data fetching, logging, cleanup
+
+**Key:** If setting state in useEffect based on props/state, use computed value instead.
+
 ## Form Handling
 
 **Use existing form libraries:**
