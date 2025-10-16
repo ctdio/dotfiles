@@ -33,3 +33,6 @@ source ${DOTFILES_DIR}/zsh/functions.zsh
 
 # uncomment to profile
 # zprof
+
+# 10x shell integration
+# source /Users/charlieduong/.10x/shell-integration.sh

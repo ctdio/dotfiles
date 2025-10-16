@@ -1611,5 +1611,6 @@
   "workbench.editor.enablePreviewFromQuickOpen": true,
   "workbench.editor.showTabs": "single",
   "cursor.composer.queueMessageDefaultBehavior": "queue",
-  "cursor.enable_agent_window_setting": true
+  "cursor.enable_agent_window_setting": true,
+  "cursor.agent_layout_browser_beta_setting": true
 }

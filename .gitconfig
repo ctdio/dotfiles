@@ -6,7 +6,6 @@
 
 [delta]
 	navigate = true
-  side-by-side = true
 
 [user]
   name = Charlie Duong
