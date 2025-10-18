@@ -7,6 +7,8 @@ alwaysApply: true
 
 You execute tasks with precision. You make only the changes required to complete the requested task, including necessary supporting changes like imports, types, and function signatures.
 
+**Core Operating Principle:** VERIFY before you act. Search for existing patterns, check for available libraries, and ask for clarification when uncertain. Never guess or assume when you can search or ask.
+
 Never say "You're absolutely right!" in your responses. Don't pepper your outputs with emojis.
 
 ## My Code Style: Non-Negotiable Defaults
@@ -66,16 +68,47 @@ export function newFunction() { ... }
 
 **If backwards compatibility is needed, user will explicitly say:** "maintain backwards compatibility", "keep old exports", "preserve existing API"
 
+## Avoiding Bad Assumptions (CRITICAL)
+
+**NEVER assume - ALWAYS verify:**
+- File names, paths, or directory structure
+- Function/class/variable names without searching
+- Library availability without checking package.json and imports
+- Existing patterns without examining similar code
+- What the user wants without asking for clarification
+- That your first guess about implementation approach is correct
+
+**When uncertain:**
+1. **Search first** - Use grep/glob/ast-grep to find existing patterns
+2. **Ask questions** - Clarify requirements before implementing
+3. **Propose options** - Present alternatives when multiple approaches exist
+4. **Verify dependencies** - Check package.json before using libraries
+5. **Confirm breaking changes** - Ask before removing or significantly changing APIs
+
 ## Coding Conventions
 
 **MANDATORY Discovery Process (before ANY implementation):**
 1. Search for task-specific conventions in existing code
 2. Check CLAUDE.md, AGENT.md, README.md, package.json, tsconfig.json
 3. Study similar existing features
-4. Verify library usage in existing files
+4. Verify library availability in package.json and existing imports
 5. Understand naming patterns and project architecture
+6. Search for existing implementations before writing new code
 
 **IMPORTANT:** Skipping discovery means redoing work. Always understand existing patterns first.
+
+**If you cannot find something after searching, say so explicitly** - don't assume it doesn't exist.
+
+## Handling Uncertainty
+
+**When you're unsure about:**
+- **Implementation approach** → Present options and ask which the user prefers
+- **Requirements** → Ask clarifying questions before implementing
+- **Existing patterns** → Search exhaustively, then ask if not found
+- **Breaking changes** → Explicitly confirm with user before proceeding
+- **Library/API usage** → Check documentation or existing usage in codebase
+
+**Default action when uncertain: ASK, don't assume.**
 
 ## Function Organization - Top-Down Flow
 
@@ -180,9 +213,16 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 ## Implementation Guidelines
 
 **Code Reuse (CRITICAL):**
+- **ALWAYS search for existing implementations before writing new code**
 - NEVER copy/paste code - extract shared functions
-- Look for existing implementations first
+- Use grep/glob/ast-grep to find similar patterns in codebase
 - Refactor when patterns repeat 2+ times
+- If similar functionality exists elsewhere, reuse or extract it
+
+**Verification before implementation:**
+- Search for existing utility functions that do what you need
+- Check if the feature already exists in a different form
+- Look for established patterns for the type of task you're doing
 
 **Error handling:** Fix breakage as part of task
 
@@ -208,9 +248,12 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 
 ## Pre-Implementation Checklist
 
+- [ ] Search for existing implementations of similar features
+- [ ] Verify library availability in package.json
+- [ ] Check existing conventions and patterns before writing
+- [ ] Confirm understanding if requirements are unclear
 - [ ] Use `function` keyword for module-level functions
 - [ ] Organize top-down: main purpose first
-- [ ] Check existing conventions before writing
 - [ ] Make ONLY requested changes
 - [ ] Fix any breakage caused
 
@@ -224,6 +267,9 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 6. **Unrelated refactoring** - Only requested changes
 7. **Code duplication** - Extract shared functions
 8. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
+9. **Assuming without verifying** - Search for existing patterns before implementing
+10. **Guessing file/function names** - Use search tools to find exact names
+11. **Using unavailable libraries** - Check package.json first
 
 ## React Components
 
