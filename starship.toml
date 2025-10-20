@@ -24,15 +24,19 @@ format = "[$branch]($style)"
 style = "71"  # Dark green
 
 [git_status]
-format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](240) ($ahead_behind$stashed)]($style)"
+format = "[[(*$conflicted$modified$staged)](240) ($ahead_behind)]($style)"
 style = "243"  # Dark gray
+# Optimized for worktree repos - only show essential status
 conflicted = "​"
-untracked = "​"
 modified = "​"
 staged = "​"
-renamed = "​"
-deleted = "​"
-stashed = "≡"
+# Disable expensive checks that cause lock contention
+renamed = ""
+deleted = ""
+stashed = ""
+untracked = ""
+# Fail fast to avoid lock conflicts in worktree repos
+ignore_submodules = true
 ahead = "⇡${count}"
 behind = "⇣${count}"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"

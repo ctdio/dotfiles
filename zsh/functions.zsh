@@ -109,4 +109,11 @@ function fnvim () {
   nvim ${file_path}
 }
 
+# Force refresh git status in starship prompt
+function refresh-git() {
+  _REFRESH_GIT_STATUS=1
+  # Trigger prompt refresh
+  zle && zle reset-prompt
+}
+
 
