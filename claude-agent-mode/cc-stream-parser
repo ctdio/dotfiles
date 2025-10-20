@@ -1,0 +1,2 @@
+#!/bin/sh
+exec bun "$HOME/dotfiles/claude-agent-mode/cc-stream-parser.ts" "$@"

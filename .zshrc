@@ -5,6 +5,9 @@
 # Base Configuration
 # =====================================
 
+# Add dotfiles bin to PATH
+export PATH="$HOME/dotfiles/bin:$PATH"
+
 # History settings
 SAVEHIST=5000
 HISTFILE=~/.zsh_history

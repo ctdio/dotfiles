@@ -28,6 +28,18 @@ _tv_git_branches() {
   zle reset-prompt
 }
 
+# Configure Claude Code agent mode
+export CLAUDE_AGENT_CMD="claude"
+export CLAUDE_AGENT_BASE_ARGS="--add-dir ~/.ai/plans --dangerously-skip-permissions"
+export CLAUDE_AGENT_FAST_ARGS="--model haiku -p"
+export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
+export CLAUDE_AGENT_INTERACTIVE_ARGS=""
+export CLAUDE_AGENT_DEFAULT_MODE="fast"
+export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/claude-agent-mode/cc-stream-parser"
+
+# Load Claude Code agent mode integration
+source ~/dotfiles/claude-agent-mode/claude-code-agent.zsh
+
 # ZVM after init hook (for keybindings)
 function zvm_after_init() {
   # install fzf keybindings
@@ -39,8 +51,7 @@ function zvm_after_init() {
   # Use regular bindkey for custom widgets
   bindkey -M viins '^K' autosuggest-accept
   bindkey -M viins '^G' _tv_git_branches  # Ctrl+G
-  bindkey -M viins '^A' claude-agent-mode  # Ctrl+A - Claude Code agent mode
 
-  # Also bind in vicmd mode to work in both insert and command mode
-  bindkey -M vicmd '^A' claude-agent-mode
+  # Setup Claude Code agent mode keybindings
+  setup-claude-agent-keybindings
 }

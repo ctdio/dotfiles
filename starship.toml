@@ -7,8 +7,8 @@ $git_state\
 $git_status\
 $cmd_duration\
 $line_break\
-$env_var\
 $python\
+$env_var\
 $character"""
 
 [directory]
@@ -52,5 +52,5 @@ style = "bright-black"
 [env_var.CLAUDE_AGENT_MODE]
 format = "[$env_value]($style) "
 style = "bold 243"
-default = ""
+disabled = false
 
