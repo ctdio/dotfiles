@@ -109,3 +109,66 @@ function fnvim () {
   nvim ${file_path}
 }
 
+# Claude Code agent mode - press Ctrl+A to enter agent mode
+
+claude-agent-mode() {
+  if [[ -n "$CLAUDE_AGENT_MODE" ]]; then
+    # Exit agent mode
+    unset CLAUDE_AGENT_MODE
+
+    # Re-enable syntax highlighting if available
+    if (( ${+ZSH_HIGHLIGHT_HIGHLIGHTERS} )); then
+      region_highlight=()
+    fi
+
+    BUFFER=""
+    CURSOR=0
+    zle reset-prompt
+  else
+    # Enter agent mode
+    # Set environment variable for Starship to detect
+    export CLAUDE_AGENT_MODE="AGENT"
+
+    # Clear current line
+    BUFFER=""
+    CURSOR=0
+
+    # Disable syntax highlighting in agent mode
+    if (( ${+ZSH_HIGHLIGHT_HIGHLIGHTERS} )); then
+      region_highlight=()
+    fi
+
+    # Trigger Starship to re-render
+    zle reset-prompt
+  fi
+}
+
+# Custom accept-line for agent mode
+claude-agent-accept-line() {
+  if [[ -n "$CLAUDE_AGENT_MODE" ]]; then
+    # Store the command
+    local agent_command="$BUFFER"
+
+    # Reset to normal mode
+    unset CLAUDE_AGENT_MODE
+
+    # Re-enable syntax highlighting if it was disabled
+    if (( ${+ZSH_HIGHLIGHT_HIGHLIGHTERS} )); then
+      region_highlight=()
+    fi
+
+    # Escape the command properly and set buffer
+    BUFFER="cc ${(qq)agent_command}"
+
+    # Call the original accept-line
+    zle .accept-line
+  else
+    # Normal accept-line behavior
+    zle .accept-line
+  fi
+}
+
+# Register widgets (keybinding set in zvm_after_init in plugins.zsh)
+zle -N claude-agent-mode
+zle -N accept-line claude-agent-accept-line
+

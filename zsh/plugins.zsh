@@ -36,6 +36,11 @@ function zvm_after_init() {
   # enable fzf-git
   [ -f ~/.fzf-git.sh/fzf-git.sh ] && source ~/.fzf-git.sh/fzf-git.sh
 
-  bindkey '^K' autosuggest-accept
-  bindkey '^G' _tv_git_branches  # Ctrl+G
+  # Use regular bindkey for custom widgets
+  bindkey -M viins '^K' autosuggest-accept
+  bindkey -M viins '^G' _tv_git_branches  # Ctrl+G
+  bindkey -M viins '^A' claude-agent-mode  # Ctrl+A - Claude Code agent mode
+
+  # Also bind in vicmd mode to work in both insert and command mode
+  bindkey -M vicmd '^A' claude-agent-mode
 }
