@@ -221,10 +221,17 @@ CRITICAL INSTRUCTIONS:
       local use_stream_parser=0
 
       if [[ $is_fast_mode -eq 1 ]]; then
-        # Add fast mode instructions
-        agent_command="${agent_command}
+        # Prepend fast mode instructions
+        agent_command="FAST MODE - CRITICAL INSTRUCTIONS:
+- DO NOT ask questions or prompt for clarification
+- DO NOT use the AskUserQuestion tool
+- Make reasonable assumptions and proceed with the task
+- Use available tools (Read, Grep, Glob) to gather any needed context
+- Provide immediate, direct, actionable responses
+- Be concise and get straight to the point
 
-FAST MODE: You are in fast mode. Respond directly and concisely without asking follow-up questions. If you need information to complete the task, make reasonable assumptions or use available tools to gather context. Your goal is to provide immediate, actionable answers."
+USER REQUEST:
+${agent_command}"
         mode_args="${CLAUDE_AGENT_FAST_ARGS}"
         use_stream_parser=1
       else
@@ -241,12 +248,34 @@ FAST MODE: You are in fast mode. Respond directly and concisely without asking f
         full_cmd="${full_cmd} ${mode_args}"
       fi
 
-      # Set buffer with stream parser if needed
+      # Build the full command line
+      local full_cmd_line
       if [[ $use_stream_parser -eq 1 ]]; then
-        BUFFER="${full_cmd} --output-format stream-json --include-partial-messages ${(qq)agent_command} | ${CLAUDE_AGENT_STREAM_PARSER}"
+        full_cmd_line="${full_cmd} --output-format stream-json --include-partial-messages ${(qq)agent_command} | ${CLAUDE_AGENT_STREAM_PARSER}"
       else
-        BUFFER="${full_cmd} ${(qq)agent_command}"
+        full_cmd_line="${full_cmd} ${(qq)agent_command}"
       fi
+
+      # Define a temporary function with the command embedded
+      # The function will add the real command to history and remove itself
+      eval "function __cc() {
+        local original_cmd=${(qq)full_cmd_line}
+
+        # Set up trap to clean up on interrupt or exit
+        trap '[[ -n \${functions[__cc]} ]] && unset -f __cc; return 130' INT
+        trap '[[ -n \${functions[__cc]} ]] && unset -f __cc' EXIT
+
+        ${full_cmd_line}
+        local exit_code=\$?
+
+        # Add the original command to history
+        print -s \"\$original_cmd\"
+
+        return \$exit_code
+      }"
+
+      # Set buffer to just call the function
+      BUFFER="__cc"
 
       # Call the original accept-line
       zle .accept-line

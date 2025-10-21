@@ -35,10 +35,10 @@ export CLAUDE_AGENT_FAST_ARGS="--model haiku -p"
 export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
 export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 export CLAUDE_AGENT_DEFAULT_MODE="fast"
-export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/claude-agent-mode/cc-stream-parser"
+export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser"
 
-# Load Claude Code agent mode integration
-source ~/dotfiles/claude-agent-mode/claude-code-agent.zsh
+# Load Claude Code zsh integration
+source ~/dotfiles/shell-integrations/zsh/claude-code-zsh-integration.zsh
 
 # ZVM after init hook (for keybindings)
 function zvm_after_init() {

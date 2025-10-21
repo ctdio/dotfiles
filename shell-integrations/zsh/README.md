@@ -20,9 +20,9 @@ export CLAUDE_AGENT_FAST_ARGS="--model haiku -p"
 export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
 export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 export CLAUDE_AGENT_DEFAULT_MODE="fast"
-export CLAUDE_AGENT_STREAM_PARSER="/path/to/claude-agent-mode/cc-stream-parser"
+export CLAUDE_AGENT_STREAM_PARSER="/path/to/shell-integrations/zsh/cc-stream-parser"
 
-source /path/to/claude-agent-mode/claude-code-agent.zsh
+source /path/to/shell-integrations/zsh/claude-code-zsh-integration.zsh
 ```
 
 2. For zsh-vi-mode, add keybindings in `zvm_after_init`:
@@ -56,6 +56,6 @@ disabled = false
 
 ## Files
 
-- `claude-code-agent.zsh`: Main integration
+- `claude-code-zsh-integration.zsh`: Main integration
 - `cc-stream-parser`: Stream parser wrapper
 - `cc-stream-parser.ts`: Parser implementation
