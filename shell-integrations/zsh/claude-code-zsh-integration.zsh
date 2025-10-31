@@ -8,6 +8,19 @@
 # - agent(interactive): Full interactive mode with all features
 # - agent(cmd): Command generation mode that seeds shell with generated commands
 #
+# Terminal Context (Opt-in):
+# You can enable automatic injection of recent terminal output into prompts
+# by setting CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT=1. This gives Claude
+# awareness of what's visible in your terminal, including command output,
+# errors, and any other visible text. The integration automatically detects
+# and uses the best capture method:
+# - tmux: Uses `tmux capture-pane` to get scrollback buffer
+# - iTerm2: Uses AppleScript to capture visible content
+# - Fallback: Uses command history if no terminal capture is available
+#
+# Set CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT=1 to enable this feature.
+# Configure the number of lines with CLAUDE_AGENT_TERMINAL_CONTEXT_LINES.
+#
 # Installation:
 # 1. Source this file in your shell configuration
 # 2. Install required binaries (cc-stream-parser) to your PATH
@@ -24,6 +37,9 @@
 #   CLAUDE_AGENT_DEFAULT_MODE - Default mode on Ctrl+A (default: "fast")
 #                                Options: "fast", "interactive", "cmd"
 #   CLAUDE_AGENT_STREAM_PARSER - Path to stream parser (default: "cc-stream-parser")
+#   CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT - Enable terminal context injection (default: "0")
+#                                           Set to "1" to enable
+#   CLAUDE_AGENT_TERMINAL_CONTEXT_LINES - Number of history lines to include (default: "50")
 #
 # Example:
 #   export CLAUDE_AGENT_CMD="claude"
@@ -33,6 +49,8 @@
 #   export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 #   export CLAUDE_AGENT_DEFAULT_MODE="fast"
 #   export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/bin/cc-stream-parser"
+#   export CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT="0"  # Set to "1" to enable
+#   export CLAUDE_AGENT_TERMINAL_CONTEXT_LINES="50"
 #
 # Keybindings:
 # - Ctrl+A: Toggle agent mode on/off
@@ -56,6 +74,8 @@
 : ${CLAUDE_AGENT_INTERACTIVE_ARGS:=""}
 : ${CLAUDE_AGENT_DEFAULT_MODE:="fast"}
 : ${CLAUDE_AGENT_STREAM_PARSER:="cc-stream-parser"}
+: ${CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT:="0"}
+: ${CLAUDE_AGENT_TERMINAL_CONTEXT_LINES:="50"}
 
 # Global state variables
 typeset -g CLAUDE_SAVED_HIGHLIGHTERS=()
@@ -74,6 +94,52 @@ function update-agent-mode-prompt() {
     export CLAUDE_AGENT_MODE="agent(interactive)"
   fi
   zle reset-prompt
+}
+
+# Capture terminal context (visible terminal buffer)
+function capture-terminal-context() {
+  # Check if terminal context is enabled
+  if [[ "${CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT:-0}" != "1" ]]; then
+    return
+  fi
+
+  local num_lines="${CLAUDE_AGENT_TERMINAL_CONTEXT_LINES:-50}"
+  local terminal_output=""
+
+  # Try different methods to capture actual terminal output
+  # Method 1: tmux (if we're in a tmux session)
+  if [[ -n "$TMUX" ]]; then
+    terminal_output=$(tmux capture-pane -p -S -${num_lines} 2>/dev/null)
+
+  # Method 2: iTerm2 (if available)
+  elif [[ "$TERM_PROGRAM" == "iTerm.app" ]] && command -v osascript >/dev/null 2>&1; then
+    # Use AppleScript to get visible text from iTerm2
+    terminal_output=$(osascript -e "
+      tell application \"iTerm\"
+        tell current session of current window
+          get contents
+        end tell
+      end tell
+    " 2>/dev/null | tail -n ${num_lines})
+
+  # Method 3: Check if we have a scrollback capture mechanism
+  elif [[ -n "$CLAUDE_TERMINAL_BUFFER" ]]; then
+    # User can set this variable with their own capture mechanism
+    terminal_output="$CLAUDE_TERMINAL_BUFFER"
+
+  # Method 4: Fallback to command history
+  else
+    terminal_output=$(fc -ln -${num_lines} -1 2>/dev/null | sed 's/^[[:space:]]*//')
+  fi
+
+  if [[ -n "$terminal_output" ]]; then
+    echo "<terminal_context>"
+    echo "Recent terminal output (last ${num_lines} lines visible in terminal):"
+    echo ""
+    echo "$terminal_output"
+    echo "</terminal_context>"
+    echo ""
+  fi
 }
 
 # ============================================================================
@@ -183,8 +249,11 @@ claude-agent-accept-line() {
 
     # Handle cmd mode - seed shell with generated command
     if [[ $is_cmd_mode -eq 1 ]]; then
+      # Capture terminal context
+      local terminal_context=$(capture-terminal-context)
+
       # Augment the user prompt with command generation instructions
-      local augmented_prompt="${agent_command}
+      local augmented_prompt="${terminal_context}${agent_command}
 
 CRITICAL INSTRUCTIONS:
 - You are in COMMAND GENERATION mode
@@ -220,9 +289,12 @@ CRITICAL INSTRUCTIONS:
       local mode_args=""
       local use_stream_parser=0
 
+      # Capture terminal context once for both modes
+      local terminal_context=$(capture-terminal-context)
+
       if [[ $is_fast_mode -eq 1 ]]; then
         # Prepend fast mode instructions
-        agent_command="FAST MODE - CRITICAL INSTRUCTIONS:
+        agent_command="${terminal_context}FAST MODE - CRITICAL INSTRUCTIONS:
 - DO NOT ask questions or prompt for clarification
 - DO NOT use the AskUserQuestion tool
 - Make reasonable assumptions and proceed with the task
@@ -235,7 +307,8 @@ ${agent_command}"
         mode_args="${CLAUDE_AGENT_FAST_ARGS}"
         use_stream_parser=1
       else
-        # Interactive mode
+        # Interactive mode - just prepend terminal context
+        agent_command="${terminal_context}${agent_command}"
         mode_args="${CLAUDE_AGENT_INTERACTIVE_ARGS}"
       fi
 

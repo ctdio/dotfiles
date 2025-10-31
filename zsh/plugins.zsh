@@ -36,6 +36,8 @@ export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
 export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 export CLAUDE_AGENT_DEFAULT_MODE="fast"
 export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser"
+export CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT="1"
+export CLAUDE_AGENT_TERMINAL_CONTEXT_LINES="50"
 
 # Load Claude Code zsh integration
 source ~/dotfiles/shell-integrations/zsh/claude-code-zsh-integration.zsh

@@ -91,11 +91,11 @@
   },
 
   // chat
-  {
-    "key": "ctrl+c",
-    "command": "composer.cancelChat",
-    "when": "composerFocused"
-  },
+  // {
+  //   "key": "ctrl+c",
+  //   "command": "composer.cancelChat",
+  //   "when": "composerFocused"
+  // },
   {
     "key": "ctrl+[",
     "command": "workbench.action.focusFirstEditorGroup",

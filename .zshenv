@@ -105,3 +105,10 @@ fi
 if [ -f "$HOME/.env" ]; then
   export $(grep -v '^#' $HOME/.env | xargs)
 fi
+
+# Mise (runtime version manager) - loaded for all shells
+if [[ "$(uname)" == "Linux" ]]; then
+  eval "$(~/.local/bin/mise activate zsh)"
+elif [[ "$(uname)" == "Darwin" ]]; then
+  eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
+fi

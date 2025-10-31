@@ -10,13 +10,6 @@ if type zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"
 fi
 
-# Mise (runtime version manager)
-if [[ "$(uname)" == "Linux" ]]; then
-  eval "$(~/.local/bin/mise activate zsh)"
-elif [[ "$(uname)" == "Darwin" ]]; then
-  eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
-fi
-
 # Starship prompt with smart git caching
 eval "$(starship init zsh)"
 

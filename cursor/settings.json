@@ -1607,10 +1607,11 @@
   ],
   "cursor-retrieval.canAttemptGithubLogin": false,
   "update.releaseTrack": "prerelease",
-  "workbench.colorTheme": "Kanso Zen",
   "workbench.editor.enablePreviewFromQuickOpen": true,
-  "workbench.editor.showTabs": "single",
   "cursor.composer.queueMessageDefaultBehavior": "queue",
   "cursor.enable_agent_window_setting": true,
-  "cursor.agent_layout_browser_beta_setting": true
+  "cursor.agent_layout_browser_beta_setting": true,
+  "workbench.editor.showTabs": "none",
+  "workbench.colorTheme": "Kanso Ink",
+  "zig.zls.enabled": "on"
 }
