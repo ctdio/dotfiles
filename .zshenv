@@ -106,9 +106,19 @@ if [ -f "$HOME/.env" ]; then
   export $(grep -v '^#' $HOME/.env | xargs)
 fi
 
-# Mise (runtime version manager) - loaded for all shells
+# Mise (runtime version manager)
+# Interactive shells: use full activation for better performance
+# Non-interactive shells: use shims for compatibility (Cursor, etc.)
 if [[ "$(uname)" == "Linux" ]]; then
-  eval "$(~/.local/bin/mise activate zsh)"
+  MISE_BIN=~/.local/bin/mise
 elif [[ "$(uname)" == "Darwin" ]]; then
-  eval "$(/Users/charlieduong/.local/bin/mise activate zsh)"
+  MISE_BIN=/Users/charlieduong/.local/bin/mise
+fi
+
+if [[ -o interactive ]]; then
+  # Interactive shell - use full mise activation
+  eval "$($MISE_BIN activate zsh)"
+else
+  # Non-interactive shell - use shims
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
 fi
