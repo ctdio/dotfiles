@@ -16,6 +16,7 @@ alias nvim-no-sesh='nvim "+let g:auto_session_enabled = v:false"'
 alias vim-no-sesh='nvim-no-sesh'
 alias dbui='nvim -c "DBUI"'
 alias notes='pushd ~/obsidian; nvim; popd'
+alias plans='pushd ~/.ai/plans; nvim; popd'
 
 # External tools
 alias wtf='~/wtfutil'
@@ -38,3 +39,4 @@ alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-202
 alias cc='claude --add-dir ~/.ai/plans --dangerously-skip-permissions'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
+

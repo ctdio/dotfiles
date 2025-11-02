@@ -23,14 +23,6 @@ local function setup()
 end
 
 setup_cmp_completion = function()
-  -- Set up neodev
-  require("neodev").setup({
-    library = {
-      plugins = { "nvim-dap-ui" },
-      types = true,
-    },
-  })
-
   require("blink-cmp").setup({
     completion = {
       list = {
@@ -61,6 +53,17 @@ setup_cmp_completion = function()
       ["<C-b>"] = { "scroll_documentation_up", "fallback" },
       ["<C-f>"] = { "scroll_documentation_down", "fallback" },
     },
+
+    cmdline = {
+      keymap = {
+        preset = "none",
+        ["<C-k>"] = { "show_and_insert_or_accept_single", "fallback" },
+        ["<C-n>"] = { "select_next", "fallback" },
+        ["<C-p>"] = { "select_prev", "fallback" },
+        ["<Tab>"] = { "show_and_insert_or_accept_single", "select_next" },
+        ["<S-Tab>"] = { "show_and_insert_or_accept_single", "select_prev" },
+      },
+    },
     signature = {
       enabled = true,
     },
@@ -81,7 +84,6 @@ end
 
 setup_lsp = function()
   vim.lsp.set_log_level("off")
-  local nvim_lsp = require("lspconfig")
 
   local opts = { noremap = true, silent = true }
   -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -149,8 +151,7 @@ setup_lsp = function()
 
   capabilities = require("blink.cmp").get_lsp_capabilities(capabilities)
 
-  -- Use a loop to conveniently call 'setup' on multiple servers and
-  -- map buffer local keybindings when the language server attaches
+  -- Register and enable LSP servers using vim.lsp.config
   local servers = {
     "astro",
     "bashls",
@@ -166,18 +167,20 @@ setup_lsp = function()
     "zls",
     "vtsls",
   }
+
   for _, lsp in ipairs(servers) do
-    nvim_lsp[lsp].setup({
+    vim.lsp.config(lsp, {
       on_attach = on_attach,
       capabilities = capabilities,
-      detached = false,
-      root_dir = nvim_lsp.util.root_pattern(".git"),
+      root_markers = { ".git" },
     })
+    vim.lsp.enable(lsp)
   end
 
   vim.api.nvim_create_user_command("TSA", "VtsExec source_actions", {})
 
-  nvim_lsp.emmet_language_server.setup({
+  -- emmet_language_server with specific filetypes
+  vim.lsp.config("emmet_language_server", {
     on_attach = on_attach,
     capabilities = capabilities,
     filetypes = {
@@ -195,22 +198,26 @@ setup_lsp = function()
       "vue",
     },
   })
+  vim.lsp.enable("emmet_language_server")
 
-  nvim_lsp.terraformls.setup({
+  -- terraformls with specific filetypes
+  vim.lsp.config("terraformls", {
     on_attach = on_attach,
     capabilities = capabilities,
     filetypes = { "terraform", "terraform-vars", "hcl" },
   })
+  vim.lsp.enable("terraformls")
 
   -- tweak denols config to avoid conflict with nodejs projects
-  -- nvim_lsp.denols.setup({
+  -- vim.lsp.config("denols", {
   --   on_attach = on_attach,
   --   capabilities = capabilities,
-  --   root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
+  --   root_markers = { "deno.json", "deno.jsonc" },
   -- })
+  -- vim.lsp.enable("denols")
 
   -- lua_ls requires some additional config
-  nvim_lsp.lua_ls.setup({
+  vim.lsp.config("lua_ls", {
     on_attach = on_attach,
     capabilities = capabilities,
     settings = {
@@ -222,20 +229,27 @@ setup_lsp = function()
         workspace = {
           -- Make the server aware of Neovim runtime files
           library = vim.api.nvim_get_runtime_file("", true),
+          checkThirdParty = false,
         },
         diagnostics = {
           -- Get the language server to recognize the `vim` global
           globals = { "vim" },
         },
+        completion = {
+          callSnippet = "Replace",
+        },
+        telemetry = {
+          enable = false,
+        },
       },
     },
   })
+  vim.lsp.enable("lua_ls")
 
   -- elixirls requires some additional config
-  -- handle it separately=
   local path_to_elixirls =
     vim.fn.expand("~/lsp/elixir-ls/release/language_server.sh")
-  nvim_lsp.elixirls.setup({
+  vim.lsp.config("elixirls", {
     cmd = { path_to_elixirls },
     on_attach = on_attach,
     capabilities = capabilities,
@@ -246,6 +260,7 @@ setup_lsp = function()
       },
     },
   })
+  vim.lsp.enable("elixirls")
 end
 
 return {

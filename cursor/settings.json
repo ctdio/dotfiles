@@ -8,11 +8,9 @@
   "editor.fontFamily": "Berkeley Mono",
   "explorer.openEditors.visible": 1,
   "notebook.formatOnSave.enabled": true,
-  "window.customTitleBarVisibility": "never",
   "window.titleBarStyle": "custom",
   "workbench.editor.limit.enabled": true,
   "workbench.editor.limit.perEditorGroup": true,
-  "workbench.layoutControl.enabled": false,
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -1612,6 +1610,14 @@
   "cursor.enable_agent_window_setting": true,
   "cursor.agent_layout_browser_beta_setting": true,
   "workbench.editor.showTabs": "none",
+  "zig.zls.enabled": "on",
   "workbench.colorTheme": "Kanso Ink",
-  "zig.zls.enabled": "on"
+  "workbench.colorCustomizations": {
+    "[Kanso Zen]": {
+      "sideBar.border": "#232325"
+    },
+    "[Kanso Ink]": {
+      "sideBar.border": "#232325"
+    }
+  }
 }

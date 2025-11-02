@@ -22,11 +22,10 @@ call plug#begin()
 
   " ai
   Plug 'olimorris/codecompanion.nvim', { 'branch': 'main', 'do': 'make' }
-  Plug 'supermaven-inc/supermaven-nvim'
+  Plug 'zbirenbaum/copilot.lua'
+  Plug 'folke/sidekick.nvim'
 
   " lsp/completion
-  Plug 'folke/neodev.nvim'
-  Plug 'neovim/nvim-lspconfig'
   Plug 'Saghen/blink.cmp', {'tag': '*'}
   Plug 'folke/trouble.nvim'
   Plug 'rafamadriz/friendly-snippets'

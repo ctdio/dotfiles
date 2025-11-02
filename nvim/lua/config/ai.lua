@@ -1,37 +1,45 @@
 local function setup()
-  require("supermaven-nvim").setup({
-    keymaps = {
-      accept_suggestion = "<C-k>",
-      clear_suggestion = nil,
-      accept_word = nil,
+  require("copilot").setup({
+    suggestion = {
+      enabled = true,
+      auto_trigger = true,
+      hide_during_completion = true,
+      debounce = 75,
+      keymap = {
+        accept = "<C-k>",
+        accept_word = false,
+        accept_line = false,
+        next = "<M-]>",
+        prev = "<M-[>",
+        dismiss = "<C-]>",
+      },
     },
-    ignore_filetypes = { TelescopePrompt = true },
-    condition = function()
-      return string.match(vim.fn.expand("%:t"), ".env")
-    end,
-  })
-
-  local api = require("supermaven-nvim.api")
-
-  -- Supermaven has been dying occasionally
-  -- Set up periodic Supermaven restart
-  vim.api.nvim_create_autocmd("VimEnter", {
-    callback = function()
-      if not api.is_running() then
-        vim.cmd("SupermavenStart")
-      end
-      -- Set up timer for periodic restart
-      local timer = vim.loop.new_timer()
-      timer:start(
-        5 * 60 * 1000, -- 10 minutes in milliseconds
-        5 * 60 * 1000, -- 10 minutes in milliseconds
-        vim.schedule_wrap(function()
-          if not api.is_running() then
-            vim.cmd("SupermavenRestart")
-          end
-        end)
-      )
-    end,
+    panel = {
+      enabled = true,
+      auto_refresh = false,
+      keymap = {
+        jump_prev = "[[",
+        jump_next = "]]",
+        accept = "<CR>",
+        refresh = "gr",
+        open = "<M-CR>",
+      },
+      layout = {
+        position = "bottom",
+        ratio = 0.4,
+      },
+    },
+    filetypes = {
+      yaml = false,
+      markdown = false,
+      help = false,
+      gitcommit = false,
+      gitrebase = false,
+      hgcommit = false,
+      svn = false,
+      cvs = false,
+      ["."] = false,
+    },
   })
 
   require("codecompanion").setup({
@@ -46,7 +54,20 @@ local function setup()
   })
 
   vim.keymap.set("n", "<leader>i", "<cmd>CodeCompanionChat<cr>")
-  vim.keymap.set({ "v" }, "<C-k>", "<cmd>'<,'>CodeCompanion<cr>")
+  vim.keymap.set({ "v" }, "<leader>cc", "<cmd>'<,'>CodeCompanion<cr>")
+
+  require("sidekick").setup({})
+
+  -- Sidekick keymaps
+  vim.keymap.set("n", "<tab>", function()
+    if not require("sidekick").nes_jump_or_apply() then
+      return "<Tab>"
+    end
+  end, { expr = true, desc = "Goto/Apply Next Edit Suggestion" })
+
+  vim.keymap.set("n", "<leader>aa", function()
+    require("sidekick.cli").toggle()
+  end, { desc = "Sidekick Toggle CLI" })
 end
 
 return {
