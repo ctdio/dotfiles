@@ -14,6 +14,12 @@
     "when": "terminalFocus"
   },
 
+  // terminal toggle
+  {
+    "key": "cmd+j",
+    "command": "workbench.action.terminal.toggleTerminal"
+  },
+
   // prevent toggling of panel
   {
     "key": "cmd+j",
