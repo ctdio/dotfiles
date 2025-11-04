@@ -59,15 +59,11 @@ local function setup()
   require("sidekick").setup({})
 
   -- Sidekick keymaps
-  vim.keymap.set("n", "<tab>", function()
+  vim.keymap.set({ "i", "n" }, "<C-k>", function()
     if not require("sidekick").nes_jump_or_apply() then
       return "<Tab>"
     end
   end, { expr = true, desc = "Goto/Apply Next Edit Suggestion" })
-
-  vim.keymap.set("n", "<leader>aa", function()
-    require("sidekick.cli").toggle()
-  end, { desc = "Sidekick Toggle CLI" })
 end
 
 return {
