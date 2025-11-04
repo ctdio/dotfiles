@@ -19,6 +19,7 @@ local function setup()
       "lua",
       "markdown",
       "markdown_inline",
+      "prisma",
       "proto",
       "python",
       "rust",

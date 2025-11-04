@@ -163,7 +163,6 @@ setup_lsp = function()
     "pyright",
     "rust_analyzer",
     "tailwindcss",
-    "prismals",
     "zls",
     "vtsls",
   }
@@ -246,6 +245,16 @@ setup_lsp = function()
   })
   vim.lsp.enable("lua_ls")
 
+  -- prismals with specific filetypes
+  vim.lsp.config("prismals", {
+    cmd = { "prisma-language-server", "--stdio" },
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "prisma" },
+    root_markers = { ".git", "package.json" },
+  })
+  vim.lsp.enable("prismals")
+
   -- elixirls requires some additional config
   local path_to_elixirls =
     vim.fn.expand("~/lsp/elixir-ls/release/language_server.sh")
@@ -253,6 +262,7 @@ setup_lsp = function()
     cmd = { path_to_elixirls },
     on_attach = on_attach,
     capabilities = capabilities,
+    filetypes = { "elixir", "eelixir", "heex", "surface" },
     settings = {
       elixirLS = {
         dialyzerEnabled = false,
