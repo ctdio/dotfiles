@@ -56,6 +56,16 @@
   ],
   "vim.normalModeKeyBindings": [
     {
+      "before": ["<C-c>"],
+      "when": "notebookEditorFocused",
+      "commands": ["notebook.cell.quitEdit"]
+    },
+    // {
+    //   "before": ["<C-c>"],
+    //   "when": "!notebookEditorFocused",
+    //   "commands": ["editor.action.cancelSelectionAnchor"]
+    // },
+    {
       "before": ["<C-k>"],
       "commands": ["editor.action.acceptCursorTabSuggestion"]
     },
@@ -89,10 +99,6 @@
       "commands": ["workbench.action.quickOpen"]
     },
     {
-      "before": ["<C-c>"],
-      "commands": ["editor.action.cancelSelectionAnchor"]
-    },
-    {
       "before": [",", "n", "n"],
       "commands": ["workbench.files.action.focusFilesExplorer"],
       "when": "vim.mode === 'Normal' && editorTextFocus"
@@ -109,7 +115,7 @@
     },
     {
       "before": ["<leader>", "f"],
-      "commands": ["workbench.action.quickTextSearch"]
+      "commands": ["editor.action.formatDocument"]
     },
     {
       "before": ["<leader>", "e"],
@@ -1611,7 +1617,7 @@
   "cursor.agent_layout_browser_beta_setting": true,
   "workbench.editor.showTabs": "none",
   "zig.zls.enabled": "on",
-  "workbench.colorTheme": "Kanso Ink",
+  "workbench.colorTheme": "Kanso Zen",
   "workbench.colorCustomizations": {
     "[Kanso Zen]": {
       "sideBar.border": "#232325"
@@ -1619,5 +1625,10 @@
     "[Kanso Ink]": {
       "sideBar.border": "#232325"
     }
-  }
+  },
+  "git.blame.editorDecoration.enabled": true,
+  "git.blame.statusBarItem.enabled": false,
+  "notebook.output.textLineLimit": 100,
+  "notebook.output.scrolling": true,
+  "notebook.lineNumbers": "on"
 }

@@ -145,11 +145,6 @@
     "when": "composerFocused"
   },
   {
-    "key": "ctrl+enter",
-    "command": "aipopup.action.modal.generate",
-    "when": "editorTextFocus"
-  },
-  {
     "key": "cmd+i",
     "command": "composerMode.agent"
   },
@@ -165,5 +160,15 @@
   {
     "key": "cmd+y",
     "command": "composerMode.plan"
+  },
+  {
+    "key": "ctrl+b",
+    "command": "-cursorLeft",
+    "when": "textInputFocus"
+  },
+  {
+    "key": "ctrl+f",
+    "command": "-cursorRight",
+    "when": "textInputFocus"
   }
 ]
