@@ -16,12 +16,14 @@
     "defaultMode": "acceptEdits"
   },
   "hooks": {
-    "UserPromptSubmit": [
+    "PreToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "~/dotfiles/claude/hooks/ultrathink"
+            "command": "~/dotfiles/claude/hooks/validate-bash",
+            "timeout": 5
           }
         ]
       }
