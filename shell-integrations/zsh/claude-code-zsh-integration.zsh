@@ -40,6 +40,8 @@
 #   CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT - Enable terminal context injection (default: "0")
 #                                           Set to "1" to enable
 #   CLAUDE_AGENT_TERMINAL_CONTEXT_LINES - Number of history lines to include (default: "50")
+#   CLAUDE_AGENT_ENABLE_HISTORY - Store AI queries in shell history (default: "0")
+#                                  Set to "1" to enable
 #
 # Example:
 #   export CLAUDE_AGENT_CMD="claude"
@@ -51,6 +53,7 @@
 #   export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/bin/cc-stream-parser"
 #   export CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT="0"  # Set to "1" to enable
 #   export CLAUDE_AGENT_TERMINAL_CONTEXT_LINES="50"
+#   export CLAUDE_AGENT_ENABLE_HISTORY="0"  # Set to "1" to enable
 #
 # Keybindings:
 # - Ctrl+A: Toggle agent mode on/off
@@ -76,6 +79,7 @@
 : ${CLAUDE_AGENT_STREAM_PARSER:="cc-stream-parser"}
 : ${CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT:="0"}
 : ${CLAUDE_AGENT_TERMINAL_CONTEXT_LINES:="50"}
+: ${CLAUDE_AGENT_ENABLE_HISTORY:="0"}
 
 # Global state variables
 typeset -g CLAUDE_SAVED_HIGHLIGHTERS=()
@@ -341,8 +345,10 @@ ${agent_command}"
         ${full_cmd_line}
         local exit_code=\$?
 
-        # Add the original command to history
-        print -s \"\$original_cmd\"
+        # Add the original command to history (if enabled)
+        if [[ \"\${CLAUDE_AGENT_ENABLE_HISTORY:-0}\" == \"1\" ]]; then
+          print -s \"\$original_cmd\"
+        fi
 
         return \$exit_code
       }"
