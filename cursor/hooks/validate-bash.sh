@@ -1,0 +1,146 @@
+#!/usr/bin/env bun
+
+// Bash command validation hook: Blocks dangerous commands that could destroy data
+
+const DANGEROUS_PATTERNS = [
+  // Terraform commands
+  {
+    pattern: /\bterraform\b/i,
+    message: "Terraform commands are blocked for safety",
+  },
+
+  // Prisma deployment/migration commands
+  {
+    pattern: /\bprisma\s+db\s+push\b/i,
+    message: "Direct 'prisma db push' is blocked - create migrations manually instead",
+  },
+  {
+    pattern: /\bprisma\s+deploy\b/i,
+    message: "'prisma deploy' is blocked for safety",
+  },
+  {
+    pattern: /\bprisma\s+migrate\s+deploy\b/i,
+    message: "'prisma migrate deploy' is blocked - run migrations manually",
+  },
+  {
+    pattern: /\bprisma\s+migrate\s+dev\b(?!.*--create-only)/i,
+    message: "'prisma migrate dev' is blocked - use 'prisma migrate dev --create-only' to create migrations without applying them",
+  },
+
+  // Generic deploy commands
+  {
+    pattern: /\b(npm|yarn|pnpm|bun)\s+run\s+deploy\b/i,
+    message: "Deploy scripts are blocked - run deployments manually",
+  },
+  {
+    pattern: /\bdeploy\b.*\b(prod|production)\b/i,
+    message: "Production deployment commands are blocked",
+  },
+
+  // Destructive filesystem operations
+  {
+    pattern: /\brm\s+(-[rf]+|--recursive|--force)\s+\/(?!tmp|var\/tmp)/,
+    message: "Recursive delete from root is blocked",
+  },
+  {
+    pattern: /\brm\s+(-[rf]+|--recursive|--force)\s+~\/?$/,
+    message: "Deleting home directory is blocked",
+  },
+  {
+    pattern: /\brm\s+(-[rf]+|--recursive|--force)\s+\*/,
+    message: "Dangerous wildcard deletion is blocked",
+  },
+  {
+    pattern: /\bmv\s+.*\s+\/dev\/null/,
+    message: "Moving files to /dev/null is blocked",
+  },
+  {
+    pattern: /\bdd\s+.*\bof=/,
+    message: "'dd' command is blocked - can overwrite disks",
+  },
+  {
+    pattern: /\bmkfs\b/,
+    message: "Filesystem formatting commands are blocked",
+  },
+  {
+    pattern: /\b(fdisk|parted|gpart)\b/,
+    message: "Disk partitioning tools are blocked",
+  },
+
+  // Dangerous system commands
+  {
+    pattern: /:\(\)\{.*\|.*&.*\};:/,
+    message: "Fork bomb pattern detected and blocked",
+  },
+  {
+    pattern: /\bchmod\s+(-R\s+)?777/,
+    message: "'chmod 777' is blocked - insecure permissions",
+  },
+  {
+    pattern: /\bchown\s+-R.*\s+\/$/,
+    message: "Recursive chown from root is blocked",
+  },
+];
+
+async function main() {
+  let payload;
+
+  try {
+    const raw = await readFromStdin();
+    payload = JSON.parse(raw.trim());
+  } catch (err) {
+    console.error('validate-bash: error reading payload', err);
+    process.exit(1);
+  }
+
+  const command = payload?.command;
+
+  if (!command) {
+    // No command to validate, allow
+    outputResponse({ permission: "allow" });
+    process.exit(0);
+  }
+
+  // Check command against dangerous patterns
+  for (const { pattern, message } of DANGEROUS_PATTERNS) {
+    if (pattern.test(command)) {
+      outputResponse({
+        permission: "deny",
+        user_message: `🚫 BLOCKED: ${message}`,
+        agent_message: `The command was blocked by security policy: ${message}\n\nCommand: ${command}`
+      });
+      process.exit(0);
+    }
+  }
+
+  // Command is safe
+  outputResponse({ permission: "allow" });
+  process.exit(0);
+}
+
+function outputResponse(response: { permission: string; user_message?: string; agent_message?: string }) {
+  console.log(JSON.stringify(response));
+}
+
+async function readFromStdin(): Promise<string> {
+  try {
+    // @ts-ignore - Bun global may not be typed
+    if (typeof Bun !== 'undefined' && Bun.stdin) {
+      // @ts-ignore - Bun specific API
+      return await new Response(Bun.stdin).text();
+    }
+  } catch {}
+
+  // Fallback to Node-style stdin
+  return await new Promise<string>((resolve) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+    });
+    process.stdin.on('end', () => resolve(data));
+    process.stdin.resume();
+  });
+}
+
+await main();

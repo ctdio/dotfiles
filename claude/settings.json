@@ -33,5 +33,5 @@
     "type": "command",
     "command": "bash ~/.claude/statusline-starship.sh"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

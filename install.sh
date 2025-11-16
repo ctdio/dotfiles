@@ -166,6 +166,11 @@ function link_dotfiles () {
     ln -nsf ${DOTFILES_DIR}/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
   fi
 
+  echo "Linking cursor hooks to ~/.cursor"
+  mkdir -p ~/.cursor
+  ln -nsf ${DOTFILES_DIR}/cursor/hooks.json ~/.cursor/hooks.json
+  ln -nsf ${DOTFILES_DIR}/cursor/hooks ~/.cursor/hooks
+
   # Link Hyprland configs for Arch/Omarchy
   if [[ "$(uname)" = 'Linux' && "$DISTRO" = "arch" ]]; then
     echo "Linking hypr files to ~/.config/hypr"
@@ -206,10 +211,12 @@ function link_dotfiles () {
     ln -nsf ${DOTFILES_DIR}/ubuntu/wofi/style.css ~/.config/wofi/style.css
   fi
 
-  echo "Linking claude agents and commands to ~/.claude"
+  echo "Linking claude agents, commands, settings, and skills to ~/.claude"
   mkdir -p ~/.claude
   ln -nsf ${DOTFILES_DIR}/claude/agents ~/.claude/agents
   ln -nsf ${DOTFILES_DIR}/claude/commands ~/.claude/commands
+  ln -nsf ${DOTFILES_DIR}/claude/settings.json ~/.claude/settings.json
+  ln -nsf ${DOTFILES_DIR}/claude/skills ~/.claude/skills
 
   local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
   local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
