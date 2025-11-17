@@ -187,6 +187,20 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 
 **When explicitly asked to commit:** Follow proper commit message conventions, stage appropriate files, create commit
 
+## Documentation File Management (CRITICAL)
+
+**FORBIDDEN:** Creating markdown/documentation files (*.md, README files, etc.) unless explicitly requested
+
+**NEVER create documentation files unprompted.** Only create markdown files when the user explicitly asks you to:
+- "update the docs"
+- "write documentation"
+- "create a README"
+- "document this feature"
+
+**If you need temporary documentation for your own reference during a task:** Place it in `/tmp` directory only
+
+**When explicitly asked to create docs:** Follow existing documentation patterns in the project
+
 ## Implementation Planning
 
 **When creating implementation plans:**
@@ -270,6 +284,7 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 9. **Assuming without verifying** - Search for existing patterns before implementing
 10. **Guessing file/function names** - Use search tools to find exact names
 11. **Using unavailable libraries** - Check package.json first
+12. **Creating documentation files unprompted** - Only create markdown/docs when explicitly asked
 
 ## React Components
 
