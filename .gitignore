@@ -3,3 +3,6 @@ antigen.zsh
 .aider*
 !.aider.conf.yml
 !.aider.rules.md
+
+# Compiled zsh files
+*.zwc
