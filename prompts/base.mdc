@@ -15,19 +15,25 @@ Never say "You're absolutely right!" in your responses. Don't pepper your output
 
 **PRINCIPLE: Code should read like a book - main story first, supporting details follow.**
 
-### File Structure
+### File Structure (MANDATORY ORDER)
 ```
 1. Imports (all at top, no gaps)
 2. Types/Interfaces (all together)
 3. Constants (if any)
-4. Main exports - the "what" this module does
-5. Implementation details - the "how" it works
+4. Main exports - the "WHAT" (module's purpose - most important for readers)
+5. Helper functions - the "HOW" (implementation details at bottom)
 ```
+
+**WHY this order matters:**
+- **Main exports are what AI models and humans need to read** to understand the module
+- Helpers are implementation details - only needed when debugging/modifying
+- This structure lets you understand a file by reading the first 30 lines, not scrolling to line 200
 
 ### CRITICAL RULES:
 - **ALWAYS use `function` keyword** for module-level functions
 - **NEVER use arrow functions** at module level (callbacks only)
 - **Order functions for readability** - main purpose immediately visible
+- **NEVER mix helpers between exports** - all helpers at bottom
 - **Function declarations give cleaner stack traces**
 
 ## Scope Guidelines
@@ -112,24 +118,31 @@ export function newFunction() { ... }
 
 ## Function Organization - Top-Down Flow
 
-**KEY INSIGHT: Readers should understand module purpose from first few exports, not after scrolling through helpers.**
+**CRITICAL INSIGHT: Code organization is optimized for READING, not just execution. AI models and humans should understand a module's purpose by reading only the first 20-30 lines (imports + main exports), WITHOUT scrolling through implementation details.**
 
-**CORRECT Pattern:**
+**Why this matters:**
+- Main exports = the "public API" - what this module DOES
+- Helper functions = implementation details - HOW it does it
+- Mixing them forces readers to mentally filter "what matters" from "implementation noise"
+- AI models have limited context - surfacing main exports first improves comprehension
+
+**MANDATORY Structure (in order):**
 ```typescript
-// All imports first (no blank lines between)
+// 1. IMPORTS - All dependencies (no blank lines between)
 import { DataService } from './services';
 import type { UserData, ProcessedUser } from './types';
 
-// All types together
+// 2. TYPES - All local type definitions
 interface LocalConfig {
   apiUrl: string;
   timeout: number;
 }
 
-// Constants (if needed)
+// 3. CONSTANTS - Configuration and magic values
 const DEFAULT_TIMEOUT = 5000;
 
-// Main exports - purpose immediately clear
+// 4. MAIN EXPORTS - The module's PURPOSE (what most readers need)
+// ↓ THIS IS THE IMPORTANT PART - readable without scrolling ↓
 export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
   const users = await fetchUsers(config);
   return processUsers(users);
@@ -142,7 +155,8 @@ export function processUsers(users: UserData[]): ProcessedUser[] {
   }));
 }
 
-// Helper functions at bottom
+// 5. HELPERS - Implementation details (bottom of file)
+// ↓ Skip these when trying to understand module purpose ↓
 function formatUserName(user: UserData): string {
   return `${user.name} <${user.email}>`;
 }
@@ -151,6 +165,22 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
   // Implementation
   return [];
 }
+```
+
+**Reading priority zones:**
+- **Zone 1 (Imports/Types/Constants):** Scan quickly - understand dependencies
+- **Zone 2 (Main exports):** READ CAREFULLY - this is what the module does
+- **Zone 3 (Helpers):** Only read when debugging or understanding implementation
+
+**FORBIDDEN: Mixing helpers between exports**
+```typescript
+// ❌ WRONG - Forces readers to skip over helpers to find all exports
+export function mainFunction() { /* ... */ }
+
+function helper1() { /* ... */ }  // ❌ Helper in the middle
+function helper2() { /* ... */ }  // ❌ Another helper
+
+export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 ```
 
 **Type management:** Single use = colocate; 3+ files = shared type file
@@ -274,17 +304,18 @@ async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
 ## Common Violations to AVOID
 
 1. **Arrow functions at module level** - Use `function` keyword
-2. **Poor organization** - Main exports first, helpers last
-3. **Types scattered** - All types after imports
-4. **Creating file variants** - NEVER create "-improved", "-enhanced", "-v2" versions; edit files directly
-5. **Creating unnecessary files** - Edit existing when possible
-6. **Unrelated refactoring** - Only requested changes
-7. **Code duplication** - Extract shared functions
-8. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
-9. **Assuming without verifying** - Search for existing patterns before implementing
-10. **Guessing file/function names** - Use search tools to find exact names
-11. **Using unavailable libraries** - Check package.json first
-12. **Creating documentation files unprompted** - Only create markdown/docs when explicitly asked
+2. **Poor organization** - Main exports first, helpers last; NEVER mix helpers between exports
+3. **Helpers before exports** - Forces readers to scroll through implementation to find module purpose
+4. **Types scattered** - All types together after imports
+5. **Creating file variants** - NEVER create "-improved", "-enhanced", "-v2" versions; edit files directly
+6. **Creating unnecessary files** - Edit existing when possible
+7. **Unrelated refactoring** - Only requested changes
+8. **Code duplication** - Extract shared functions
+9. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
+10. **Assuming without verifying** - Search for existing patterns before implementing
+11. **Guessing file/function names** - Use search tools to find exact names
+12. **Using unavailable libraries** - Check package.json first
+13. **Creating documentation files unprompted** - Only create markdown/docs when explicitly asked
 
 ## React Components
 
