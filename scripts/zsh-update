@@ -1,0 +1,53 @@
+#!/bin/zsh
+# Update zsh plugins and recompile for speed
+
+set -e
+
+PLUGINS_DIR="$HOME/dotfiles/zsh/plugins"
+
+echo "Updating zsh plugins..."
+
+# Update each plugin
+for plugin_dir in "$PLUGINS_DIR"/*/; do
+  plugin_name=$(basename "$plugin_dir")
+  echo "  Updating $plugin_name..."
+  (cd "$plugin_dir" && git pull --quiet 2>/dev/null || echo "    (not a git repo)")
+done
+
+echo ""
+echo "Regenerating caches..."
+
+# Regenerate tool caches
+mkdir -p ~/.cache/zsh
+zoxide init zsh > ~/.cache/zsh/zoxide.zsh
+starship init zsh > ~/.cache/zsh/starship.zsh
+
+echo ""
+echo "Compiling zsh files..."
+
+# Compile dotfiles
+zcompile ~/dotfiles/.zshrc
+zcompile ~/dotfiles/zsh/tools.zsh
+zcompile ~/dotfiles/zsh/plugins.zsh
+zcompile ~/dotfiles/zsh/aliases.zsh
+zcompile ~/dotfiles/zsh/functions.zsh
+
+# Compile caches
+zcompile ~/.cache/zsh/zoxide.zsh
+zcompile ~/.cache/zsh/starship.zsh
+
+# Compile plugins
+zcompile "$PLUGINS_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh"
+zcompile "$PLUGINS_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# Compile claude integration
+zcompile ~/dotfiles/shell-integrations/zsh/claude-code-zsh-integration.zsh
+
+# Regenerate completions
+echo ""
+echo "Regenerating completions..."
+rm -f ~/.zcompdump
+autoload -Uz compinit && compinit
+
+echo ""
+echo "Done! Restart your shell to apply changes."

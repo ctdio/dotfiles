@@ -1,0 +1,139 @@
+#!/bin/zsh
+
+# Benchmark zsh startup time
+# Usage: zsh-bench [iterations]
+
+set -e
+
+ITERATIONS=${1:-10}
+TIMES=()
+
+usage() {
+  cat <<EOF
+Usage: zsh-bench [options] [iterations]
+
+Benchmark zsh startup time.
+
+Options:
+  -p, --profile    Run zprof profiling (single run, shows what's slow)
+  -c, --compare    Compare login vs non-login shell times
+  -h, --help       Show this help message
+
+Arguments:
+  iterations       Number of iterations for averaging (default: 10)
+
+Examples:
+  zsh-bench              # Run 10 iterations
+  zsh-bench 50           # Run 50 iterations
+  zsh-bench -p           # Profile with zprof
+  zsh-bench -c           # Compare shell types
+EOF
+}
+
+# Run benchmark iterations
+run_benchmark() {
+  local shell_args="$1"
+  local label="$2"
+  local iterations="$3"
+  local times=()
+
+  for i in $(seq 1 $iterations); do
+    # Time a new zsh process that exits immediately
+    # Use clean environment to avoid inherited fpath bloat
+    local start=$(gdate +%s%N 2>/dev/null || date +%s%N)
+    env -i HOME="$HOME" PATH="/usr/bin:/bin:/opt/homebrew/bin:$HOME/.local/bin" TERM="$TERM" SHELL="$SHELL" zsh $shell_args -i -c exit 2>/dev/null
+    local end=$(gdate +%s%N 2>/dev/null || date +%s%N)
+    local duration=$(( (end - start) / 1000000 ))
+    times+=($duration)
+    printf "\r%s: %d/%d" "$label" "$i" "$iterations"
+  done
+  printf "\r"
+
+  # Calculate statistics
+  local sum=0
+  local min=${times[1]}
+  local max=${times[1]}
+
+  for t in "${times[@]}"; do
+    sum=$((sum + t))
+    (( t < min )) && min=$t
+    (( t > max )) && max=$t
+  done
+
+  local avg=$((sum / iterations))
+
+  printf "%s:\n" "$label"
+  printf "  Average: %dms\n" "$avg"
+  printf "  Min:     %dms\n" "$min"
+  printf "  Max:     %dms\n" "$max"
+  printf "  Total:   %dms over %d runs\n\n" "$sum" "$iterations"
+}
+
+# Run zprof profiling
+run_profile() {
+  echo "Running zprof profiling..."
+  echo "Top 20 time consumers:"
+  echo "================================================"
+
+  # Create temp file with profiling enabled
+  local tmprc=$(mktemp)
+  cat > "$tmprc" <<'PROFILE'
+zmodload zsh/zprof
+source ~/.zshrc
+zprof | head -25
+PROFILE
+
+  ZDOTDIR=$(dirname "$tmprc") zsh -c "source $tmprc"
+  rm -f "$tmprc"
+}
+
+# Compare shell types
+run_compare() {
+  echo "Comparing shell startup times ($ITERATIONS iterations each):"
+  echo "================================================"
+  echo ""
+  run_benchmark "" "Interactive shell (zsh -i)" "$ITERATIONS"
+  run_benchmark "-l" "Login shell (zsh -li)" "$ITERATIONS"
+}
+
+# Check for GNU date (needed for nanoseconds on macOS)
+check_date() {
+  if ! gdate +%s%N &>/dev/null && ! date +%s%N &>/dev/null; then
+    echo "Error: Need nanosecond precision timing."
+    echo "On macOS, install coreutils: brew install coreutils"
+    exit 1
+  fi
+}
+
+# Main
+case "$1" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  -p|--profile)
+    run_profile
+    exit 0
+    ;;
+  -c|--compare)
+    shift
+    ITERATIONS=${1:-10}
+    check_date
+    run_compare
+    exit 0
+    ;;
+  *)
+    if [[ "$1" =~ ^[0-9]+$ ]]; then
+      ITERATIONS=$1
+    elif [[ -n "$1" ]]; then
+      echo "Unknown option: $1"
+      usage
+      exit 1
+    fi
+    check_date
+    echo "Benchmarking zsh startup ($ITERATIONS iterations):"
+    echo "================================================"
+    echo ""
+    run_benchmark "" "zsh -i" "$ITERATIONS"
+    ;;
+esac

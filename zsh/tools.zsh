@@ -1,17 +1,20 @@
-# Tool initializations
+# Tool initializations - ultra-fast static setup
+# No evals, no subshells, just direct environment setup
 
-# Homebrew (if available)
-if [ -f '/opt/homebrew/bin/brew' ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+# Homebrew - inline the env vars (no eval)
+export HOMEBREW_PREFIX="/opt/homebrew"
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+export HOMEBREW_REPOSITORY="/opt/homebrew"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+export MANPATH="/opt/homebrew/share/man:${MANPATH:-}"
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
+fpath=("/opt/homebrew/share/zsh/site-functions" $fpath)
 
-# Zoxide (better cd)
-if type zoxide &> /dev/null; then
-  eval "$(zoxide init zsh)"
-fi
+# Zoxide - source cached init (regenerate with: zoxide init zsh > ~/.cache/zsh/zoxide.zsh)
+[[ -f ~/.cache/zsh/zoxide.zsh ]] && source ~/.cache/zsh/zoxide.zsh
 
-# Starship prompt with smart git caching
-eval "$(starship init zsh)"
+# Starship - source cached init (regenerate with: starship init zsh > ~/.cache/zsh/starship.zsh)
+[[ -f ~/.cache/zsh/starship.zsh ]] && source ~/.cache/zsh/starship.zsh
 
 # Smart git status caching for worktree repos
 # Only refresh git status after git commands or directory changes

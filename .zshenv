@@ -22,7 +22,7 @@ export PATH=${PATH}:${HOME}/.fzf/bin
 export PATH=${PATH}:${HOME}/.turso
 
 
-export FPATH="$HOME/.zcomp:$FPATH"
+# fpath set in .zshrc (before compinit)
 
 # libpq
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
@@ -109,17 +109,28 @@ if [ -f "$HOME/.env" ]; then
 fi
 
 # Mise (runtime version manager)
-# Interactive shells: use full activation for better performance
+# Interactive shells: use cached activation + deferred hook
 # Non-interactive shells: use shims for compatibility (Cursor, etc.)
-if [[ "$(uname)" == "Linux" ]]; then
-  MISE_BIN=~/.local/bin/mise
-elif [[ "$(uname)" == "Darwin" ]]; then
-  MISE_BIN=/Users/charlieduong/.local/bin/mise
-fi
+MISE_BIN="${HOME}/.local/bin/mise"
+MISE_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/mise.zsh"
 
 if [[ -o interactive ]]; then
-  # Interactive shell - use full mise activation
-  eval "$($MISE_BIN activate zsh)"
+  # Interactive shell - use cached mise activation for speed
+  # Cache the activate script (regenerate with: mise activate zsh --no-hook-env > ~/.cache/zsh/mise.zsh)
+  if [[ ! -f "$MISE_CACHE" ]]; then
+    mkdir -p "$(dirname "$MISE_CACHE")"
+    "$MISE_BIN" activate zsh --no-hook-env > "$MISE_CACHE"
+  fi
+  source "$MISE_CACHE"
+
+  # Defer hook-env to first prompt (adds ~27ms but only once)
+  _mise_hook() {
+    eval "$($MISE_BIN hook-env -s zsh)"
+  }
+  typeset -ag precmd_functions
+  precmd_functions=(_mise_hook ${precmd_functions[@]})
+  typeset -ag chpwd_functions
+  chpwd_functions=(_mise_hook ${chpwd_functions[@]})
 else
   # Non-interactive shell - use shims
   export PATH="$HOME/.local/share/mise/shims:$PATH"

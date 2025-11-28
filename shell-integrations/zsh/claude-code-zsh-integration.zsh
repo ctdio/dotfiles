@@ -380,8 +380,8 @@ zle -N accept-line claude-agent-accept-line
 # For zsh-vi-mode, add to zvm_after_init() hook
 
 function setup-claude-agent-keybindings() {
-  # Check if using vi mode
-  if bindkey -l | grep -q viins; then
+  # Check if using vi mode (no subshell - use zsh's (M) modifier)
+  if [[ -n "${keymaps[(r)viins]}" ]]; then
     bindkey -M viins '^A' claude-agent-mode
     bindkey -M viins '^I' claude-agent-toggle-mode  # Tab
     bindkey -M vicmd '^A' claude-agent-mode
@@ -393,8 +393,5 @@ function setup-claude-agent-keybindings() {
   fi
 }
 
-# Auto-setup if not using zsh-vi-mode
-# If you use zsh-vi-mode, call setup-claude-agent-keybindings in zvm_after_init
-if [[ ! -v ZVM_INIT_MODE ]]; then
-  setup-claude-agent-keybindings
-fi
+# Note: Keybindings are set up by the calling script (e.g., plugins.zsh)
+# Call setup-claude-agent-keybindings after sourcing this file

@@ -16,20 +16,19 @@ setopt SHARE_HISTORY
 # Prevent accidental exit with Ctrl+D
 set -o ignoreeof
 
-# Use -C to only check for completion fields when .zompdump is missing or outdated
-autoload -Uz compinit && compinit -C
-
-# Add custom completions to fpath
-fpath=(~/.zcomp $fpath)
-
-# =====================================
-# Source Modular Configuration
-# =====================================
-
 DOTFILES_DIR=~/dotfiles
 
-# Load all modular zsh configurations
+# Load tools first (sets up fpath)
 source ${DOTFILES_DIR}/zsh/tools.zsh
+
+# Add custom completions to fpath (after tools, before compinit)
+fpath=(~/.zcomp $fpath)
+
+# Fast compinit - use compiled cache
+# Regenerate with: rm ~/.zcompdump* && compinit && zcompile ~/.zcompdump
+autoload -Uz compinit && compinit -C
+
+# Load remaining configurations
 source ${DOTFILES_DIR}/zsh/plugins.zsh
 source ${DOTFILES_DIR}/zsh/aliases.zsh
 source ${DOTFILES_DIR}/zsh/functions.zsh
