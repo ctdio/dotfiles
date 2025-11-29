@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Toggle agent pane on the left side of tmux window
+# - 30% of window width, max 80 columns
+# - Preserves agent by moving pane to/from a hidden session
+# - Per-session: each tmux session has its own agent instance
+
+# Get current session/window/pane info
+current_session=$(tmux display-message -p '#{session_name}')
+current_window=$(tmux display-message -p '#{window_id}')
+current_pane=$(tmux display-message -p '#{pane_id}')
+
+# Find the leftmost pane in the current window (lowest pane_left value)
+leftmost_pane=$(tmux list-panes -F '#{pane_left} #{pane_id}' | sort -n | head -1 | awk '{print $2}')
+
+# Session-specific identifiers
+HIDDEN_SESSION="_agent_${current_session}"
+OPTION_NAME="@agent_pane_id"
+
+# Get stored pane ID from session option (more reliable than pane titles)
+agent_pane=$(tmux show-options -qv -t "$current_session" "$OPTION_NAME")
+
+# Verify the pane still exists
+if [ -n "$agent_pane" ]; then
+    if ! tmux list-panes -a -F '#{pane_id}' | grep -q "^${agent_pane}$"; then
+        # Pane no longer exists, clear the option
+        tmux set-option -u -t "$current_session" "$OPTION_NAME"
+        agent_pane=""
+    fi
+fi
+
+# Check if agent pane is in current window
+agent_in_current=""
+if [ -n "$agent_pane" ]; then
+    agent_window=$(tmux list-panes -a -F '#{pane_id} #{window_id}' | grep "^$agent_pane " | awk '{print $2}')
+    if [ "$agent_window" = "$current_window" ]; then
+        agent_in_current="yes"
+    fi
+fi
+
+# Calculate width helper
+calc_width() {
+    local window_width=$(tmux display-message -p '#{window_width}')
+    local target=$((window_width * 30 / 100))
+    if [ "$target" -gt 80 ]; then
+        echo 80
+    else
+        echo "$target"
+    fi
+}
+
+# Toggle logic
+if [ -n "$agent_in_current" ]; then
+    # Agent is visible in current window
+    focused_pane=$(tmux display-message -p '#{pane_id}')
+
+    if [ "$focused_pane" = "$agent_pane" ]; then
+        # Focused on agent -> hide it (break to hidden session)
+        # Create hidden session if needed
+        if ! tmux has-session -t "$HIDDEN_SESSION" 2>/dev/null; then
+            tmux new-session -d -s "$HIDDEN_SESSION"
+        fi
+        tmux break-pane -d -s "$agent_pane" -t "$HIDDEN_SESSION"
+    else
+        # Agent visible but not focused -> focus it
+        tmux select-pane -t "$agent_pane"
+    fi
+elif [ -n "$agent_pane" ]; then
+    # Agent exists in hidden session -> bring it back to far left
+    target_width=$(calc_width)
+    tmux join-pane -hb -l "$target_width" -s "$agent_pane" -t "$leftmost_pane"
+    tmux select-pane -t "$agent_pane"
+else
+    # Agent doesn't exist -> create it at far left
+    target_width=$(calc_width)
+    tmux split-window -hb -l "$target_width" -t "$leftmost_pane" -c "#{pane_current_path}" "zsh -ic 'cc'"
+    # Store the new pane ID in session option for reliable tracking
+    new_pane=$(tmux display-message -p '#{pane_id}')
+    tmux set-option -t "$current_session" "$OPTION_NAME" "$new_pane"
+fi
