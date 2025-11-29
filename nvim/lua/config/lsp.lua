@@ -163,7 +163,6 @@ setup_lsp = function()
     "pyright",
     "rust_analyzer",
     "tailwindcss",
-    "zls",
     "vtsls",
   }
 
@@ -175,6 +174,16 @@ setup_lsp = function()
     })
     vim.lsp.enable(lsp)
   end
+
+  -- zls needs explicit cmd, filetypes, and root markers
+  vim.lsp.config("zls", {
+    cmd = { "zls" },
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "zig", "zir" },
+    root_markers = { "build.zig", "zls.json", ".git" },
+  })
+  vim.lsp.enable("zls")
 
   vim.api.nvim_create_user_command("TSA", "VtsExec source_actions", {})
 
