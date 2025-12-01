@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Toggle focus between agent pane and pane to its right
+
+current_session=$(tmux display-message -p '#{session_name}')
+current_window=$(tmux display-message -p '#{window_id}')
+current_pane=$(tmux display-message -p '#{pane_id}')
+
+# Get agent pane ID from session option
+agent_pane=$(tmux show-options -qv -t "$current_session" "@agent_pane_id")
+
+# Check if agent pane exists and is in current window
+if [ -z "$agent_pane" ]; then
+    exit 0
+fi
+
+agent_window=$(tmux list-panes -a -F '#{pane_id} #{window_id}' | grep "^$agent_pane " | awk '{print $2}')
+if [ "$agent_window" != "$current_window" ]; then
+    # Agent not visible in current window
+    exit 0
+fi
+
+if [ "$current_pane" = "$agent_pane" ]; then
+    # On agent pane -> go right
+    tmux select-pane -R
+else
+    # Elsewhere -> go to agent pane
+    tmux select-pane -t "$agent_pane"
+fi
