@@ -65,11 +65,42 @@ EOF
       echo "fzf is required for interactive switching. Install it and try again."
       return 1
     fi
+
+    local current_worktree
+    current_worktree=$(git rev-parse --show-toplevel 2>/dev/null)
+
+    # Build list with branch names: "path [branch]"
+    local worktree_list
+    worktree_list=$(git worktree list --porcelain | awk '
+      /^worktree / {
+        if (path) {
+          if (branch) print path " [" branch "]"
+          else print path " [detached]"
+        }
+        path = $2
+        branch = ""
+      }
+      /^branch / { branch = $2; sub(/^refs\/heads\//, "", branch) }
+      END {
+        if (path) {
+          if (branch) print path " [" branch "]"
+          else print path " [detached]"
+        }
+      }
+    ')
+
     local selected
-    selected=$(git worktree list --porcelain | awk '/^worktree / {print $2}' | grep -v "^$(pwd)$" | fzf --prompt="Switch to worktree: ")
+    selected=$(echo "$worktree_list" | fzf \
+      --prompt="Switch to worktree: " \
+      --header="Current: $current_worktree" \
+      --preview='echo {} | cut -d" " -f1 | xargs -I{} git -C {} log --oneline -5' \
+      --preview-window=down:5)
+
     if [ -n "$selected" ]; then
-      echo "Switching to worktree: $selected"
-      cd "$selected"
+      local target_path
+      target_path=$(echo "$selected" | cut -d' ' -f1)
+      echo "Switching to worktree: $target_path"
+      cd "$target_path"
     else
       echo "No worktree selected."
     fi
