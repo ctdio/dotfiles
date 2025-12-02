@@ -33,5 +33,8 @@
     "type": "command",
     "command": "bash ~/.claude/statusline-starship.sh"
   },
-  "alwaysThinkingEnabled": false
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true
+  },
+  "alwaysThinkingEnabled": true
 }
