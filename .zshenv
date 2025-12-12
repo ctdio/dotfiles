@@ -25,7 +25,7 @@ export PATH=${PATH}:${HOME}/.turso
 # fpath set in .zshrc (before compinit)
 
 # libpq
-export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
+# export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
 
 # temp, add skim
 export PATH="/Users/charlieduong/projects/open-source/skim/zig-out/bin/:$PATH"

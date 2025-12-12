@@ -15,6 +15,8 @@
         repo: https://github.com/code-lever/asdf-rust
       - plugin: python
         repo: https://github.com/asdf-community/asdf-python
+      - plugin: pixi
+        repo: https://github.com/pavelzw/asdf-pixi
       - plugin: poetry
         repo: https://github.com/asdf-community/asdf-poetry
       - plugin: golang

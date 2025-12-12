@@ -6,9 +6,10 @@ golang 1.25.0
 helm 3.15.1
 helmfile 0.165.0
 nodejs 22.19.0
+pixi 0.59.0
 python 3.11.9
 rust 1.82.0
 terraform 1.12.2
-uv 0.5.6
+uv 0.9.14
 zig 0.13.0
 zls 0.13.0
