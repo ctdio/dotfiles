@@ -1,28 +1,36 @@
-# Fix Bugbot Comments
+# Address Bug Bot Feedback
 
-Fetch cursor bugbot comments from a PR, verify which are real bugs, and fix them.
+Fetch **unresolved** cursor bugbot comments from a PR, verify which are real bugs, and fix them.
 
 **Argument**: `$ARGUMENTS` - PR number (optional, defaults to current branch's PR)
 
-## 1. Fetch Comments
+## 1. Fetch Unresolved Comments
 
 ```bash
 # Get repo and PR info
-REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+OWNER=$(gh repo view --json owner -q '.owner.login')
+REPO=$(gh repo view --json name -q '.name')
 PR_NUM=${ARGUMENTS:-$(gh pr view --json number -q '.number')}
 
-# Get review comments (inline on code)
-gh api "repos/$REPO/pulls/$PR_NUM/comments" --jq '
-  .[] | select(.user.login | test("cursor|bugbot|bug-bot"; "i"))
-  | {type: "review", path, line, body, diff_hunk}'
-
-# Get issue comments (top-level)
-gh api "repos/$REPO/issues/$PR_NUM/comments" --jq '
-  .[] | select(.user.login | test("cursor|bugbot|bug-bot"; "i"))
-  | {type: "issue", body}'
+# Get unresolved review threads
+gh api graphql -f query='
+query {
+  repository(owner: "'"$OWNER"'", name: "'"$REPO"'") {
+    pullRequest(number: '"$PR_NUM"') {
+      reviewThreads(first: 50) {
+        nodes {
+          isResolved
+          comments(first: 1) {
+            nodes { body path line }
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
-## 2. For Each Comment
+## 2. For Each Unresolved Comment
 
 ### Triage First
 Read the comment and categorize before investigating:
@@ -48,7 +56,7 @@ For each potential bug:
 After processing all comments:
 
 ```
-## Bugbot Review: PR #XXX
+## Bug Bot Review: PR #XXX
 
 **Fixed (N):**
 - `file.ts:42` - [issue] → [fix applied]
@@ -66,7 +74,8 @@ After processing all comments:
 
 ## Rules
 
-1. **Never blindly fix** - Bugbot has false positives. Verify each issue.
-2. **Skip style issues** - Only fix functional bugs, not preferences.
-3. **Minimal changes** - Fix the bug, don't refactor.
-4. **When uncertain, don't fix** - Flag for human review instead.
+1. **Only unresolved comments** - Ignore resolved threads entirely.
+2. **Never blindly fix** - Bugbot has false positives. Verify each issue.
+3. **Skip style issues** - Only fix functional bugs, not preferences.
+4. **Minimal changes** - Fix the bug, don't refactor.
+5. **When uncertain, don't fix** - Flag for human review instead.
