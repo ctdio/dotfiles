@@ -1,0 +1,29 @@
+#!/bin/zsh
+# Toggle between popup and direct session switching modes
+
+mode=$(tmux show-option -gqv @session_popup_mode)
+current_session=$(tmux display-message -p -F "#{session_name}")
+
+if [[ "$mode" == "direct" ]]; then
+    tmux set-option -g @session_popup_mode popup
+    # If in a popup session (direct/full-screen), switch to non-popup and open as popup overlay
+    if [[ "$current_session" == popup-* ]]; then
+        # Find a non-popup session to switch to
+        other_session=$(tmux list-sessions -F "#{session_name}" | grep -v "^popup-" | head -1)
+        if [[ -n "$other_session" ]]; then
+            tmux switch-client -t "$other_session"
+            tmux popup -w90% -h90% -E "tmux attach -t ${current_session}"
+        fi
+    fi
+else
+    tmux set-option -g @session_popup_mode direct
+    # If in a popup session (overlay), full-screen it
+    if [[ "$current_session" == popup-* ]]; then
+        # Find the outer client (not in a popup session) and switch it
+        outer_client=$(tmux list-clients -F "#{client_name} #{session_name}" | grep -v "popup-" | head -1 | awk '{print $1}')
+        if [[ -n "$outer_client" ]]; then
+            tmux switch-client -c "$outer_client" -t "$current_session"
+        fi
+        tmux detach-client
+    fi
+fi

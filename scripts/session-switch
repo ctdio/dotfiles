@@ -1,0 +1,12 @@
+#!/bin/zsh
+# Mode-aware session switch
+# Popup mode: opens tms switch in popup overlay
+# Direct mode: instantly switch to last session, or next if no last
+
+mode=$(tmux show-option -gqv @session_popup_mode)
+
+if [[ "$mode" == "direct" ]]; then
+    tmux switch-client -l 2>/dev/null || tmux switch-client -n
+else
+    tmux display-popup -E "tms switch"
+fi
