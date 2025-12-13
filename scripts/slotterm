@@ -1,11 +1,11 @@
 #!/bin/bash
 
 current_session_name="$(tmux display-message -p -F "#{session_name}")"
-target_session_name="popup-${1:-default}"
-mode=$(tmux show-option -gqv @session_popup_mode)
+target_session_name="slot-${1:-default}"
+mode=$(tmux show-option -gqv @slot_mode)
 
-if [[ "$mode" == "direct" ]]; then
-    # Direct mode: switch to session full-screen (create if needed)
+if [[ "$mode" == "switch" ]]; then
+    # Switch mode: switch to session full-screen (create if needed)
     if [[ "${current_session_name}" == "${target_session_name}" ]]; then
         # Already in target session, do nothing
         exit 0
@@ -13,11 +13,11 @@ if [[ "$mode" == "direct" ]]; then
         tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session -d -s "${target_session_name}"
         tmux switch-client -t "${target_session_name}"
     fi
-elif [[ ${current_session_name} == popup-* ]]; then
-    # Popup mode: already in a popup, detach to close overlay
+elif [[ ${current_session_name} == slot-* ]]; then
+    # Overlay mode: already in a slot, detach to close overlay
     tmux detach-client
 else
-    # Popup mode: open in overlay
+    # Overlay mode: open in overlay
     tmux popup \
       -w90% -h90% \
       -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
