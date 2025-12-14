@@ -112,11 +112,13 @@ return {
     lazy = true,
   },
 
-  -- LSP configuration (native Neovim 0.10+ vim.lsp.config/enable)
+  -- LSP configuration (native Neovim 0.11+ vim.lsp.config/enable)
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPost", "BufNewFile" },
-    optional = true, -- Not strictly required, but kept for schema definitions
+    lazy = false, -- Load immediately so vim.lsp.enable() sets up FileType autocmds early
+    dependencies = {
+      "Saghen/blink.cmp",
+    },
     config = function()
       vim.lsp.set_log_level("off")
 
@@ -197,9 +199,9 @@ return {
       })
       vim.lsp.enable("zls")
 
-      -- tsgo (TypeScript native Go port)
+      -- tsgo (TypeScript native Go port) - built from source
       vim.lsp.config("tsgo", {
-        cmd = { "tsgo", "lsp", "--stdio" },
+        cmd = { vim.env.HOME .. "/typescript-go/built/local/tsgo", "--lsp", "--stdio" },
         on_attach = on_attach,
         capabilities = capabilities,
         filetypes = {
