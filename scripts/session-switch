@@ -6,7 +6,7 @@
 mode=$(tmux show-option -gqv @slot_mode)
 
 if [[ "$mode" == "switch" ]]; then
-    tmux switch-client -l 2>/dev/null || tmux switch-client -n
+    tms switch
 else
     tmux display-popup -E "tms switch"
 fi
