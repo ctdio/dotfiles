@@ -1,4 +1,6 @@
 {
+  "typescript.experimental.useTsgo": true,
+  "git.showCursorWorktrees": true,
   "python.terminal.activateEnvironment": false,
   "terminal.integrated.shellIntegration.enabled": false,
   "editor.accessibilitySupport": "off",
@@ -33,7 +35,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "extensions.ignoreRecommendations": true,
-  "git.showCursorWorktrees": true,
   "vscode-textobjects.vimEnabled": true,
   "vim.enableNeovim": true,
   "vim.surround": true,
