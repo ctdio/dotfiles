@@ -93,19 +93,33 @@ product-scraper
 EOM
 )
 
-RG_IGNORE_FORMATTED="$(echo "${RG_IGNORE}" | tr '\n' ',')"
+# Use parameter expansion instead of subprocess
+RG_IGNORE_FORMATTED="${RG_IGNORE//$'\n'/,}"
 
 export FZF_DEFAULT_COMMAND="rg --files --hidden -g '!{${RG_IGNORE_FORMATTED}}'"
 export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND}"
 
-if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
-  alias pbcopy='clip.exe'
-elif [[ "$(uname)" = 'Linux' ]]; then
-  alias pbcopy='xclip -selection clipboard'
+# Only check WSL on Linux (use $OSTYPE to avoid subprocess)
+if [[ "$OSTYPE" == linux* ]]; then
+  if [[ -f /proc/version ]] && grep -qEi "(Microsoft|WSL)" /proc/version; then
+    alias pbcopy='clip.exe'
+  else
+    alias pbcopy='xclip -selection clipboard'
+  fi
 fi
 
-if [ -f "$HOME/.env" ]; then
-  export $(grep -v '^#' $HOME/.env | xargs)
+# Load .env without spawning subprocesses
+if [[ -f "$HOME/.env" ]]; then
+  while IFS='=' read -r key value; do
+    # Skip comments and empty lines
+    [[ -z "$key" || "$key" == \#* ]] && continue
+    # Remove surrounding quotes from value
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$HOME/.env"
 fi
 
 # Mise (runtime version manager)
