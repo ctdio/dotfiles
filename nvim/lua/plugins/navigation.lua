@@ -190,7 +190,7 @@ return {
   {
     "stevearc/resession.nvim",
     lazy = false, -- Load early for session restore
-    priority = 100,
+    priority = 1000,
     keys = {
       {
         "<leader>ss",
@@ -220,18 +220,13 @@ return {
         autosave = { enabled = true, interval = 60, notify = false },
       })
 
-      -- Load session after UI is ready (VeryLazy equivalent)
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "VeryLazy",
-        callback = function()
-          if vim.fn.argc(-1) == 0 and #vim.v.argv < 4 then
-            resession.load(
-              vim.fn.getcwd(),
-              { dir = "dirsession", silence_errors = true }
-            )
-          end
-        end,
-      })
+      -- Load session immediately
+      if vim.fn.argc(-1) == 0 and #vim.v.argv < 4 then
+        resession.load(
+          vim.fn.getcwd(),
+          { dir = "dirsession", silence_errors = true }
+        )
+      end
 
       vim.api.nvim_create_autocmd("VimLeavePre", {
         callback = function()
