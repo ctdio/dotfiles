@@ -67,7 +67,8 @@ return {
   -- Dotenv
   {
     "tpope/vim-dotenv",
-    event = "VeryLazy",
+    lazy = false,
+    priority = 1000,
     config = function()
       vim.cmd("Dotenv ~")
     end,
