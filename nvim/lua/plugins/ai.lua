@@ -63,6 +63,12 @@ return {
         mode = "v",
         desc = "CodeCompanion",
       },
+      {
+        "ga",
+        "<cmd>CodeCompanionChat Add<cr>",
+        mode = "v",
+        desc = "Add to CodeCompanion Chat",
+      },
     },
     dependencies = {
       "nvim-lua/plenary.nvim",
@@ -90,16 +96,6 @@ return {
             and "CodeCompanion: Claude Code token found."
           or "CodeCompanion: Claude Code token NOT found!"
       )
-
-      vim.keymap.set(
-        "v",
-        "ga",
-        "<cmd>CodeCompanionChat Add<cr>",
-        { noremap = true, silent = true }
-      )
-
-      -- Expand 'cc' into 'CodeCompanion' in the command line
-      vim.cmd([[cab cc CodeCompanion]])
     end,
   },
 
