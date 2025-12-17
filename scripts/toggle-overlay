@@ -1,0 +1,22 @@
+#!/bin/bash
+
+current_session_name="$(tmux display-message -p -F "#{session_name}")"
+mode=$(tmux show-option -gqv @slot_mode)
+
+# Only works in overlay mode
+if [[ "$mode" != "overlay" ]]; then
+    exit 0
+fi
+
+if [[ ${current_session_name} == slot-* ]]; then
+    # Currently in a slot overlay - close it
+    tmux detach-client
+else
+    # Not in overlay - open last used slot (default to slot-a)
+    last_slot=$(tmux show-option -gqv @last_slot)
+    slot_letter="${last_slot:-a}"
+    target_session_name="slot-${slot_letter}"
+    tmux popup \
+      -w90% -h90% \
+      -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
+fi

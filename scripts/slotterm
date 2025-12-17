@@ -1,7 +1,8 @@
 #!/bin/bash
 
 current_session_name="$(tmux display-message -p -F "#{session_name}")"
-target_session_name="slot-${1:-default}"
+slot_letter="${1:-default}"
+target_session_name="slot-${slot_letter}"
 mode=$(tmux show-option -gqv @slot_mode)
 
 if [[ "$mode" == "switch" ]]; then
@@ -12,12 +13,22 @@ if [[ "$mode" == "switch" ]]; then
     else
         tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session -d -s "${target_session_name}"
         tmux switch-client -t "${target_session_name}"
+        tmux set-option -g @last_slot "${slot_letter}"
     fi
 elif [[ ${current_session_name} == slot-* ]]; then
-    # Overlay mode: already in a slot, detach to close overlay
-    tmux detach-client
+    # Overlay mode: already in a slot
+    if [[ "${current_session_name}" == "${target_session_name}" ]]; then
+        # Same slot pressed - close overlay
+        tmux detach-client
+    else
+        # Different slot - switch to it within overlay
+        tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session -d -s "${target_session_name}"
+        tmux switch-client -t "${target_session_name}"
+        tmux set-option -g @last_slot "${slot_letter}"
+    fi
 else
     # Overlay mode: open in overlay
+    tmux set-option -g @last_slot "${slot_letter}"
     tmux popup \
       -w90% -h90% \
       -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
