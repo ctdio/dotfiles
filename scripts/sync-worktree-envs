@@ -1,0 +1,290 @@
+#!/bin/bash
+
+# Script to sync .env files and Claude settings from main worktree to all other worktrees
+# Usage: ./sync-worktree-envs.sh (can be run from anywhere)
+#
+# Syncs:
+# - platform/.env* -> platform-wt*/.env*
+# - platform/apps/platform/.env* -> platform-wt*/apps/platform/.env*
+# - platform/.claude/settings.local.json -> platform-wt*/.claude/settings.local.json
+#
+# Port Configuration:
+# - After sync, PORT variable is updated per worktree
+# - platform (source) keeps PORT=3000
+# - Worktrees get sequential ports based on their position in git worktree list
+#
+# Backups:
+# - Stored in ~/.sync-worktree-backups (centralized, outside repo)
+# - Organized by worktree and preserves directory structure
+# - Only created when files differ (uses cmp to compare)
+# - Claude settings are NOT backed up
+
+set -e  # Exit on any error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+SOURCE_DIR="/Users/charlieduong/projects/private/opine/platform"
+BACKUP_DIR="${HOME}/.sync-worktree-backups"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to update port references in .env file based on worktree index
+# First worktree -> 3001, second -> 3002, etc.
+# Replaces :3000 in URLs and PORT=3000 variables
+# Also updates INNGEST_BASE_URL port: 8288 -> 9001, 9002, etc.
+# Skips .env.example files
+update_port_for_worktree() {
+    local target_file="$1"
+    local worktree_index="$2"
+
+    # Only update the main .env file (not .env.example, .env.test, etc.)
+    if [[ "$(basename "$target_file")" != ".env" ]]; then
+        return 0
+    fi
+
+    local new_port=$((3000 + worktree_index))
+    local new_inngest_port=$((9000 + worktree_index))
+
+    # Replace :3000 in URLs (e.g., localhost:3000)
+    if grep -q ":3000" "$target_file" 2>/dev/null; then
+        local url_count=$(grep -o ":3000" "$target_file" | wc -l | tr -d ' ')
+        sed -i '' "s/:3000/:$new_port/g" "$target_file"
+    else
+        local url_count=0
+    fi
+
+    # Replace PORT=3000 (no colon before the number)
+    if grep -q "^PORT=3000" "$target_file" 2>/dev/null; then
+        local port_count=$(grep "^PORT=3000" "$target_file" | wc -l | tr -d ' ')
+        sed -i '' "s/^PORT=3000/PORT=$new_port/g" "$target_file"
+    else
+        local port_count=0
+    fi
+
+    # Replace INNGEST_BASE_URL port (8288 -> 9000 + wt_num)
+    if grep -q "INNGEST_BASE_URL.*:8288" "$target_file" 2>/dev/null; then
+        sed -i '' "s/\(INNGEST_BASE_URL.*\):8288/\1:$new_inngest_port/g" "$target_file"
+        print_success "    ✓ Updated INNGEST_BASE_URL port: 8288 -> $new_inngest_port"
+    fi
+
+    local server_updates=$((url_count + port_count))
+    if [ "$server_updates" -gt 0 ]; then
+        print_success "    ✓ Updated $server_updates server port reference(s): 3000 -> $new_port"
+    fi
+}
+
+# Function to sync a file with optional backup
+sync_file() {
+    local source_file="$1"
+    local target_file="$2"
+    local context="$3"
+    local worktree_name="$4"
+    local create_backup="${5:-true}"  # Default to true for backwards compatibility
+
+    print_status "  $context: $(basename "$source_file")"
+
+    # Create target directory if it doesn't exist
+    target_dir=$(dirname "$target_file")
+    if [ ! -d "$target_dir" ]; then
+        mkdir -p "$target_dir"
+        print_status "    Created directory: $target_dir"
+    fi
+
+    # Create backup if enabled and target file exists and is different
+    if [ "$create_backup" = "true" ] && [ -f "$target_file" ]; then
+        if ! cmp -s "$source_file" "$target_file"; then
+            # Create centralized backup directory structure
+            local filename=$(basename "$target_file")
+            local timestamp=$(date +%Y%m%d-%H%M%S)
+
+            # Organize backups by worktree and preserve subdirectory structure
+            # Get the relative path within the worktree
+            local rel_path="${target_file#$worktree_name/}"
+            local rel_dir=$(dirname "$rel_path")
+
+            # Create backup directory preserving structure
+            local backup_location="$BACKUP_DIR/$(basename "$worktree_name")"
+            if [ "$rel_dir" != "." ]; then
+                backup_location="$backup_location/$rel_dir"
+            fi
+            mkdir -p "$backup_location"
+
+            local backup_file="$backup_location/${filename}.backup.$timestamp"
+            cp "$target_file" "$backup_file"
+            print_status "    Created backup: $backup_file"
+        fi
+    fi
+
+    # Copy the file
+    if cp "$source_file" "$target_file"; then
+        print_success "    ✓ Synced $(basename "$source_file")"
+        return 0
+    else
+        print_error "    ✗ Failed to sync $(basename "$source_file")"
+        return 1
+    fi
+}
+
+# Check if source directory exists
+if [ ! -d "$SOURCE_DIR" ]; then
+    print_error "Source directory '$SOURCE_DIR' does not exist!"
+    exit 1
+fi
+
+# Find files to sync in three locations:
+# 1. Root level: ./platform/.env*
+# 2. Platform app level: ./platform/apps/platform/.env*
+# 3. Claude settings: ./platform/.claude/settings.local.json
+print_status "Looking for files to sync..."
+
+# Root level .env files
+ROOT_ENV_FILES=($(find "$SOURCE_DIR" -maxdepth 1 -name ".env*" -type f))
+# Platform app level .env files
+PLATFORM_APP_ENV_FILES=($(find "$SOURCE_DIR/apps/platform" -maxdepth 1 -name ".env*" -type f 2>/dev/null || true))
+# Claude settings file
+CLAUDE_SETTINGS_FILE=""
+if [ -f "$SOURCE_DIR/.claude/settings.local.json" ]; then
+    CLAUDE_SETTINGS_FILE="$SOURCE_DIR/.claude/settings.local.json"
+fi
+
+TOTAL_FILES=$((${#ROOT_ENV_FILES[@]} + ${#PLATFORM_APP_ENV_FILES[@]}))
+if [ -n "$CLAUDE_SETTINGS_FILE" ]; then
+    TOTAL_FILES=$((TOTAL_FILES + 1))
+fi
+
+if [ $TOTAL_FILES -eq 0 ]; then
+    print_warning "No files found to sync in $SOURCE_DIR"
+    exit 0
+fi
+
+print_status "Found $TOTAL_FILES file(s) to sync:"
+if [ ${#ROOT_ENV_FILES[@]} -gt 0 ]; then
+    echo "  Root level ($SOURCE_DIR):"
+    for file in "${ROOT_ENV_FILES[@]}"; do
+        echo "    - $(basename "$file")"
+    done
+fi
+if [ ${#PLATFORM_APP_ENV_FILES[@]} -gt 0 ]; then
+    echo "  Platform app level ($SOURCE_DIR/apps/platform):"
+    for file in "${PLATFORM_APP_ENV_FILES[@]}"; do
+        echo "    - $(basename "$file")"
+    done
+fi
+if [ -n "$CLAUDE_SETTINGS_FILE" ]; then
+    echo "  Claude settings ($SOURCE_DIR/.claude):"
+    echo "    - settings.local.json"
+fi
+
+# Find all worktrees using git (excludes the main worktree)
+print_status "Discovering worktrees via git worktree list..."
+
+# Check if we can access the git repository
+if ! git -C "$SOURCE_DIR" worktree list &>/dev/null; then
+    print_error "Cannot access git repository at $SOURCE_DIR"
+    exit 1
+fi
+
+# Get all worktrees except the main one
+# Format: Get worktree paths, skip the first one (main), filter out empty lines
+WORKTREES=()
+while IFS= read -r line; do
+    WORKTREES+=("$line")
+done < <(git -C "$SOURCE_DIR" worktree list --porcelain | grep "^worktree " | cut -d' ' -f2 | tail -n +2)
+
+if [ ${#WORKTREES[@]} -eq 0 ]; then
+    print_warning "No additional worktrees found (only main worktree exists)"
+    exit 0
+fi
+
+print_status "Found ${#WORKTREES[@]} worktree(s):"
+for worktree in "${WORKTREES[@]}"; do
+    echo "  - $worktree"
+done
+
+echo
+print_status "Backups will be stored in: $BACKUP_DIR"
+
+# Sync .env files to each worktree
+print_status "Starting sync process..."
+
+SYNC_COUNT=0
+ERROR_COUNT=0
+WORKTREE_INDEX=1
+
+for worktree in "${WORKTREES[@]}"; do
+    print_status "Processing worktree: $worktree (port offset: $WORKTREE_INDEX)"
+
+    # Sync root level .env files
+    for env_file in "${ROOT_ENV_FILES[@]}"; do
+        filename=$(basename "$env_file")
+        target_file="$worktree/$filename"
+
+        if sync_file "$env_file" "$target_file" "Root level" "$worktree"; then
+            ((SYNC_COUNT++))
+            # Update PORT for worktree-specific port assignment
+            update_port_for_worktree "$target_file" "$WORKTREE_INDEX"
+        else
+            ((ERROR_COUNT++))
+        fi
+    done
+
+    # Sync platform app .env files
+    for env_file in "${PLATFORM_APP_ENV_FILES[@]}"; do
+        filename=$(basename "$env_file")
+        target_file="$worktree/apps/platform/$filename"
+
+        if sync_file "$env_file" "$target_file" "Platform app" "$worktree"; then
+            ((SYNC_COUNT++))
+            # Update PORT for worktree-specific port assignment
+            update_port_for_worktree "$target_file" "$WORKTREE_INDEX"
+        else
+            ((ERROR_COUNT++))
+        fi
+    done
+
+    # Sync Claude settings
+    # Note: No backup created for Claude settings (5th parameter = false)
+    if [ -n "$CLAUDE_SETTINGS_FILE" ]; then
+        target_file="$worktree/.claude/settings.local.json"
+
+        if sync_file "$CLAUDE_SETTINGS_FILE" "$target_file" "Claude settings" "$worktree" false; then
+            ((SYNC_COUNT++))
+        else
+            ((ERROR_COUNT++))
+        fi
+    fi
+
+    ((WORKTREE_INDEX++))
+done
+
+# Summary
+echo
+print_status "Sync completed!"
+print_success "Successfully synced: $SYNC_COUNT file(s)"
+if [ $ERROR_COUNT -gt 0 ]; then
+    print_error "Failed syncs: $ERROR_COUNT file(s)"
+    exit 1
+else
+    print_success "All files synced successfully to ${#WORKTREES[@]} worktree(s)!"
+fi
