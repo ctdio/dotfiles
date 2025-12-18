@@ -72,6 +72,61 @@ After processing all comments:
 - `file.ts:99` - [issue] → [why uncertain]
 ```
 
+## 4. Proactive Bug Detection
+
+After addressing bugbot's unresolved comments, **proactively search for similar issues** across the PR:
+
+### Common Bugbot Patterns to Find
+
+1. **Null/Undefined checks**
+   - Property access without null checks
+   - Optional chaining missing where needed
+   - Array operations without length checks
+
+2. **Error handling**
+   - Unhandled promise rejections
+   - Missing try-catch blocks
+   - Ignored error returns
+
+3. **Type safety**
+   - Unsafe type assertions
+   - Missing type guards
+   - Incorrect type narrowing
+
+4. **Logic issues**
+   - Off-by-one errors
+   - Race conditions
+   - Missing edge case handling
+
+### Search Strategy
+
+```bash
+# Search files changed in this PR
+gh pr diff $PR_NUM --name-only | while read file; do
+  # Read each changed file and look for patterns
+  echo "Checking $file for potential issues..."
+done
+```
+
+For each file in the PR:
+1. **Read the file** completely
+2. **Identify patterns** similar to bugbot's findings
+3. **Look for common issues** from the list above
+4. **Fix proactively** if you find real bugs
+
+### Output Proactive Fixes
+
+Add to the summary:
+
+```
+## Proactive Fixes (N):**
+- `file.ts:150` - Added null check for optional property
+- `api.ts:42` - Added error handling for async operation
+- `utils.ts:88` - Fixed potential array out of bounds
+```
+
+**Goal**: Reduce bugbot comments in future reviews by catching issues before they're flagged.
+
 ## Rules
 
 1. **Only unresolved comments** - Ignore resolved threads entirely.

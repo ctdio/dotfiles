@@ -22,7 +22,8 @@
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true,
     "dev-browser@dev-browser-marketplace": true,
-    "datadog-cli@ctdio-datadog": true
+    "datadog-cli@ctdio-datadog": true,
+    "feature-dev@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true
 }
