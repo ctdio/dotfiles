@@ -25,5 +25,6 @@
     "datadog-cli@ctdio-datadog": true,
     "feature-dev@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "model": "opus"
 }

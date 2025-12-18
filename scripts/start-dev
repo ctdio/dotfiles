@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Detect worktree and calculate port
+CURRENT_DIR=$(pwd)
+DIR_NAME=$(basename "$CURRENT_DIR")
+
+# Determine slot based on directory name
+# platform -> slot 0, platform-wt1 -> slot 1, platform-wt2 -> slot 2, etc.
+if [[ "$DIR_NAME" == "platform" ]]; then
+  SLOT=0
+elif [[ "$DIR_NAME" =~ ^platform-wt([0-9]+)$ ]]; then
+  SLOT=${BASH_REMATCH[1]}
+else
+  echo "Error: Must be run from platform or platform-wt* directory"
+  echo "Current directory: $CURRENT_DIR"
+  exit 1
+fi
+
+# Calculate ports based on slot (all ports end with slot number for clarity)
+PORT=$((3000 + SLOT))
+INNGEST_PORT=$((9000 + SLOT))
+INNGEST_CONNECT_GATEWAY_PORT=$((8290 + SLOT))
+INNGEST_CONNECT_GATEWAY_GRPC_PORT=$((50050 + SLOT))
+INNGEST_CONNECT_EXECUTOR_GRPC_PORT=$((50060 + SLOT))
+
+echo "Starting opine-dev for $DIR_NAME (server: $PORT, inngest: $INNGEST_PORT)"
+
+# Kill all other panes, start fresh
+tmux kill-pane -a
+
+# Start server in current pane
+tmux send-keys "nx run platform:serve:turbo" C-m
+
+# Create right pane (35%) for inngest
+tmux split-window -h -l 35% -c "$CURRENT_DIR"
+sleep 0.3  # Let shell initialize (fzf, etc.)
+
+# Start inngest in right pane
+tmux send-keys "npx inngest-cli@latest dev --no-discovery --poll-interval 120 --port $INNGEST_PORT --connect-gateway-port $INNGEST_CONNECT_GATEWAY_PORT --connect-gateway-grpc-port $INNGEST_CONNECT_GATEWAY_GRPC_PORT --connect-executor-grpc-port $INNGEST_CONNECT_EXECUTOR_GRPC_PORT -u https://localhost:$PORT/api/v1/inngest" C-m
+
+# Return to server pane (left)
+tmux select-pane -L
