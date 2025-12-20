@@ -98,12 +98,20 @@ function detect_distro() {
   fi
 }
 
+function init_submodules () {
+  echo "Initializing git submodules..."
+  git -C "$DOTFILES_DIR" submodule update --init --recursive
+}
+
 function main () {
   echo "Installing..."
 
   # Detect distribution first
   detect_distro
-  
+
+  # Initialize and update git submodules (zsh plugins, etc.)
+  init_submodules
+
   update_deps
 
   link_dotfiles

@@ -7,3 +7,6 @@
 [submodule "zsh/plugins/zsh-vi-mode"]
 	path = zsh/plugins/zsh-vi-mode
 	url = https://github.com/jeffreytse/zsh-vi-mode.git
+[submodule "zsh/plugins/zsh-defer"]
+	path = zsh/plugins/zsh-defer
+	url = https://github.com/romkatv/zsh-defer.git
