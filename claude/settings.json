@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "includeCoAuthoredBy": false,
+  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -24,6 +25,6 @@
     "datadog-cli@ctdio-datadog": true,
     "feature-dev@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true,
-  "model": "opus"
+  "syntaxHighlightingDisabled": false,
+  "alwaysThinkingEnabled": true
 }
