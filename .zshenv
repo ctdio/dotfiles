@@ -28,7 +28,7 @@ export PATH=${PATH}:${HOME}/.turso
 # export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
 
 # temp, add skim
-export PATH="/Users/charlieduong/projects/open-source/skim/zig-out/bin/:$PATH"
+export PATH="/Users/charlieduong/projects/open-source/skim/zig-out/bin:$PATH"
 
 export LANG="en_US.UTF-8"
 export LC_COLLATE="en_US.UTF-8"
