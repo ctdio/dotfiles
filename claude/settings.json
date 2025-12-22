@@ -23,7 +23,8 @@
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true,
     "datadog-cli@ctdio-datadog": true,
-    "feature-dev@claude-plugins-official": true
+    "feature-dev@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   },
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true
