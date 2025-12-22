@@ -11,5 +11,5 @@ python 3.11.9
 rust 1.92.0
 terraform 1.12.2
 uv 0.9.14
-zig 0.13.0
-zls 0.13.0
+zig 0.15.1
+zls 0.15.0
