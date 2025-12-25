@@ -5,6 +5,7 @@
     packages:
       - bat
       - fd-find
+      - mergiraf
       - ripgrep
       - stylua
       - xsv

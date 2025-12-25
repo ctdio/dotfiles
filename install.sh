@@ -199,6 +199,11 @@ function link_dotfiles () {
   echo "Linking starship.toml to ~/.config/starship.toml"
   ln -nsf ${DOTFILES_DIR}/starship.toml ~/.config/starship.toml
 
+  echo "Linking git config to ~/.config/git/config"
+  mkdir -p ~/.config/git
+  ln -nsf ${DOTFILES_DIR}/git/config ~/.config/git/config
+  ln -nsf ${DOTFILES_DIR}/git/attributes ~/.config/git/attributes
+
   echo "Linking television to ~/.config/television"
   ln -nsf ${DOTFILES_DIR}/television ~/.config/television
 
