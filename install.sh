@@ -207,6 +207,10 @@ function link_dotfiles () {
   echo "Linking television to ~/.config/television"
   ln -nsf ${DOTFILES_DIR}/television ~/.config/television
 
+  echo "Linking gh-dash config to ~/.config/gh-dash/config.yml"
+  mkdir -p ~/.config/gh-dash
+  ln -nsf ${DOTFILES_DIR}/gh-dash/config.yml ~/.config/gh-dash/config.yml
+
   # Link Sway, Waybar, and Wofi configs for Ubuntu
   if [[ "$(uname)" = 'Linux' && "$DISTRO" = "ubuntu" ]]; then
     echo "Linking sway config to ~/.config/sway"

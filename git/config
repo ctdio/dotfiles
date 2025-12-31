@@ -1,11 +1,6 @@
 [core]
-	pager = delta
+	pager = skim
 
-[interactive]
-	diffFilter = delta --color-only
-
-[delta]
-	navigate = true
 
 [user]
   name = Charlie Duong
