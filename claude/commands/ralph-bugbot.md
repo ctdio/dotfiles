@@ -26,13 +26,14 @@ PR_NUM=${ARGUMENTS:-$(gh pr view --json number -q '.number')}
 
 echo "Checking bugbot comments on PR #$PR_NUM..."
 
-# Get unresolved review threads from bugbot
+# Get unresolved review threads from bugbot (with thread IDs for resolving)
 gh api graphql -f query='
 query {
   repository(owner: "'"$OWNER"'", name: "'"$REPO"'") {
     pullRequest(number: '"$PR_NUM"') {
       reviewThreads(first: 50) {
         nodes {
+          id
           isResolved
           comments(first: 1) {
             nodes {
@@ -66,16 +67,46 @@ Categorize before investigating:
 - **Likely false positive**: Style suggestions, "consider using", optional improvements
 - **Needs investigation**: Unclear without reading code
 
-### 3b. Verify
-1. **Read the file** - Get full context around the flagged line
-2. **Check if real** - Is there actually a bug, or is bugbot wrong?
-3. **Look for safeguards** - Does defensive code exist elsewhere?
-4. **Decide**: Fix it, skip it (false positive), or flag for human review
+### 3b. Verify RIGOROUSLY
+
+**For potential false positives, you MUST prove it before resolving:**
+
+1. **Read the ENTIRE file** - Get complete context, not just the flagged line
+2. **Search for related code** - Use Grep to find similar patterns in codebase
+3. **Check defensive code** - Look for validation, error handling, type guards elsewhere
+4. **Trace data flow** - Follow the execution path to understand safeguards
+5. **Verify false positive criteria** - Confirm it matches one of these:
+   - Style suggestion only (no functional impact)
+   - Already handled by defensive code elsewhere
+   - Impossible condition (proven by type system or validation)
+   - Misunderstanding of framework/library behavior
+
+**ONLY if you have concrete evidence it's safe, mark as false positive.**
 
 ### 3c. Fix Valid Bugs
 - Make minimal, surgical edits
 - Follow existing code patterns
 - One fix at a time
+
+### 3d. Resolve False Positives
+
+**ONLY after rigorous verification in 3b, resolve the thread:**
+
+```bash
+# THREAD_ID from Step 1's output (the "id" field)
+gh api graphql -f query='
+mutation {
+  resolveReviewThread(input: {threadId: "'"$THREAD_ID"'"}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}
+'
+```
+
+**Do not resolve unless you can explain WHY it's a false positive with evidence.**
 
 ## Step 4: Commit and Push
 
@@ -110,7 +141,7 @@ done
 
 ```
 Fixed: [list files:lines]
-Skipped: [list false positives]
+Resolved as false positive: [list files:lines with brief reason]
 Remaining: [count]
 ```
 
@@ -128,9 +159,10 @@ After pushing and waiting for bugbot check:
 
 1. **Move fast** - Execute commands immediately. No deliberation between steps.
 2. **Only unresolved bugbot comments** - Ignore resolved threads and other reviewers
-3. **Never blindly fix** - Bugbot has false positives. Verify each issue.
-4. **Skip style issues** - Only fix functional bugs, not preferences
-5. **Minimal changes** - Fix the bug, don't refactor
-6. **When uncertain, skip** - Flag for human review instead of guessing
-7. **Always push** - Even if only skipping false positives, push to let bugbot re-analyze
-8. **One iteration = one pass** - Don't try to loop internally; let ralph-loop handle iteration
+3. **Verify rigorously** - For false positives, gather evidence before resolving
+4. **Resolve false positives** - Use GraphQL mutation to mark them resolved (don't just skip)
+5. **Never blindly fix OR resolve** - Both bugs and false positives need verification
+6. **Minimal changes** - Fix the bug, don't refactor
+7. **When uncertain, skip** - Flag for human review instead of guessing
+8. **Always commit and push** - After fixes or resolving false positives
+9. **One iteration = one pass** - Don't try to loop internally; let ralph-loop handle iteration
