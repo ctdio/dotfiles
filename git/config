@@ -1,6 +1,5 @@
-[core]
-	pager = skim
-
+[pager]
+  diff = skim
 
 [user]
   name = Charlie Duong
