@@ -26,38 +26,13 @@ This is an action-oriented skill. Follow steps in order, execute commands direct
 
 ## Workflow
 
-### Step 1: Check Bugbot State
+### Step 1: Wait for Bugbot (if running)
 
-**RUN THIS IMMEDIATELY to see if bugbot is still analyzing:**
+**RUN THIS IMMEDIATELY to ensure bugbot has finished analyzing:**
 
-```bash
-PR_NUM=$(gh pr view --json number -q '.number')
-echo "Checking bugbot check status on PR #$PR_NUM..."
+Run the `wait-for-bugbot.sh` script in this skill's directory.
 
-CHECK_STATUS=$(gh pr checks $PR_NUM --json name,state --jq '.[] | select(.name | test("bugbot|bug-bot|cursor-bugbot|Cursor Bugbot"; "i")) | .state' | head -1)
-echo "Bugbot status: ${CHECK_STATUS:-not found}"
-```
-
-**IMMEDIATELY evaluate:**
-- **PENDING or IN_PROGRESS?** → Go to Step 1a (wait for bugbot)
-- **SUCCESS, FAILURE, or not found?** → Skip to Step 2 (fetch comments)
-
-### Step 1a: Wait for Bugbot (only if pending/in-progress)
-
-**RUN THIS LOOP if bugbot is still analyzing:**
-
-```bash
-PR_NUM=$(gh pr view --json number -q '.number')
-echo "Bugbot is still analyzing, waiting for completion..."
-while true; do
-  CHECK_STATUS=$(gh pr checks $PR_NUM --json name,state --jq '.[] | select(.name | test("bugbot|bug-bot|cursor-bugbot|Cursor Bugbot"; "i")) | .state' | head -1)
-  if [[ -z "$CHECK_STATUS" ]]; then echo "No bugbot check found, proceeding..."; break; fi
-  case "$CHECK_STATUS" in
-    SUCCESS|FAILURE|CANCELLED|SKIPPED|NEUTRAL) echo "Bugbot check complete: $CHECK_STATUS"; break ;;
-    *) echo "Bugbot check status: $CHECK_STATUS - waiting 30s..."; sleep 30 ;;
-  esac
-done
-```
+This script checks if bugbot is currently running and waits for it to complete before proceeding.
 
 ### Step 2: Fetch Unresolved Comments
 
@@ -106,14 +81,14 @@ query {
 
 For each unresolved bugbot comment:
 
-#### 4a. Triage
+#### Triage
 
 Categorize before investigating:
 - **Likely bug**: Logic errors, null checks, race conditions, security issues
 - **Likely false positive**: Style suggestions, "consider using", optional improvements
 - **Needs investigation**: Unclear without reading code
 
-#### 4b. Verify RIGOROUSLY
+#### Verify RIGOROUSLY
 
 **For potential false positives, you MUST prove it before resolving:**
 
@@ -129,15 +104,15 @@ Categorize before investigating:
 
 **ONLY if you have concrete evidence it's safe, mark as false positive.**
 
-#### 4c. Fix Valid Bugs
+#### Fix Valid Bugs
 
 - Make minimal, surgical edits
 - Follow existing code patterns
 - One fix at a time
 
-#### 4d. Resolve False Positives
+#### Resolve False Positives
 
-**ONLY after rigorous verification in 4b, resolve the thread:**
+**ONLY after rigorous verification, resolve the thread:**
 
 ```bash
 # THREAD_ID from Step 2's output (the "id" field)
@@ -167,20 +142,9 @@ mutation {
 
 ### Step 6: Wait for Bugbot Check
 
-**RUN THIS LOOP IMMEDIATELY after pushing. Do not skip.**
+**RUN THIS IMMEDIATELY after pushing. Do not skip.**
 
-```bash
-PR_NUM=$(gh pr view --json number -q '.number')
-echo "Waiting for bugbot check to complete..."
-while true; do
-  CHECK_STATUS=$(gh pr checks $PR_NUM --json name,state --jq '.[] | select(.name | test("bugbot|bug-bot|cursor-bugbot|Cursor Bugbot"; "i")) | .state' | head -1)
-  if [[ -z "$CHECK_STATUS" ]]; then echo "No bugbot check found, proceeding..."; break; fi
-  case "$CHECK_STATUS" in
-    SUCCESS|FAILURE|CANCELLED|SKIPPED|NEUTRAL) echo "Bugbot check complete: $CHECK_STATUS"; break ;;
-    *) echo "Bugbot check status: $CHECK_STATUS - waiting 30s..."; sleep 30 ;;
-  esac
-done
-```
+Run the `wait-for-bugbot.sh` script in this skill's directory.
 
 ### Step 7: Report Progress
 
