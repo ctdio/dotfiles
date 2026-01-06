@@ -1,6 +1,6 @@
 ---
 name: feature-implementation
-description: Execute feature plans from ~/.ai/plans using progressive disclosure and state tracking. This skill reads existing feature plans, tracks implementation progress in implementation_state.md, uses the Plan agent to explore plans and codebases, and systematically implements features phase by phase. Pairs with the feature-planning skill.
+description: Execute feature plans from ~/.ai/plans using progressive disclosure and state tracking. This skill reads existing feature plans, tracks implementation progress in implementation-state.md, uses the Plan agent to explore plans and codebases, and systematically implements features phase by phase. Pairs with the feature-planning skill.
 color: green
 ---
 
@@ -14,11 +14,13 @@ This skill helps you execute feature plans created by the feature-planning skill
 
 ## Core Principles
 
-1. **State Tracking**: Always maintain `implementation_state.md` to track what's been done
-2. **Progressive Disclosure**: Start with overview, drill down only as needed
-3. **Plan Before Execute**: Use Plan agent to explore, then propose implementation steps
-4. **Verify Before Implement**: Check existing code patterns and implementations first
-5. **Update State Continuously**: Mark tasks complete as you go, like TodoWrite but persistent
+1. **Spec is Law**: The `spec.md` file defines requirements that MUST be met - reference it continuously
+2. **State Tracking**: Always maintain `implementation-state.md` to track what's been done
+3. **Progressive Disclosure**: Start with overview, drill down only as needed
+4. **Plan Before Execute**: Use Plan agent to explore, then propose implementation steps
+5. **Verify Before Implement**: Check existing code patterns and implementations first
+6. **Update State Continuously**: Mark tasks complete as you go, like TodoWrite but persistent
+7. **Verify Against Spec**: Before marking any phase complete, verify all relevant spec requirements are met
 
 ## How This Skill Works
 
@@ -32,41 +34,69 @@ This skill helps you execute feature plans created by the feature-planning skill
    - Start with `overview.md` to understand the feature
    - Identify which phase to work on (user-specified or next incomplete)
 
-3. **Check implementation state**
-   - Look for `implementation_state.md` in the plan directory
-   - If exists: understand what's been completed
+3. **Read the spec (CRITICAL)**
+   - Read `spec.md` to understand ALL requirements that MUST be met
+   - Note functional requirements with acceptance criteria
+   - Note non-functional requirements (performance, security, etc.)
+   - Note constraints and out-of-scope items
+   - This is the authoritative definition of "done"
+
+4. **Check implementation state**
+   - Look for `implementation-state.md` in the plan directory
+   - If exists: understand what's been completed AND which spec requirements are satisfied
    - If not: this is a fresh start
 
-4. **Use Plan agent for deep exploration**
+5. **Use Plan agent for deep exploration**
    - Explore the full plan structure (all phase documents)
    - Explore the relevant codebase areas
    - Understand existing patterns and implementations
    - Identify dependencies and affected files
+   - Map spec requirements to implementation areas
 
 ### Phase 2: Implementation Planning
 
-5. **Propose implementation approach**
+6. **Propose implementation approach**
    - Based on Plan agent findings, propose concrete steps
    - Break down the phase into implementable chunks
+   - Map chunks to spec requirements they will satisfy
    - Identify file changes, tests needed, and validation steps
    - Get user approval before proceeding
 
-### Phase 3: Execution
+### Phase 3: Execution (TDD Approach)
 
-6. **Implement systematically**
+7. **Write tests FIRST (CRITICAL)**
+   - Read the Testing Requirements section in spec.md
+   - Write unit tests for the requirements you're about to implement
+   - Write integration tests for the flows you're building
+   - Tests should initially fail (red) - this confirms they're testing the right thing
+   - Use tests to clarify your understanding of requirements
+
+8. **Implement to make tests pass**
    - Follow the approved implementation plan
+   - Write code to make failing tests pass (green)
    - Use TodoWrite for task tracking during implementation
-   - Update `implementation_state.md` after completing each major chunk
-   - Run tests and validation as you go
+   - Refactor as needed while keeping tests green
+   - Cross-reference spec.md to ensure requirements are being met
 
-7. **Maintain state tracking**
+9. **Maintain state tracking**
+   - Update `implementation-state.md` after completing each major chunk
    - Mark chunks as in_progress, completed, or blocked
+   - Track which spec requirements are satisfied by completed work
+   - Track which tests are passing
    - Document any deviations from the plan
    - Note any discoveries or gotchas for future phases
 
+10. **Verify against spec before completing phase**
+    - Review all spec requirements relevant to this phase
+    - Verify each acceptance criterion is satisfied
+    - All tests from spec's Testing Requirements must pass
+    - Run verification steps listed in spec.md
+    - Update Spec Requirements Status in implementation-state.md
+    - Only mark phase complete when all relevant requirements AND tests pass
+
 ## Implementation State Format
 
-The `implementation_state.md` file tracks progress and lives in the plan directory:
+The `implementation-state.md` file tracks progress and lives in the plan directory:
 
 ```markdown
 # Implementation State: [Feature Name]
@@ -77,12 +107,36 @@ The `implementation_state.md` file tracks progress and lives in the plan directo
 
 ---
 
+## Spec Requirements Status
+
+Track which requirements from spec.md are satisfied:
+
+### Functional Requirements
+- ✅ FR-1: [Name] - Satisfied in Phase 1
+- ✅ FR-2: [Name] - Satisfied in Phase 1
+- 🔄 FR-3: [Name] - In progress (Phase 2)
+- ⏳ FR-4: [Name] - Pending (Phase 3)
+
+### Non-Functional Requirements
+- ✅ NFR-1: Performance - Verified with benchmarks
+- 🔄 NFR-2: Security - Partially complete
+- ⏳ NFR-3: Error Handling - Pending
+
+### Constraints
+- ✅ C-1: [Name] - Respected throughout
+- ✅ C-2: [Name] - Verified
+
+---
+
 ## Phase 1: [Phase Name]
 
 **Status**: completed
 **Started**: [Date]
 **Completed**: [Date]
 **Implementation PR**: #123
+
+### Spec Requirements Addressed
+- FR-1, FR-2, NFR-1 (partial)
 
 ### Completed Tasks
 - ✅ [Task 1] - [Brief note about implementation]
@@ -104,7 +158,22 @@ The `implementation_state.md` file tracks progress and lives in the plan directo
 
 **Status**: in_progress
 **Started**: [Date]
-**Estimated Completion**: [Don't include this - no time estimates!]
+
+### Spec Requirements to Address
+- FR-3, FR-4 (partial), NFR-2
+
+### Tests Written (TDD)
+Write tests FIRST, then implement to make them pass.
+
+**Unit Tests**:
+- ✅ `test_function_happy_path` - Written, passing
+- ✅ `test_function_edge_case` - Written, passing
+- 🔴 `test_component_behavior` - Written, failing (implementing now)
+- ⏳ `test_error_handling` - Not yet written
+
+**Integration Tests**:
+- ✅ `test_api_endpoint_success` - Written, passing
+- 🔴 `test_flow_complete` - Written, failing (implementing now)
 
 ### Completed Tasks
 - ✅ [Task 1] - [Brief note]
@@ -130,6 +199,9 @@ The `implementation_state.md` file tracks progress and lives in the plan directo
 **Status**: pending
 **Dependencies**: Phase 2 must be completed
 
+### Spec Requirements to Address
+- FR-4 (completion), NFR-3
+
 ### Planned Tasks
 - [ ] [Task 1]
 - [ ] [Task 2]
@@ -140,6 +212,7 @@ The `implementation_state.md` file tracks progress and lives in the plan directo
 ## Overall Progress
 
 **Phases Complete**: 1 / 4
+**Spec Requirements Satisfied**: 3 / 8
 **Current Focus**: Phase 2 - Core Features
 **Next Milestone**: Complete user authentication flow
 
@@ -197,16 +270,27 @@ When user says: "Implement the [feature-name] plan" or "Start working on [featur
    cat ~/.ai/plans/feature-name/overview.md
    ```
 
-2. **Check for existing state**
+2. **Read the spec (CRITICAL)**
+   ```bash
+   # Read the requirements that MUST be met
+   cat ~/.ai/plans/feature-name/spec.md
+   ```
+   - Note all functional requirements and acceptance criteria
+   - Note non-functional requirements
+   - Note constraints
+   - This is the authoritative definition of "done"
+
+3. **Check for existing state**
    ```bash
    # Check if implementation has started
-   ls ~/.ai/plans/feature-name/implementation_state.md
+   ls ~/.ai/plans/feature-name/implementation-state.md
    ```
 
-3. **Launch Plan agent to explore** (CRITICAL STEP)
+4. **Launch Plan agent to explore** (CRITICAL STEP)
    - Use Task tool with `subagent_type: "Plan"`
    - Ask it to explore:
      - The complete feature plan (all phase documents)
+     - The spec.md requirements
      - The relevant codebase areas mentioned in the plan
      - Existing patterns for similar functionality
      - Dependencies and affected files
@@ -214,6 +298,9 @@ When user says: "Implement the [feature-name] plan" or "Start working on [featur
    Example prompt for Plan agent:
    ```
    Explore the feature plan at ~/.ai/plans/feature-name/ completely, focusing on phase-01-foundation.
+
+   CRITICAL: Read spec.md and understand ALL requirements that must be met.
+
    Then explore the codebase to understand:
    - Existing implementations of similar features
    - Current architecture in the affected areas
@@ -221,27 +308,34 @@ When user says: "Implement the [feature-name] plan" or "Start working on [featur
    - Testing patterns to follow
 
    Provide a comprehensive summary of:
-   1. What the phase aims to accomplish
-   2. Current state of the codebase
-   3. Files that will need modification
-   4. Existing patterns to follow
-   5. Potential challenges or gotchas
+   1. What spec requirements this phase addresses
+   2. What the phase aims to accomplish
+   3. Current state of the codebase
+   4. Files that will need modification
+   5. Existing patterns to follow
+   6. Potential challenges or gotchas
+   7. How to verify spec requirements are met
    ```
 
-4. **Propose implementation approach**
+5. **Propose implementation approach**
    - Based on Plan agent findings, create concrete implementation steps
+   - Map each step to spec requirements it will satisfy
    - Show user the proposed approach
    - Get approval before proceeding
 
-5. **Create initial implementation state**
-   - Create `implementation_state.md` with phases from the plan
+6. **Create initial implementation state**
+   - Create `implementation-state.md` with phases from the plan
+   - Include Spec Requirements Status section at the top
    - Mark current phase as in_progress
+   - List spec requirements to address in this phase
    - List planned tasks for current phase
 
-6. **Execute and track**
-   - Implement systematically
+7. **Execute with TDD**
+   - Write tests FIRST based on spec's Testing Requirements
+   - Implement code to make tests pass
    - Update state file after each major chunk
-   - Mark tasks as completed in real-time
+   - Track test status (written/failing/passing)
+   - Update spec requirements status as they are satisfied
 
 ### Resuming Implementation
 
@@ -251,39 +345,50 @@ When user says: "Continue with [feature]" or "Resume [feature] implementation"
 
 1. **Read implementation state first**
    ```bash
-   cat ~/.ai/plans/feature-name/implementation_state.md
+   cat ~/.ai/plans/feature-name/implementation-state.md
    ```
 
-2. **Understand current status**
+2. **Read the spec to refresh requirements**
+   ```bash
+   cat ~/.ai/plans/feature-name/spec.md
+   ```
+
+3. **Understand current status**
    - What phase are we on?
    - What's completed vs pending?
+   - Which spec requirements are satisfied vs pending?
    - Any blockers or challenges?
 
-3. **Launch Plan agent for context**
+4. **Launch Plan agent for context**
    - Focus exploration on current phase and next steps
    - Check codebase for any changes since last session
 
    Example prompt:
    ```
    We're resuming implementation of [feature] at Phase N. Read:
-   1. ~/.ai/plans/feature-name/implementation_state.md for what's been done
-   2. ~/.ai/plans/feature-name/phase-0N-*/technical-details.md for current phase details
-   3. The codebase areas we've been working in to see current state
+   1. ~/.ai/plans/feature-name/implementation-state.md for what's been done
+   2. ~/.ai/plans/feature-name/spec.md to understand remaining requirements
+   3. ~/.ai/plans/feature-name/phase-0N-*/technical-details.md for current phase details
+   4. The codebase areas we've been working in to see current state
 
    Summarize:
    - What's completed so far
+   - Which spec requirements are satisfied
    - What's left in current phase
+   - Which spec requirements still need to be addressed
    - Any code changes that affect our next steps
    ```
 
-4. **Propose next steps**
+5. **Propose next steps**
    - Show user what's pending
+   - Show which spec requirements will be addressed
    - Propose concrete next actions
    - Get confirmation
 
-5. **Continue implementation**
+6. **Continue implementation**
    - Pick up where left off
    - Update state as you go
+   - Track spec requirement satisfaction
 
 ### Focusing on Specific Phase
 
@@ -291,33 +396,40 @@ When user says: "Implement phase 2" or "Start phase-03-integration"
 
 **Your Process:**
 
-1. **Read overview and state**
+1. **Read overview, spec, and state**
    - Understand overall feature
+   - Read spec.md to know which requirements apply to this phase
    - Check what phases are complete
+   - Check which spec requirements are already satisfied
    - Verify dependencies are met
 
 2. **Launch Plan agent for phase-specific exploration**
    ```
    Explore phase-0N-name from ~/.ai/plans/feature-name/ in detail.
+   Read spec.md to understand which requirements this phase addresses.
    Read all documents in that phase directory and explore the relevant codebase areas.
 
    Provide:
-   1. Detailed understanding of phase objectives
-   2. Current codebase state for affected areas
-   3. Specific files to modify with current implementation
-   4. Step-by-step implementation approach
-   5. Testing strategy
+   1. Which spec requirements this phase will satisfy
+   2. Detailed understanding of phase objectives
+   3. Current codebase state for affected areas
+   4. Specific files to modify with current implementation
+   5. Step-by-step implementation approach
+   6. Testing strategy
+   7. How to verify spec requirements are met
    ```
 
 3. **Propose phase implementation plan**
    - Break phase into chunks
+   - Map chunks to spec requirements they satisfy
    - Show user the approach
    - Get approval
 
 4. **Execute phase**
    - Implement chunk by chunk
    - Update state continuously
-   - Mark phase complete when done
+   - Verify spec requirements as they are completed
+   - Mark phase complete only when all relevant spec requirements pass
 
 ## Key Behaviors
 
@@ -335,7 +447,7 @@ The Plan agent is designed for thorough exploration and will provide you with a 
 
 ### State Updates
 
-Update `implementation_state.md` after:
+Update `implementation-state.md` after:
 - Completing a major chunk of work
 - Before and after each phase
 - When encountering blockers
@@ -358,7 +470,7 @@ Use TodoWrite during active implementation for:
 - Breaking down chunks into immediate steps
 - Maintaining focus during implementation
 
-Use implementation_state.md for:
+Use implementation-state.md for:
 - Persistent progress tracking across sessions
 - High-level phase completion status
 - Historical record of implementation
@@ -366,7 +478,7 @@ Use implementation_state.md for:
 
 **Think of it as:**
 - TodoWrite = short-term memory (this session)
-- implementation_state.md = long-term memory (all sessions)
+- implementation-state.md = long-term memory (all sessions)
 
 ### Handling Blockers
 
@@ -417,10 +529,10 @@ Plans are guides, not contracts. When you need to deviate:
 User: "Implement the user-authentication plan"
 You:
 1. Read ~/.ai/plans/user-authentication/overview.md
-2. Check for implementation_state.md (doesn't exist)
+2. Check for implementation-state.md (doesn't exist)
 3. Launch Plan agent to explore plan + codebase
 4. Propose implementation approach for Phase 1
-5. Create implementation_state.md
+5. Create implementation-state.md
 6. Start implementing with state tracking
 ```
 
@@ -428,7 +540,7 @@ You:
 ```
 User: "Continue the user-authentication implementation"
 You:
-1. Read implementation_state.md first
+1. Read implementation-state.md first
 2. Launch Plan agent to get current context
 3. Propose next steps based on state
 4. Continue implementing and updating state
@@ -438,7 +550,7 @@ You:
 ```
 User: "Implement phase 3 of user-authentication"
 You:
-1. Read overview.md and implementation_state.md
+1. Read overview.md and implementation-state.md
 2. Verify phases 1-2 are complete (or ask user)
 3. Launch Plan agent for phase 3 exploration
 4. Propose phase 3 implementation approach
@@ -448,17 +560,35 @@ You:
 ## Success Criteria
 
 A good implementation should:
+- ✅ Read spec.md at the start and reference it throughout
+- ✅ Write tests FIRST based on spec's Testing Requirements (TDD)
+- ✅ Implement code to make tests pass
+- ✅ Track spec requirements satisfaction in implementation-state.md
+- ✅ Track test status (written/failing/passing) in state file
+- ✅ Verify spec requirements before marking phases complete
 - ✅ Always use Plan agent before proposing implementation
-- ✅ Maintain accurate implementation_state.md
+- ✅ Maintain accurate implementation-state.md
 - ✅ Complete phases in order (unless explicitly told otherwise)
 - ✅ Document deviations and gotchas
-- ✅ Run tests and validation after each chunk
 - ✅ Update state file continuously, not just at end
 - ✅ Follow existing codebase patterns discovered by Plan agent
 - ✅ Ask for clarification when plan is ambiguous
 - ✅ Mark blockers and explain them clearly
+- ✅ Mark all spec requirements as satisfied in implementation-state.md when complete
 
 ## Anti-Patterns to Avoid
+
+❌ **Don't**: Ignore spec.md or treat it as optional
+✅ **Do**: Read spec.md first and reference it throughout implementation
+
+❌ **Don't**: Write implementation code before tests
+✅ **Do**: Write tests FIRST (TDD), then implement to make them pass
+
+❌ **Don't**: Skip writing tests defined in spec's Testing Requirements
+✅ **Do**: Write all unit and integration tests specified in the spec
+
+❌ **Don't**: Mark phase complete without verifying spec requirements
+✅ **Do**: Check all relevant acceptance criteria AND tests pass before completing phases
 
 ❌ **Don't**: Read all plan files manually instead of using Plan agent
 ✅ **Do**: Use Plan agent for comprehensive exploration
@@ -466,7 +596,7 @@ A good implementation should:
 ❌ **Don't**: Start implementing without proposing approach first
 ✅ **Do**: Propose concrete steps and get user approval
 
-❌ **Don't**: Forget to update implementation_state.md
+❌ **Don't**: Forget to update implementation-state.md
 ✅ **Do**: Update state after each major chunk
 
 ❌ **Don't**: Skip phases or dependencies
@@ -480,6 +610,9 @@ A good implementation should:
 
 ❌ **Don't**: Hide blockers or challenges
 ✅ **Do**: Document blockers clearly and explain impact
+
+❌ **Don't**: Forget to track which spec requirements are satisfied
+✅ **Do**: Update Spec Requirements Status section in implementation-state.md
 
 ## Example State Update
 
@@ -513,16 +646,25 @@ After completing a chunk:
 
 ### With feature-planning skill
 - Read plans created by feature-planning
+- Use spec.md as authoritative source of requirements
 - Update plan files if significant deviations occur
 - Reference plan structure and templates
 
+### With spec.md
+- Read spec.md at the start of every implementation session (it is immutable - never modify it)
+- Track requirement satisfaction in implementation-state.md
+- Verify acceptance criteria before completing phases
+- Mark spec requirements in implementation-state.md as they are satisfied
+- spec.md is the authoritative reference; state tracks progress against it
+
 ### With TodoWrite
 - Use TodoWrite for in-session task management
-- implementation_state.md for cross-session persistence
+- implementation-state.md for cross-session persistence
 - TodoWrite tasks should align with state file chunks
 
 ### With Plan agent
 - Always use for exploration before implementation
+- Have it read spec.md to understand requirements
 - Use for understanding codebase patterns
 - Use for identifying existing implementations to reuse
 
@@ -558,7 +700,7 @@ When using this skill, you should:
    - Get user approval
 
 4. **Create/update state file**
-   - Initialize or update implementation_state.md
+   - Initialize or update implementation-state.md
    - Mark current phase and tasks
 
 5. **Implement systematically**
@@ -608,7 +750,7 @@ Does this approach look good?
 
 User: Yes, go ahead
 
-You: [Creates implementation_state.md with phases and tasks]
+You: [Creates implementation-state.md with phases and tasks]
 [Uses TodoWrite to track immediate tasks]
 [Implements chunk 1, updates state file]
 [Implements chunk 2, updates state file]
@@ -616,7 +758,7 @@ You: [Creates implementation_state.md with phases and tasks]
 [Implements chunk 4, updates state file]
 [Marks phase 1 as complete in state file]
 
-Phase 1 complete! Updated implementation_state.md with progress.
+Phase 1 complete! Updated implementation-state.md with progress.
 
 **Completed:**
 - ✅ Database schema for calendar_events
@@ -646,7 +788,7 @@ Don't save all testing for the end:
 - Update state file with test results
 
 ### 4. State File Hygiene
-Keep implementation_state.md clean and useful:
+Keep implementation-state.md clean and useful:
 - Use clear, descriptive task names
 - Add timestamps for completed tasks
 - Document context in notes, not task names
@@ -667,7 +809,7 @@ Update the user:
 - Suggest using feature-planning skill to create plan first
 
 ### "The plan seems outdated"
-- Document differences in implementation_state.md
+- Document differences in implementation-state.md
 - Suggest updating plan files
 - Discuss with user if major changes needed
 
@@ -679,7 +821,7 @@ Update the user:
 
 ### "The codebase doesn't match the plan"
 - Use Plan agent to understand current codebase state
-- Document deviations in implementation_state.md
+- Document deviations in implementation-state.md
 - Propose adjusted approach
 - Update plan files if appropriate
 
@@ -701,20 +843,28 @@ If implementation needs to be rolled back:
 
 ### Cross-Feature Dependencies
 If implementing a feature that depends on another:
-1. Check other feature's implementation_state.md
+1. Check other feature's implementation-state.md
 2. Verify dependencies are complete
 3. Document dependency in current state file
 4. Reference other feature's completed work
 
 ## Remember
 
-This skill is about **systematic execution with persistent tracking**. The key differences from regular implementation:
+This skill is about **systematic execution with TDD, persistent tracking, and spec compliance**. The key differences from regular implementation:
 
-1. **Always use Plan agent** - Don't explore manually
-2. **Always maintain state** - implementation_state.md is your source of truth
-3. **Always propose first** - Get user buy-in before implementing
-4. **Always update continuously** - Don't batch state updates
+1. **Spec is law** - spec.md defines what MUST be implemented; reference it continuously
+2. **Tests first (TDD)** - Write tests from spec's Testing Requirements BEFORE implementation
+3. **Always use Plan agent** - Don't explore manually
+4. **Always maintain state** - implementation-state.md is your source of truth
+5. **Track tests and requirements** - Know which tests pass and requirements are satisfied
+6. **Always propose first** - Get user buy-in before implementing
+7. **Always update continuously** - Don't batch state updates
+8. **Verify before completing** - All tests pass AND spec requirements met before marking done
 
-Your goal is to make implementation resumable, trackable, and transparent. Future you (or another agent) should be able to pick up exactly where you left off by reading the state file.
+Your goal is to make implementation resumable, trackable, test-driven, and spec-compliant. Future you (or another agent) should be able to:
+- Pick up exactly where you left off by reading the state file
+- Know which tests are written/failing/passing
+- Know which spec requirements are satisfied and which remain
+- Verify the implementation meets all requirements
 
-Good luck implementing! 🚀
+The spec.md is the authoritative definition of "done" - implementation is not complete until all tests pass and all spec requirements are verified.

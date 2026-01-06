@@ -26,6 +26,7 @@ Create plans following this standard structure:
 ```
 ~/.ai/plans/feature-name/
 ├── overview.md                    # High-level feature summary (START HERE)
+├── spec.md                        # REQUIREMENTS - Must be met for completion
 ├── implementation-guide.md        # Phased rollout strategy
 ├── phase-01-foundation/
 │   ├── technical-details.md      # Detailed implementation specs
@@ -98,11 +99,238 @@ Brief list of phases (details in implementation-guide.md):
 
 ## Next Steps
 
-1. Read `implementation-guide.md` for phased approach
-2. Start with `phase-01-foundation/` when ready to implement
+1. Read `spec.md` for requirements that MUST be met
+2. Read `implementation-guide.md` for phased approach
+3. Start with `phase-01-foundation/` when ready to implement
 ```
 
-### 2. Implementation-Guide.md Template
+### 2. Spec.md Template
+
+The spec defines **requirements that MUST be met** for the feature to be considered complete. This is the authoritative source of truth for what the feature must accomplish.
+
+```markdown
+# [Feature Name] - Specification
+
+> **This document defines the requirements that MUST be met for this feature to be complete.**
+> Implementation agents should reference this spec continuously and verify all requirements are satisfied.
+
+## Functional Requirements
+
+These requirements define WHAT the feature must do. Each requirement is a verifiable condition.
+
+### FR-1: [Requirement Name]
+
+**Description**: [Clear, unambiguous description of what must be true]
+
+**Acceptance Criteria**:
+- [ ] [Specific, testable condition 1]
+- [ ] [Specific, testable condition 2]
+- [ ] [Specific, testable condition 3]
+
+**Verification**: [How to verify this requirement is met - test command, manual check, etc.]
+
+---
+
+### FR-2: [Requirement Name]
+
+**Description**: [Clear description]
+
+**Acceptance Criteria**:
+- [ ] [Condition 1]
+- [ ] [Condition 2]
+
+**Verification**: [How to verify]
+
+---
+
+### FR-3: [Requirement Name]
+
+[Continue pattern for all functional requirements]
+
+---
+
+## Non-Functional Requirements
+
+These requirements define HOW the feature must behave (performance, security, etc.).
+
+### NFR-1: Performance
+
+**Description**: [Performance expectations]
+
+**Acceptance Criteria**:
+- [ ] [Response time < X ms for Y operation]
+- [ ] [Memory usage < X MB under Y load]
+- [ ] [Throughput > X requests/second]
+
+**Verification**: [How to measure - benchmarks, profiling, load tests]
+
+---
+
+### NFR-2: Security
+
+**Description**: [Security requirements]
+
+**Acceptance Criteria**:
+- [ ] [Input validation for X]
+- [ ] [Authentication required for Y]
+- [ ] [Authorization checks for Z]
+
+**Verification**: [Security tests, audits, etc.]
+
+---
+
+### NFR-3: Error Handling
+
+**Description**: [How errors must be handled]
+
+**Acceptance Criteria**:
+- [ ] [Graceful degradation for X failure]
+- [ ] [Error messages for Y are user-friendly]
+- [ ] [All errors are logged with context]
+
+**Verification**: [Error scenario tests]
+
+---
+
+### NFR-4: Compatibility
+
+**Description**: [Compatibility requirements]
+
+**Acceptance Criteria**:
+- [ ] [Works with existing feature X]
+- [ ] [Backward compatible with API version Y]
+- [ ] [No breaking changes to Z]
+
+**Verification**: [Integration tests, regression tests]
+
+---
+
+## Constraints
+
+Hard constraints that limit implementation choices.
+
+### C-1: [Constraint Name]
+
+**Constraint**: [What cannot be done or must be done a specific way]
+
+**Reason**: [Why this constraint exists]
+
+---
+
+### C-2: [Constraint Name]
+
+**Constraint**: [Description]
+
+**Reason**: [Rationale]
+
+---
+
+## Out of Scope
+
+Explicitly define what this feature does NOT include to prevent scope creep.
+
+- [Thing 1 that is NOT included]
+- [Thing 2 that is NOT included]
+- [Thing 3 that is NOT included]
+
+---
+
+## Testing Requirements
+
+Define what tests MUST be created. Implementation should write these tests FIRST (TDD approach).
+
+### Unit Tests
+
+Tests for individual functions/components in isolation.
+
+| Test | Description | Requirement |
+|------|-------------|-------------|
+| `test_[function]_[scenario]` | [What this test verifies] | FR-1 |
+| `test_[function]_[edge_case]` | [What this test verifies] | FR-1 |
+| `test_[component]_[behavior]` | [What this test verifies] | FR-2 |
+
+### Integration Tests
+
+Tests for component interactions and API endpoints.
+
+| Test | Description | Requirement |
+|------|-------------|-------------|
+| `test_[flow]_[scenario]` | [What this test verifies] | FR-1, FR-2 |
+| `test_[api]_[endpoint]_[method]` | [What this test verifies] | FR-3 |
+
+### Test Scenarios by Requirement
+
+#### FR-1: [Requirement Name]
+- [ ] Happy path: [description]
+- [ ] Edge case: [description]
+- [ ] Error case: [description]
+
+#### FR-2: [Requirement Name]
+- [ ] Happy path: [description]
+- [ ] Edge case: [description]
+- [ ] Error case: [description]
+
+### Test Coverage Expectations
+- Unit test coverage: [target %] for new code
+- All acceptance criteria must have corresponding tests
+- All error paths must be tested
+
+---
+
+## Verification Checklist
+
+Use this checklist before marking the feature complete:
+
+### Functional Requirements
+- [ ] FR-1: [Name] - All criteria met
+- [ ] FR-2: [Name] - All criteria met
+- [ ] FR-3: [Name] - All criteria met
+
+### Non-Functional Requirements
+- [ ] NFR-1: Performance - All criteria met
+- [ ] NFR-2: Security - All criteria met
+- [ ] NFR-3: Error Handling - All criteria met
+- [ ] NFR-4: Compatibility - All criteria met
+
+### Constraints
+- [ ] C-1: [Name] - Constraint respected
+- [ ] C-2: [Name] - Constraint respected
+
+### Final Verification
+- [ ] All automated tests pass
+- [ ] Manual testing completed per testing-strategy.md
+- [ ] No regressions in existing functionality
+- [ ] Documentation updated if required
+
+---
+
+## Requirement Traceability
+
+Map requirements to implementation:
+
+| Requirement | Phase | Files | Tests |
+|-------------|-------|-------|-------|
+| FR-1 | Phase 1 | `path/to/file.ts` | `test/file.test.ts` |
+| FR-2 | Phase 2 | `path/to/other.ts` | `test/other.test.ts` |
+| NFR-1 | Phase 3 | Multiple | `test/perf/` |
+
+---
+
+## Change Log
+
+Track changes to requirements during planning phase. Once implementation begins, spec.md is frozen.
+
+| Date | Requirement | Change | Reason |
+|------|-------------|--------|--------|
+| [Date] | FR-1 | Added criterion X | [Why] |
+| [Date] | NFR-2 | Relaxed from X to Y | [Why] |
+
+---
+
+**Note**: This spec becomes immutable once implementation begins. Any changes after implementation starts require explicit user approval and should be rare. Implementation progress is tracked in `implementation-state.md`, not here.
+```
+
+### 3. Implementation-Guide.md Template
 
 This document provides the strategic roadmap.
 
@@ -689,6 +917,88 @@ Invoke this skill when:
 - Future agents will need detailed context to continue work
 - Feature has complex edge cases or architectural decisions
 
+### Clarifying Requirements (CRITICAL)
+
+Before writing ANY plan documents, you MUST thoroughly clarify requirements with the user. Vague requirements lead to wasted implementation time. Ask questions aggressively.
+
+**Question Categories to Explore:**
+
+1. **Scope Clarification**
+   - What exactly should this feature do? (Get specific examples)
+   - What should it NOT do? (Define boundaries early)
+   - Are there similar features to reference?
+   - What's the minimum viable version vs nice-to-haves?
+
+2. **User Experience**
+   - Who are the users of this feature?
+   - What's the user's workflow/journey?
+   - What happens on success? On failure?
+   - Are there UI/UX preferences or constraints?
+
+3. **Technical Constraints**
+   - Are there performance requirements (response time, throughput)?
+   - Security requirements (auth, permissions, data sensitivity)?
+   - Compatibility requirements (browsers, APIs, backwards compat)?
+   - Infrastructure constraints (hosting, databases, external services)?
+
+4. **Edge Cases**
+   - What happens when X fails?
+   - How should concurrent access be handled?
+   - What about empty states, large datasets, special characters?
+   - Rate limiting, quotas, or other operational concerns?
+
+5. **Integration Points**
+   - What existing features does this touch?
+   - External APIs or services involved?
+   - Data flow between systems?
+
+6. **Success Criteria**
+   - How will we know this feature is working correctly?
+   - What metrics define success?
+   - What's the testing strategy?
+
+**Questioning Process:**
+
+1. **Initial Questions**: Ask 5-10 clarifying questions based on the request
+2. **Follow-up Drill-Down**: For each answer, ask follow-up questions if unclear
+3. **Confirmation**: Summarize understanding and confirm with user
+4. **Document Unknowns**: If user doesn't know, document as open question in plan
+
+**Example Dialogue:**
+
+```
+User: "Add user notifications to the app"
+
+You: Before I create a plan, I need to clarify several things:
+
+1. **What types of notifications?** Email, in-app, push, or all of the above?
+2. **What triggers notifications?** Specific events? User actions? System alerts?
+3. **User control:** Can users configure which notifications they receive?
+4. **Delivery guarantees:** Must every notification be delivered, or is best-effort OK?
+5. **Real-time requirements:** Do in-app notifications need to appear instantly?
+6. **Volume expectations:** How many notifications per user per day? Total system volume?
+7. **Existing infrastructure:** Do we have email/push services already integrated?
+
+[User answers...]
+
+You: Based on that:
+- Clarifying on #3: For configuration, do users set preferences per notification type, or just on/off globally?
+- Follow-up on #5: When you say "instantly", is <1 second acceptable or do you need <100ms?
+- For #6: "Hundreds" - is that 100-300 or 500-900? This affects database design.
+
+[Continue until requirements are clear]
+```
+
+**Red Flags That Indicate More Questions Needed:**
+- "It should just work like X" (what specifically about X?)
+- "The normal way" (what's normal in this context?)
+- "Whatever makes sense" (clarify expectations)
+- "We might need X later" (include in plan or explicitly defer?)
+- Any ambiguous terms (define them explicitly)
+
+**Document Your Questions:**
+Keep a record of questions asked and answers received. This becomes valuable context in the plan's `context-notes.md` or `overview.md`.
+
 ### How to Create a Plan
 
 1. **Start with Discovery**
@@ -707,18 +1017,25 @@ Invoke this skill when:
    - Focus on "why" and "what", not "how"
    - Include success criteria
 
-4. **Create Implementation Guide**
+4. **Create Spec File**
+   - Define ALL functional requirements with acceptance criteria
+   - Define non-functional requirements (performance, security, etc.)
+   - Document constraints and out-of-scope items
+   - Create verification checklist
+   - This is the authoritative source of truth for what MUST be implemented
+
+5. **Create Implementation Guide**
    - Define clear phases with dependencies
    - Explain sequencing rationale
    - Document rollout strategy
 
-5. **Detail Each Phase**
+6. **Detail Each Phase**
    - Only create phase directories as needed
    - Use templates above for consistency
    - Include code examples and file references
    - Document decisions and trade-offs
 
-6. **Keep It Updated**
+7. **Keep It Updated**
    - Update as implementation reveals new information
    - Document deviations from plan with rationale
    - Add lessons learned
@@ -738,16 +1055,22 @@ Use numbered prefixes for clear ordering:
 - Read `overview.md` only
 - Understand problem, solution, and success criteria
 
-**Level 2 - Implementation Strategy** (10 minutes):
+**Level 2 - Requirements** (5 minutes):
+- Read `spec.md` for MUST-have requirements
+- Understand acceptance criteria and constraints
+- Know what defines "done"
+
+**Level 3 - Implementation Strategy** (10 minutes):
 - Read `implementation-guide.md`
 - Understand phases, dependencies, rollout plan
 
-**Level 3 - Phase Implementation** (30+ minutes):
+**Level 4 - Phase Implementation** (30+ minutes):
 - Dive into specific phase directory
 - Read technical-details.md, files-to-modify.md
+- Cross-reference spec.md to ensure requirements are met
 - Implement with full context
 
-**Level 4 - Deep Context** (as needed):
+**Level 5 - Deep Context** (as needed):
 - Read context-notes.md for decisions and gotchas
 - Review testing-strategy.md before writing tests
 - Check shared/ directory for cross-phase concerns
@@ -813,23 +1136,34 @@ This skill **supplements** the simple planning guidance in your base instruction
 
 When using this skill, you should:
 
-1. **Confirm Understanding**
-   - Repeat back the feature request
-   - Ask clarifying questions if needed
+1. **Clarify Requirements Thoroughly**
+   - Ask 5-10 initial clarifying questions
+   - Follow up on any vague or ambiguous answers
+   - Continue questioning until requirements are specific
+   - Document all questions and answers for the plan
 
-2. **Propose Structure**
+2. **Confirm Understanding**
+   - Summarize the feature requirements back to the user
+   - List all functional requirements you understand
+   - List all constraints and non-functional requirements
+   - Get explicit confirmation before proceeding
+
+3. **Propose Structure**
    - Suggest feature name for directory
    - Outline proposed phases
+   - Preview key requirements that will go in spec.md
    - Get user approval on approach
 
-3. **Create Documents**
+4. **Create Documents**
    - Start with overview.md
+   - Create spec.md with all requirements (CRITICAL - this defines what MUST be implemented)
    - Create implementation-guide.md
    - Create phase directories as needed
-   - Fill in templates with actual content
+   - Fill in templates with actual content from clarifying questions
 
-4. **Summarize**
+5. **Summarize**
    - Show directory tree created
+   - Highlight key requirements from spec.md
    - Explain how to navigate the plan
    - Suggest where to start implementation
 
@@ -837,6 +1171,8 @@ When using this skill, you should:
 
 A good feature plan should:
 - ✅ Be navigable in under 2 minutes (via overview)
+- ✅ Have spec.md with ALL requirements clearly defined and verifiable
+- ✅ Have acceptance criteria for every functional requirement
 - ✅ Enable agent to start Phase 1 with full context
 - ✅ Document all major architectural decisions
 - ✅ Include specific file references with line numbers
@@ -844,5 +1180,6 @@ A good feature plan should:
 - ✅ Consider backward compatibility and rollback
 - ✅ Capture edge cases and gotchas
 - ✅ Be updateable as implementation progresses
+- ✅ Include verification checklist in spec.md
 
-Remember: These plans are "mini-skills" that make future implementation faster and more confident. Invest time upfront to save time later.
+Remember: These plans are "mini-skills" that make future implementation faster and more confident. The spec.md is especially critical - it's the authoritative definition of what MUST be implemented. Invest time upfront to save time later.

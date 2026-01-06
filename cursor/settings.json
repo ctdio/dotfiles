@@ -1633,5 +1633,6 @@
   "notebook.output.textLineLimit": 100,
   "notebook.output.scrolling": true,
   "notebook.lineNumbers": "on",
-  "gitlens.currentLine.enabled": false
+  "gitlens.currentLine.enabled": false,
+  "jupyter.askForKernelRestart": false
 }

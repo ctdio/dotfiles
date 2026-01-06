@@ -74,7 +74,7 @@ query {
 
 **IMMEDIATELY after Step 2:**
 
-- **Zero comments?** → Output `<promise>BUGBOT RESOLVED</promise>` and STOP.
+- **Zero comments?** → Task complete. STOP.
 - **Has comments?** → Continue to Step 4. Do not deliberate.
 
 ### Step 4: Process Each Comment
@@ -159,10 +159,9 @@ Remaining: [count]
 ### Step 8: Loop Behavior
 
 After pushing and waiting for bugbot check:
-- Do NOT output the completion promise yet
 - The ralph-loop will re-run this skill
 - Next iteration will re-fetch comments (bugbot has finished re-analyzing)
-- Only output `<promise>BUGBOT RESOLVED</promise>` when Step 2 finds zero unresolved comments
+- Task is complete when Step 2 finds zero unresolved comments
 
 ## Rules
 
@@ -184,12 +183,3 @@ Invoke this skill when:
 - User says "fix bugbot comments" or similar
 
 The skill will loop via ralph-loop until all bugbot comments are resolved or fixed.
-
-## Completion Signal
-
-When all bugbot comments are resolved, output:
-```
-<promise>BUGBOT RESOLVED</promise>
-```
-
-This signals to ralph-loop that the task is complete.
