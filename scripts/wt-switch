@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Switch to worktree - finds existing window or creates new
+# Usage: wt-switch
+
+set -e
+
+SEARCH_PATHS=(
+  "$HOME/projects/private"
+  "$HOME/projects/open-source"
+)
+
+CACHE_FILE="/tmp/wt-jump-cache-$USER"
+CACHE_TTL=300
+
+cache_is_fresh() {
+  [ -f "$CACHE_FILE" ] && [ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0))) -lt $CACHE_TTL ]
+}
+
+find_repos_with_worktrees() {
+  if cache_is_fresh; then
+    cat "$CACHE_FILE"
+    return
+  fi
+
+  {
+    for search_path in "${SEARCH_PATHS[@]}"; do
+      [ -d "$search_path" ] || continue
+      if command -v fd &>/dev/null; then
+        fd -H -t d '^\.git$' "$search_path" -d 3
+      else
+        find "$search_path" -maxdepth 3 -type d -name ".git" 2>/dev/null
+      fi
+    done
+  } | sed -E 's/\/\.git\/?$//' | xargs -P 8 -I {} sh -c '
+    count=$(git -C "{}" worktree list 2>/dev/null | wc -l)
+    [ "$count" -gt 1 ] && echo "{}"
+  ' | tee "$CACHE_FILE"
+}
+
+get_worktrees() {
+  local repo_path="$1"
+  git -C "$repo_path" worktree list --porcelain | awk '
+    /^worktree / {
+      if (path) {
+        if (branch) print path " [" branch "]"
+        else print path " [detached]"
+      }
+      path = $2
+      branch = ""
+    }
+    /^branch / { branch = $2; sub(/^refs\/heads\//, "", branch) }
+    END {
+      if (path) {
+        if (branch) print path " [" branch "]"
+        else print path " [detached]"
+      }
+    }
+  '
+}
+
+# Step 1: Select project
+repos=$(find_repos_with_worktrees)
+
+if [ -z "$repos" ]; then
+  echo "No repos with worktrees found"
+  exit 1
+fi
+
+selected_repo=$(echo "$repos" | fzf \
+  --prompt="Project: " \
+  --header="Select project (C-r to refresh)" \
+  --bind="ctrl-r:reload(rm -f '$CACHE_FILE'; $0 --list-repos)" \
+  --preview='git -C {} worktree list' \
+  --preview-window=down:6)
+
+if [ -z "$selected_repo" ]; then
+  exit 0
+fi
+
+# Step 2: Select worktree
+worktrees=$(get_worktrees "$selected_repo")
+
+selected_worktree=$(echo "$worktrees" | fzf \
+  --prompt="Worktree: " \
+  --header="$(basename "$selected_repo")" \
+  --preview='echo {} | cut -d" " -f1 | xargs -I{} git -C {} log --oneline -5' \
+  --preview-window=down:5)
+
+if [ -z "$selected_worktree" ]; then
+  exit 0
+fi
+
+target_path=$(echo "$selected_worktree" | cut -d' ' -f1)
+
+# Write path for wrapper to use
+echo "$target_path" > /tmp/wt-switch-selection

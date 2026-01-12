@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Tmux wrapper for wt-jump
+# Opens fzf in a popup, creates new window at selected worktree
+
+rm -f /tmp/wt-jump-selection
+
+tmux display-popup -E -w 80% -h 60% ~/dotfiles/scripts/wt-jump
+
+if [ -f /tmp/wt-jump-selection ]; then
+  selected=$(cat /tmp/wt-jump-selection)
+  rm -f /tmp/wt-jump-selection
+  window_name=$(basename "$selected")
+  tmux new-window -c "$selected" -n "$window_name"
+fi

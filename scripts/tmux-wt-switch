@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Tmux wrapper for wt-switch
+# Opens fzf in a popup, switches to existing window or creates new
+
+rm -f /tmp/wt-switch-selection
+
+tmux display-popup -E -w 80% -h 60% ~/dotfiles/scripts/wt-switch
+
+if [ -f /tmp/wt-switch-selection ]; then
+  selected=$(cat /tmp/wt-switch-selection)
+  rm -f /tmp/wt-switch-selection
+  window_name=$(basename "$selected")
+
+  # Check if window with this path already exists
+  existing_window=$(tmux list-windows -F '#{window_index}:#{pane_current_path}' 2>/dev/null | grep ":${selected}$" | cut -d: -f1 | head -1)
+
+  if [ -n "$existing_window" ]; then
+    tmux select-window -t "$existing_window"
+  else
+    tmux new-window -c "$selected" -n "$window_name"
+  fi
+fi
