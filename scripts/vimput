@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Mini neovim editor - just opens nvim on the given temp file
+# Used by tmux-vimput wrapper
+
+TMPFILE="$1"
+
+if [ -z "$TMPFILE" ]; then
+    echo "Usage: vimput <tmpfile>"
+    exit 1
+fi
+
+nvim -c 'startinsert' "$TMPFILE"

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Opens vimput in a tmux popup scoped to current pane, pastes on close
+
+TMPFILE=$(mktemp /tmp/vimput.XXXXXX)
+TARGET_PANE=$(tmux display-message -p '#{pane_id}')
+
+# Get pane geometry
+PANE_WIDTH=$(tmux display-message -p '#{pane_width}')
+PANE_HEIGHT=$(tmux display-message -p '#{pane_height}')
+PANE_LEFT=$(tmux display-message -p '#{pane_left}')
+PANE_BOTTOM=$(tmux display-message -p '#{e|+:#{pane_top},#{pane_height}}')
+
+# Popup dimensions (within pane)
+POPUP_HEIGHT=10
+POPUP_WIDTH=$((PANE_WIDTH > 80 ? 80 : PANE_WIDTH - 2))
+POPUP_X=$((PANE_LEFT + (PANE_WIDTH - POPUP_WIDTH) / 2))
+POPUP_Y=$((PANE_BOTTOM - 1))
+
+# Cleanup
+trap "rm -f '$TMPFILE'" EXIT
+
+# Open popup within pane bounds
+tmux display-popup -E \
+    -h "$POPUP_HEIGHT" \
+    -w "$POPUP_WIDTH" \
+    -x "$POPUP_X" \
+    -y "$POPUP_Y" \
+    -T " vimput " \
+    ~/dotfiles/scripts/vimput "$TMPFILE"
+
+# After popup closes, paste content to original pane
+if [ -s "$TMPFILE" ]; then
+    tmux load-buffer "$TMPFILE"
+    tmux paste-buffer -t "$TARGET_PANE"
+fi
