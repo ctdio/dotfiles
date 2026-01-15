@@ -16,9 +16,9 @@ SEARCH_PATHS=(
 CACHE_FILE="/tmp/wt-jump-cache-$USER"
 CACHE_TTL=300  # 5 minutes
 
-# Check if cache is fresh
+# Check if cache is fresh and non-empty
 cache_is_fresh() {
-  [ -f "$CACHE_FILE" ] && [ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0))) -lt $CACHE_TTL ]
+  [ -s "$CACHE_FILE" ] && [ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0))) -lt $CACHE_TTL ]
 }
 
 # Find repos with worktrees (parallel, uses fd if available)
