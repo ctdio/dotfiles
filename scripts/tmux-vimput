@@ -32,5 +32,5 @@ tmux display-popup -E \
 # After popup closes, paste content to original pane
 if [ -s "$TMPFILE" ]; then
     tmux load-buffer "$TMPFILE"
-    tmux paste-buffer -t "$TARGET_PANE"
+    tmux paste-buffer -p -t "$TARGET_PANE"
 fi
