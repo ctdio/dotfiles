@@ -18,9 +18,12 @@ Commands:
 EOF
   }
 
-  # Get repo dir name
+  # Get base project name (strips -wt* suffix if present)
   repo_dir() {
-    basename "$(git rev-parse --show-toplevel 2>/dev/null)"
+    local dir
+    dir=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+    # Strip any existing -wt* suffix to get base project name
+    echo "${dir%-wt*}"
   }
 
   # Create worktree
@@ -47,6 +50,10 @@ EOF
       echo "Created worktree at $dir"
       # Change into the new worktree
       cd "$dir"
+      # Bookmark for tms (tmux-sessionizer)
+      if command -v tms >/dev/null 2>&1; then
+        tms bookmark "$(pwd)" 2>/dev/null && echo "Bookmarked in tms"
+      fi
     else
       # Return to original directory on failure
       cd "$current_dir"
@@ -126,8 +133,13 @@ EOF
 
     local dir="../$(repo_dir)-$1"
     if [ -d "$dir" ]; then
+      local abs_dir="$(cd "$dir" && pwd)"
       git worktree remove "$dir"
       echo "Removed worktree $dir"
+      # Remove tms bookmark
+      if command -v tms >/dev/null 2>&1; then
+        tms bookmark --delete "$abs_dir" 2>/dev/null && echo "Removed tms bookmark"
+      fi
       # Return to original directory
       cd "$current_dir"
     else
