@@ -4,12 +4,29 @@
 CURRENT_DIR=$(pwd)
 DIR_NAME=$(basename "$CURRENT_DIR")
 
+# Convert worktree suffix to slot number
+# Supports both numeric (wt1, wt2) and alpha (wta, wtb)
+# a=1, b=2, ..., z=26
+worktree_suffix_to_slot() {
+  local suffix="$1"
+  if [[ "$suffix" =~ ^[0-9]+$ ]]; then
+    echo "$suffix"
+  elif [[ "$suffix" =~ ^[a-z]$ ]]; then
+    # Convert a-z to 1-26
+    printf '%d' "$(($(printf '%d' "'$suffix") - 96))"
+  else
+    echo ""
+  fi
+}
+
 # Determine slot based on directory name
-# platform -> slot 0, platform-wt1 -> slot 1, platform-wt2 -> slot 2, etc.
+# platform -> slot 0, platform-wt1 -> slot 1, platform-wta -> slot 1, etc.
 if [[ "$DIR_NAME" == "platform" ]]; then
   SLOT=0
 elif [[ "$DIR_NAME" =~ ^platform-wt([0-9]+)$ ]]; then
   SLOT=${BASH_REMATCH[1]}
+elif [[ "$DIR_NAME" =~ ^platform-wt([a-z])$ ]]; then
+  SLOT=$(worktree_suffix_to_slot "${BASH_REMATCH[1]}")
 else
   echo "Error: Must be run from platform or platform-wt* directory"
   echo "Current directory: $CURRENT_DIR"

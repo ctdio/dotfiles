@@ -11,7 +11,9 @@
 # Port Configuration:
 # - After sync, PORT variable is updated per worktree
 # - platform (source) keeps PORT=3000
-# - Worktrees get sequential ports based on their position in git worktree list
+# - Worktrees get ports based on their name suffix:
+#   - Numeric: platform-wt1 -> 3001, platform-wt2 -> 3002
+#   - Alpha: platform-wta -> 3001, platform-wtb -> 3002 (a=1, b=2, ...)
 #
 # Backups:
 # - Stored in ~/.sync-worktree-backups (centralized, outside repo)
@@ -31,6 +33,36 @@ NC='\033[0m' # No Color
 # Configuration
 SOURCE_DIR="/Users/charlieduong/projects/private/opine/platform"
 BACKUP_DIR="${HOME}/.sync-worktree-backups"
+
+# Convert worktree suffix to slot number
+# Supports both numeric (wt1, wt2) and alpha (wta, wtb)
+# a=1, b=2, ..., z=26
+worktree_suffix_to_slot() {
+    local suffix="$1"
+    if [[ "$suffix" =~ ^[0-9]+$ ]]; then
+        echo "$suffix"
+    elif [[ "$suffix" =~ ^[a-z]$ ]]; then
+        # Convert a-z to 1-26
+        printf '%d' "$(($(printf '%d' "'$suffix") - 96))"
+    else
+        echo ""
+    fi
+}
+
+# Extract slot from worktree path
+# platform-wt1 -> 1, platform-wta -> 1, platform-wtb -> 2, etc.
+get_worktree_slot() {
+    local worktree_path="$1"
+    local dir_name=$(basename "$worktree_path")
+
+    if [[ "$dir_name" =~ ^platform-wt([0-9]+)$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+    elif [[ "$dir_name" =~ ^platform-wt([a-z])$ ]]; then
+        worktree_suffix_to_slot "${BASH_REMATCH[1]}"
+    else
+        echo ""
+    fi
+}
 
 # Function to print colored output
 print_status() {
@@ -230,10 +262,17 @@ print_status "Starting sync process..."
 
 SYNC_COUNT=0
 ERROR_COUNT=0
-WORKTREE_INDEX=1
 
 for worktree in "${WORKTREES[@]}"; do
-    print_status "Processing worktree: $worktree (port offset: $WORKTREE_INDEX)"
+    # Extract slot from worktree name (wt1->1, wta->1, wtb->2, etc.)
+    SLOT=$(get_worktree_slot "$worktree")
+
+    if [ -z "$SLOT" ]; then
+        print_warning "Skipping worktree with unrecognized naming: $worktree"
+        continue
+    fi
+
+    print_status "Processing worktree: $worktree (slot: $SLOT -> port 300$SLOT)"
 
     # Sync root level .env files
     for env_file in "${ROOT_ENV_FILES[@]}"; do
@@ -243,7 +282,7 @@ for worktree in "${WORKTREES[@]}"; do
         if sync_file "$env_file" "$target_file" "Root level" "$worktree"; then
             ((SYNC_COUNT++))
             # Update PORT for worktree-specific port assignment
-            update_port_for_worktree "$target_file" "$WORKTREE_INDEX"
+            update_port_for_worktree "$target_file" "$SLOT"
         else
             ((ERROR_COUNT++))
         fi
@@ -257,7 +296,7 @@ for worktree in "${WORKTREES[@]}"; do
         if sync_file "$env_file" "$target_file" "Platform app" "$worktree"; then
             ((SYNC_COUNT++))
             # Update PORT for worktree-specific port assignment
-            update_port_for_worktree "$target_file" "$WORKTREE_INDEX"
+            update_port_for_worktree "$target_file" "$SLOT"
         else
             ((ERROR_COUNT++))
         fi
@@ -274,8 +313,6 @@ for worktree in "${WORKTREES[@]}"; do
             ((ERROR_COUNT++))
         fi
     fi
-
-    ((WORKTREE_INDEX++))
 done
 
 # Summary
