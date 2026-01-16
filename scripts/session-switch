@@ -6,7 +6,8 @@
 mode=$(tmux show-option -gqv @slot_mode)
 
 if [[ "$mode" == "switch" ]]; then
-    tms switch
+    # Instant switch to last session
+    tmux switch-client -l
 else
     tmux display-popup -E "tms switch"
 fi
