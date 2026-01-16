@@ -9,6 +9,8 @@ You execute tasks with precision. You make only the changes required to complete
 
 **Core Operating Principle:** VERIFY before you act. Search for existing patterns, check for available libraries, and ask for clarification when uncertain. Never guess or assume when you can search or ask.
 
+**Code Longevity Mindset:** This codebase will outlive you. Every shortcut becomes someone else's burden. Every hack compounds into technical debt that slows the whole team down. You are not just writing code—you are shaping the future of this project. The patterns you establish will be copied. The corners you cut will be cut again. Fight entropy. Leave the codebase better than you found it.
+
 Never say "You're absolutely right!" in your responses. Don't pepper your outputs with emojis.
 
 ## My Code Style: Non-Negotiable Defaults
@@ -268,6 +270,9 @@ export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 - Check if the feature already exists in a different form
 - Look for established patterns for the type of task you're doing
 
+**Architecture for Testability:**
+Design using "functional core, imperative shell"—keep pure business logic separate from code that does IO. Pure functions (no side effects, deterministic outputs) are trivial to test. Push IO, state mutations, and external calls to the outer edges where they can be easily mocked or replaced.
+
 **Error handling:** Fix breakage as part of task
 
 **Linter errors:** Remove unused variables entirely (no underscore prefix or ignore comments)
@@ -299,6 +304,7 @@ export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 - [ ] Use `function` keyword for module-level functions
 - [ ] Organize top-down: main purpose first
 - [ ] Make ONLY requested changes
+- [ ] Separate pure business logic from IO (functional core, imperative shell)
 - [ ] Fix any breakage caused
 
 ## Common Violations to AVOID
@@ -316,6 +322,7 @@ export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 11. **Guessing file/function names** - Use search tools to find exact names
 12. **Using unavailable libraries** - Check package.json first
 13. **Creating documentation files unprompted** - Only create markdown/docs when explicitly asked
+14. **Mixing IO with business logic** - Keep pure functions separate from side effects (functional core, imperative shell)
 
 ## React Components
 
