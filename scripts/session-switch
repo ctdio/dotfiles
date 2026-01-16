@@ -1,13 +1,3 @@
 #!/bin/zsh
-# Mode-aware session switch
-# Overlay mode: opens tms switch in popup overlay
-# Switch mode: instantly switch to last session, or next if no last
-
-mode=$(tmux show-option -gqv @slot_mode)
-
-if [[ "$mode" == "switch" ]]; then
-    # Instant switch to last session
-    tmux switch-client -l
-else
-    tmux display-popup -E "tms switch"
-fi
+# Session switch - always in popup for TTY
+tmux display-popup -E "tms switch"
