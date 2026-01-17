@@ -5,21 +5,23 @@
     packages:
       - "@astrojs/language-server"
       - "@astrojs/ts-plugin"
-      - "@socketsecurity/cli"
-      - "@withgraphite/graphite-cli"
-      - "@tailwindcss/language-server"
+      - "@fsouza/prettierd"
       - "@olrtg/emmet-language-server"
+      - "@prisma/language-server"
+      - "@socketsecurity/cli"
+      - "@tailwindcss/language-server"
       - "@vtsls/language-server"
+      - "@withgraphite/graphite-cli"
+      - "@zed-industries/claude-code-acp"
+      - "@zed-industries/codex-acp"
       - bash-language-server
+      - dotenv-cli
+      - node-notifier
+      - nx
+      - turbo
       - typescript
       - typescript-language-server
       - vscode-langservers-extracted
-      - nx
-      - node-notifier
-      - turbo
-      - dotenv-cli
-      - "@fsouza/prettierd"
-      - "@prisma/language-server"
   tasks:
     - name: Installing npm packages
       loop: "{{ packages }}"

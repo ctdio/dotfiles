@@ -5,7 +5,7 @@ gleam 0.22.1
 golang 1.25.0
 helm 3.15.1
 helmfile 0.165.0
-nodejs 22.19.0
+nodejs 22.22.0
 pixi 0.59.0
 python 3.11.9
 rust 1.92.0
