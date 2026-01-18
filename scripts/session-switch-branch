@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Session switcher with branch information
+# Format: session_name [branch]
+# Preview: active pane content
+
+DIM=$'\033[2m'
+RESET=$'\033[0m'
+TMPDIR="${TMPDIR:-/tmp}"
+OUTFILE="$TMPDIR/session-switch-$$"
+
+current_session=$(tmux display-message -p '#S' 2>/dev/null)
+
+# Fast branch lookup - reads .git/HEAD directly, handles worktrees
+get_branch() {
+  local dir="$1"
+  local git_dir="$dir/.git"
+
+  # Handle worktrees where .git is a file pointing to real git dir
+  if [ -f "$git_dir" ]; then
+    git_dir="${dir}/$(< "$git_dir")"
+    git_dir="${git_dir#*gitdir: }"
+  fi
+
+  [ -f "$git_dir/HEAD" ] || return
+
+  local head
+  read -r head < "$git_dir/HEAD"
+  if [[ "$head" == ref:\ refs/heads/* ]]; then
+    echo "${head#ref: refs/heads/}"
+  else
+    echo "HEAD"
+  fi
+}
+
+# Store sessions in array first to avoid subshell issues
+sessions=()
+paths=()
+while read -r session path; do
+  [ "$session" = "$current_session" ] && continue
+  sessions+=("$session")
+  paths+=("$path")
+done < <(tmux list-sessions -F '#{session_name} #{pane_current_path}' 2>/dev/null)
+
+# Parallel branch lookups
+for i in "${!sessions[@]}"; do
+  session="${sessions[$i]}"
+  path="${paths[$i]}"
+  {
+    branch=$(get_branch "$path")
+    if [ -n "$branch" ]; then
+      printf "%s ${DIM}[%s]${RESET}\n" "$session" "$branch"
+    else
+      printf "%s\n" "$session"
+    fi
+  } >> "$OUTFILE" &
+done
+wait
+
+session_list=$(< "$OUTFILE" sort)
+rm -f "$OUTFILE"
+
+if [ -z "$session_list" ]; then
+  echo "No other sessions"
+  exit 0
+fi
+
+selected=$(echo "$session_list" | fzf \
+  --ansi \
+  --prompt="› " \
+  --no-border \
+  --preview='
+    session=$(echo {} | sed "s/ \[.*\]$//" | sed "s/\x1b\[[0-9;]*m//g")
+    tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
+  ' \
+  --preview-window=right:45%:noborder) || exit 0
+
+if [ -n "$selected" ]; then
+  session_name=$(echo "$selected" | sed 's/ \[.*\]$//' | sed 's/\x1b\[[0-9;]*m//g')
+  tmux switch-client -t "$session_name"
+fi
