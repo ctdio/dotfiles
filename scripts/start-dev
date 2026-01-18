@@ -53,7 +53,13 @@ tmux split-window -h -l 35% -c "$CURRENT_DIR"
 sleep 0.3  # Let shell initialize (fzf, etc.)
 
 # Start inngest in right pane
-tmux send-keys "npx inngest-cli@latest dev --no-discovery --poll-interval 120 --port $INNGEST_PORT --connect-gateway-port $INNGEST_CONNECT_GATEWAY_PORT --connect-gateway-grpc-port $INNGEST_CONNECT_GATEWAY_GRPC_PORT --connect-executor-grpc-port $INNGEST_CONNECT_EXECUTOR_GRPC_PORT -u https://localhost:$PORT/api/v1/inngest" C-m
+if [[ $SLOT -eq 0 ]]; then
+  # Root platform directory: use default inngest ports
+  tmux send-keys "npx inngest-cli@latest dev --no-discovery --poll-interval 120 -u https://localhost:$PORT/api/v1/inngest" C-m
+else
+  # Worktree: use custom ports to avoid conflicts
+  tmux send-keys "npx inngest-cli@latest dev --no-discovery --poll-interval 120 --port $INNGEST_PORT --connect-gateway-port $INNGEST_CONNECT_GATEWAY_PORT --connect-gateway-grpc-port $INNGEST_CONNECT_GATEWAY_GRPC_PORT --connect-executor-grpc-port $INNGEST_CONNECT_EXECUTOR_GRPC_PORT -u https://localhost:$PORT/api/v1/inngest" C-m
+fi
 
 # Return to server pane (left)
 tmux select-pane -L
