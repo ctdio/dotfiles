@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Ensure standard tmux sessions exist
+# Usage: ensure-sessions [--attach]
+
+# Session directories (session name = directory basename)
+SESSION_DIRS=(
+  "/Users/charlieduong/projects/private/opine/platform-wta"
+  "/Users/charlieduong/projects/private/opine/platform-wtb"
+  "/Users/charlieduong/projects/private/opine/platform-wtc"
+  "/Users/charlieduong/projects/private/opine/platform-wtd"
+  "/Users/charlieduong/projects/private/opine/platform-wte"
+  "/Users/charlieduong/projects/private/opine/platform-wtf"
+  "/Users/charlieduong/dotfiles"
+  "/Users/charlieduong/projects/open-source/skim"
+)
+
+attach_first=false
+if [[ "$1" == "--attach" ]]; then
+  attach_first=true
+fi
+
+first_session=""
+
+for path in "${SESSION_DIRS[@]}"; do
+  name=$(basename "$path")
+
+  if ! tmux has-session -t "$name" 2>/dev/null; then
+    if [[ -d "$path" ]]; then
+      tmux new-session -d -s "$name" -c "$path"
+      echo "Created session: $name"
+    else
+      echo "Warning: Directory not found: $path"
+    fi
+  else
+    echo "Session exists: $name"
+  fi
+
+  [[ -z "$first_session" ]] && first_session="$name"
+done
+
+# Optionally attach to first session
+if $attach_first && [[ -n "$first_session" ]]; then
+  if [[ -z "$TMUX" ]]; then
+    tmux attach -t "$first_session"
+  else
+    tmux switch-client -t "$first_session"
+  fi
+fi
