@@ -1,3 +1,3 @@
 #!/bin/zsh
 # Session switch - always in popup for TTY
-tmux display-popup -E "tms switch"
+tmux display-popup -E -w 80% -h 60% "tms switch"
