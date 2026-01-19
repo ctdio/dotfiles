@@ -302,6 +302,14 @@ Use this checklist before marking the feature complete:
 - [ ] No regressions in existing functionality
 - [ ] Documentation updated if required
 
+### Phase Commits (REQUIRED)
+Each phase MUST have a commit created after verification passes. Commits gate advancement to the next phase.
+
+- [ ] Phase 1 commit created: `feat(<feature>): complete phase 1 - <name>`
+- [ ] Phase 2 commit created: `feat(<feature>): complete phase 2 - <name>`
+- [ ] Phase 3 commit created: `feat(<feature>): complete phase 3 - <name>`
+- [ ] (Add more as needed for additional phases)
+
 ---
 
 ## Requirement Traceability
@@ -360,6 +368,8 @@ This document provides the strategic roadmap.
 
 **Detailed Docs**: `phase-01-foundation/`
 
+**Completion Gate**: After verification passes, create commit: `feat(<feature>): complete phase 1 - foundation`. This commit gates advancement to Phase 2.
+
 ---
 
 ### Phase 2: Core Features
@@ -371,7 +381,7 @@ This document provides the strategic roadmap.
 - [Deliverable 1]
 - [Deliverable 2]
 
-**Dependencies**: Phase 1 complete
+**Dependencies**: Phase 1 complete (verified by Phase 1 commit)
 
 **PR Strategy**: [explain]
 
@@ -379,10 +389,12 @@ This document provides the strategic roadmap.
 
 **Detailed Docs**: `phase-02-core-features/`
 
+**Completion Gate**: After verification passes, create commit: `feat(<feature>): complete phase 2 - core-features`. This commit gates advancement to Phase 3.
+
 ---
 
 ### Phase 3: Polish
-[Same structure as above]
+[Same structure as above, including Completion Gate]
 
 ## Migration & Rollout Strategy
 
@@ -1124,7 +1136,15 @@ This allows quick navigation with editor commands.
 
 ## Example Plan Reference
 
-See `~/.ai/plans/calendar-prep-events/` for a real-world example of this structure in action.
+**Template examples:**
+This skill includes example templates in `examples/` showing well-structured documents based on a "Task Comments" feature:
+- `examples/overview-example.md` - How to write a concise, navigable overview
+- `examples/spec-example.md` - How to write testable requirements with acceptance criteria
+- `examples/implementation-guide-example.md` - How to structure phases with required tests and completion criteria
+- `examples/phase-technical-details-example.md` - How to document implementation details
+- `examples/phase-files-to-modify-example.md` - How to list files for quick context gathering
+
+Review these examples before creating your first plan.
 
 ## Integration with Existing Workflow
 

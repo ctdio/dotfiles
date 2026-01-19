@@ -94,6 +94,14 @@ This skill helps you execute feature plans created by the feature-planning skill
     - Update Spec Requirements Status in implementation-state.md
     - Only mark phase complete when all relevant requirements AND tests pass
 
+11. **Create phase commit (GATES NEXT PHASE)**
+    - After verification passes, create a commit for the completed phase
+    - Commit message format: `feat(<feature>): complete phase N - <phase-name>`
+    - Include all files modified in this phase
+    - The commit serves as a checkpoint and gates advancement to the next phase
+    - Update implementation-state.md with commit hash
+    - **DO NOT advance to next phase without creating this commit**
+
 ## Implementation State Format
 
 The `implementation-state.md` file tracks progress and lives in the plan directory:
@@ -133,6 +141,7 @@ Track which requirements from spec.md are satisfied:
 **Status**: completed
 **Started**: [Date]
 **Completed**: [Date]
+**Commit**: `abc123f` - feat(feature): complete phase 1 - foundation
 **Implementation PR**: #123
 
 ### Spec Requirements Addressed
@@ -158,6 +167,7 @@ Track which requirements from spec.md are satisfied:
 
 **Status**: in_progress
 **Started**: [Date]
+**Commit**: ⏳ Pending (create after verification passes)
 
 ### Spec Requirements to Address
 - FR-3, FR-4 (partial), NFR-2
@@ -566,6 +576,7 @@ A good implementation should:
 - ✅ Track spec requirements satisfaction in implementation-state.md
 - ✅ Track test status (written/failing/passing) in state file
 - ✅ Verify spec requirements before marking phases complete
+- ✅ **Create a commit after each phase verification passes (gates next phase)**
 - ✅ Always use Plan agent before proposing implementation
 - ✅ Maintain accurate implementation-state.md
 - ✅ Complete phases in order (unless explicitly told otherwise)
@@ -613,6 +624,9 @@ A good implementation should:
 
 ❌ **Don't**: Forget to track which spec requirements are satisfied
 ✅ **Do**: Update Spec Requirements Status section in implementation-state.md
+
+❌ **Don't**: Advance to next phase without creating a commit
+✅ **Do**: Create a phase commit after verification passes - this gates advancement
 
 ## Example State Update
 
@@ -756,7 +770,9 @@ You: [Creates implementation-state.md with phases and tasks]
 [Implements chunk 2, updates state file]
 [Implements chunk 3, updates state file]
 [Implements chunk 4, updates state file]
-[Marks phase 1 as complete in state file]
+[Runs verification: build, lint, type-check, tests - all pass]
+[Creates commit: feat(calendar-sync): complete phase 1 - foundation]
+[Updates state file with commit hash, marks phase 1 as complete]
 
 Phase 1 complete! Updated implementation-state.md with progress.
 
@@ -848,6 +864,15 @@ If implementing a feature that depends on another:
 3. Document dependency in current state file
 4. Reference other feature's completed work
 
+## Example References
+
+**Template examples:**
+This skill includes example templates in `examples/` showing well-maintained state files based on a "Task Comments" feature:
+- `examples/implementation-state-example.md` - Complete implementation state with multiple phases, spec tracking, required tests, and verification output
+- `examples/in-progress-phase-example.md` - How to track state during active TDD implementation (red/green tests)
+
+Review these examples to understand the expected format and level of detail.
+
 ## Remember
 
 This skill is about **systematic execution with TDD, persistent tracking, and spec compliance**. The key differences from regular implementation:
@@ -860,6 +885,7 @@ This skill is about **systematic execution with TDD, persistent tracking, and sp
 6. **Always propose first** - Get user buy-in before implementing
 7. **Always update continuously** - Don't batch state updates
 8. **Verify before completing** - All tests pass AND spec requirements met before marking done
+9. **Commit gates advancement** - Create a commit after each phase verification passes; do NOT advance without it
 
 Your goal is to make implementation resumable, trackable, test-driven, and spec-compliant. Future you (or another agent) should be able to:
 - Pick up exactly where you left off by reading the state file

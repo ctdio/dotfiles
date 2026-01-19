@@ -45,6 +45,7 @@ Execute a feature plan from `~/.ai/plans/{feature}/` with strict quality gate en
 **Status**: completed | in_progress | pending
 **Started**: {DATE}
 **Completed**: {DATE}
+**Commit**: {HASH} - feat({feature}): complete phase 1 - {name}
 
 ### Verification Results
 - Build: PASS
@@ -124,6 +125,26 @@ npm run test
 ### Step 4: Phase-Specific Checks
 If the plan lists phase-specific checks, verify each one manually and document in state file.
 
+### Step 5: Create Phase Commit (GATES NEXT PHASE)
+After ALL verification checks pass, create a commit for the completed phase:
+
+```bash
+# Stage all files modified in this phase
+git add .
+
+# Create commit with standardized message
+git commit -m "feat(<feature>): complete phase N - <phase-name>
+
+- Summary of deliverables completed
+- Tests passing: X/X
+- Verification: build, lint, type-check, tests all pass"
+```
+
+**CRITICAL**:
+- DO NOT advance to the next phase without creating this commit
+- The commit serves as a checkpoint and proof of verified completion
+- Record the commit hash in implementation-state.md
+
 ---
 
 ## Phase: Advance to Next Phase
@@ -132,10 +153,13 @@ If the plan lists phase-specific checks, verify each one manually and document i
 
 **Actions**:
 1. Confirm current phase verification passed (re-check state file)
-2. Check dependencies for next phase (read plan)
-3. Update state file: Current Phase = next phase number
-4. Update todos
-5. Begin "Implement Current Phase" for next phase
+2. **Confirm phase commit was created** (check state file for commit hash)
+3. Check dependencies for next phase (read plan)
+4. Update state file: Current Phase = next phase number
+5. Update todos
+6. Begin "Implement Current Phase" for next phase
+
+**BLOCKER**: If no commit hash is recorded for the current phase, DO NOT advance. Go back and create the commit first.
 
 ---
 
@@ -209,6 +233,7 @@ npm run build && npm run lint && npm run type-check && npm run test && echo "ALL
 - **DO NOT** proceed past type errors or lint errors
 - **DO NOT** assume tests pass without running them
 - **DO NOT** lie about verification results in implementation-state.md
+- **DO NOT** advance to the next phase without creating a commit for the current phase
 
 ---
 
@@ -231,7 +256,8 @@ npm run build && npm run lint && npm run type-check && npm run test && echo "ALL
    - Run: npm run lint → PASS
    - Run: npm run type-check → PASS
    - Run: npm run test → PASS
-   - All passed! Update state, advance to Phase 2
+   - All passed! Create commit: feat(turbopuffer): complete phase 1 - foundation
+   - Update state with commit hash, advance to Phase 2
 
 5. [Implement Phase 2]
    - Read phase-02-dual-write/technical-details.md
@@ -244,7 +270,8 @@ npm run build && npm run lint && npm run type-check && npm run test && echo "ALL
    - Re-run: npm run lint → PASS
    - Run: npm run type-check → PASS
    - Run: npm run test → PASS
-   - All passed! Update state, advance to Phase 3
+   - All passed! Create commit: feat(turbopuffer): complete phase 2 - dual-write
+   - Update state with commit hash, advance to Phase 3
 
 ... continue until all phases complete ...
 
