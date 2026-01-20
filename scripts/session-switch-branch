@@ -36,11 +36,17 @@ get_branch() {
 # Store sessions in array first to avoid subshell issues
 sessions=()
 paths=()
-while read -r session path; do
+# Use session_path (stable) with pane_current_path fallback
+while read -r session spath ppath; do
   [ "$session" = "$current_session" ] && continue
   sessions+=("$session")
-  paths+=("$path")
-done < <(tmux list-sessions -F '#{session_name} #{pane_current_path}' 2>/dev/null)
+  # Prefer session_path (set at creation), fall back to pane_current_path
+  if [ -n "$spath" ] && [ -d "$spath" ]; then
+    paths+=("$spath")
+  else
+    paths+=("$ppath")
+  fi
+done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
 
 # Parallel branch lookups
 for i in "${!sessions[@]}"; do
