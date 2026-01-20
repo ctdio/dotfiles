@@ -11,20 +11,33 @@ Generate a casual status update for Slack by checking git history and recently m
 1. Get the current date using the `date` command
 2. Calculate the lookback date based on the timeframe (default: 1 day)
 3. Check git log for commits by the current user within the timeframe
-4. Use `gh pr list` to find recently merged PRs by the current user
-5. Create a casual summary suitable for posting in Slack
-6. Sort items in chronological order (oldest first, newest last)
+4. Use `gh pr list --state merged` to find recently merged PRs by the current user
+5. Use `gh pr list --state open --author @me` and `gh pr list --state closed --author @me` to find PRs submitted within the timeframe (check the `createdAt` date)
+6. Create a casual summary suitable for posting in Slack
+7. Sort items in chronological order (oldest first, newest last)
+
+## PR Categories
+
+When reporting on PRs, distinguish between:
+- **Merged PRs**: PRs that were merged within the timeframe
+- **Submitted PRs**: PRs that were opened/created within the timeframe (may still be open or under review)
 
 ## Output Format
 
-Write a casual list using dashes (not bullet points) like you're updating your team on Slack, in chronological order with the latest items at the bottom. For example:
+Write a casual status update for Slack with two sections:
+
+**Since last update**
 - Fixed that annoying bug with user auth
 - Added dark mode to the settings page
-- Cleaned up some old code in the API
 - Got the new search feature working
 
-Keep it conversational and focus on what got done, not PR numbers or technical jargon. No fluff, just straight to the point.
+**In progress**
+- Notification system overhaul (PR in review)
+- Database migration for user preferences (draft PR up)
 
-**Important**: 
-- Use plain dashes (-) for the list items, not markdown bullets (•) or other unicode characters, to ensure easy copy/paste into Slack and other markdown-supporting systems
-- List items in chronological order with the oldest work at the top and the most recent work at the bottom
+### Guidelines
+- **Since last update**: Merged PRs and completed work within the timeframe, sorted chronologically (oldest first)
+- **In progress**: Open PRs submitted within the timeframe - include brief status like "PR in review", "draft PR up", "awaiting feedback"
+- Keep it conversational, focus on what got done, no PR numbers or technical jargon
+- Use plain dashes (-) for list items to ensure easy copy/paste into Slack
+- Omit a section entirely if there's nothing to report for it
