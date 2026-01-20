@@ -77,14 +77,30 @@ This skill helps you execute feature plans created by the feature-planning skill
    - Use TodoWrite for task tracking during implementation
    - Refactor as needed while keeping tests green
    - Cross-reference spec.md to ensure requirements are being met
+   - **UPDATE implementation-state.md after EVERY completed task** (see step 9)
 
-9. **Maintain state tracking**
-   - Update `implementation-state.md` after completing each major chunk
-   - Mark chunks as in_progress, completed, or blocked
-   - Track which spec requirements are satisfied by completed work
-   - Track which tests are passing
-   - Document any deviations from the plan
-   - Note any discoveries or gotchas for future phases
+9. **Maintain state tracking (CRITICAL - UPDATE CONTINUOUSLY)**
+
+   **YOU MUST UPDATE `implementation-state.md` AS YOU WORK, NOT JUST AT THE END.**
+
+   **Update the state file IMMEDIATELY when:**
+   - ✅ You complete ANY task (mark it done, add timestamp)
+   - ✅ You start a new task (mark it in_progress)
+   - ✅ A test goes from failing to passing (update test status)
+   - ✅ You satisfy a spec requirement (update Spec Requirements Status)
+   - ✅ You discover a gotcha or make a decision (document it)
+   - ✅ You encounter a blocker (mark task blocked with reason)
+   - ✅ You deviate from the plan (document why)
+
+   **State update format for completed tasks:**
+   ```markdown
+   ### Completed Tasks
+   - ✅ [Task name] - [Brief note about what was done]
+   ```
+
+   **DO NOT batch state updates.** Update after EACH task, not at the end of a session.
+
+   The state file is your persistent memory - future sessions depend on it being accurate.
 
 10. **Verify against spec before completing phase**
     - Review all spec requirements relevant to this phase
@@ -333,12 +349,87 @@ When user says: "Implement the [feature-name] plan" or "Start working on [featur
    - Show user the proposed approach
    - Get approval before proceeding
 
-6. **Create initial implementation state**
-   - Create `implementation-state.md` with phases from the plan
-   - Include Spec Requirements Status section at the top
-   - Mark current phase as in_progress
-   - List spec requirements to address in this phase
-   - List planned tasks for current phase
+6. **Create initial implementation state (CRITICAL - DO NOT SKIP)**
+
+   **YOU MUST CREATE `implementation-state.md` BEFORE IMPLEMENTING ANYTHING.**
+
+   Create the file at `~/.ai/plans/<feature-name>/implementation-state.md` using Write tool with this template:
+
+   ```markdown
+   # Implementation State: [Feature Name]
+
+   **Last Updated**: [Today's Date]
+   **Current Phase**: phase-01-[name]
+   **Status**: in_progress
+
+   ---
+
+   ## Spec Requirements Status
+
+   ### Functional Requirements
+   - ⏳ FR-1: [Name] - Pending
+   - ⏳ FR-2: [Name] - Pending
+   [Copy ALL from spec.md]
+
+   ### Non-Functional Requirements
+   - ⏳ NFR-1: [Name] - Pending
+   [Copy ALL from spec.md]
+
+   ### Constraints
+   - ⏳ C-1: [Name] - Pending
+   [Copy ALL from spec.md]
+
+   ---
+
+   ## Phase 1: [Phase Name]
+
+   **Status**: in_progress
+   **Started**: [Today's Date]
+   **Commit**: ⏳ Pending (create after verification passes)
+
+   ### Spec Requirements to Address
+   - [List requirements this phase will satisfy]
+
+   ### Tests Written (TDD)
+   - ⏳ [List tests to write based on spec]
+
+   ### Planned Tasks
+   - [ ] [Task from phase-01 docs]
+   - [ ] [Task from phase-01 docs]
+
+   ---
+
+   ## Phase 2: [Phase Name]
+
+   **Status**: pending
+   **Dependencies**: Phase 1 must be completed
+
+   ### Spec Requirements to Address
+   - [List requirements]
+
+   ### Planned Tasks
+   - [ ] [Task from phase-02 docs]
+
+   [Continue for ALL phases from the plan]
+
+   ---
+
+   ## Quick Status Summary
+
+   - **What's Done**: Nothing yet - just starting
+   - **What's In Progress**: Phase 1
+   - **What's Next**: [First task]
+   - **Blockers**: None
+   ```
+
+   **Steps to create the state file:**
+   1. Read overview.md to get all phase names
+   2. Read spec.md and copy ALL requirements (FR, NFR, Constraints)
+   3. Read each phase-XX directory to get planned tasks
+   4. Use Write tool to create `~/.ai/plans/<feature>/implementation-state.md`
+   5. Mark phase 1 as in_progress with today's date
+
+   **DO NOT proceed to step 7 until implementation-state.md exists.**
 
 7. **Execute with TDD**
    - Write tests FIRST based on spec's Testing Requirements
@@ -607,8 +698,11 @@ A good implementation should:
 ❌ **Don't**: Start implementing without proposing approach first
 ✅ **Do**: Propose concrete steps and get user approval
 
-❌ **Don't**: Forget to update implementation-state.md
-✅ **Do**: Update state after each major chunk
+❌ **Don't**: Skip creating implementation-state.md before implementing
+✅ **Do**: Create the state file FIRST, before any implementation work
+
+❌ **Don't**: Forget to update implementation-state.md after completing tasks
+✅ **Do**: Update state IMMEDIATELY after EVERY completed task - not just "major chunks"
 
 ❌ **Don't**: Skip phases or dependencies
 ✅ **Do**: Implement in order unless explicitly told otherwise
@@ -616,8 +710,11 @@ A good implementation should:
 ❌ **Don't**: Ignore existing codebase patterns
 ✅ **Do**: Use Plan agent to discover and follow patterns
 
-❌ **Don't**: Batch all state updates at the end
-✅ **Do**: Update state continuously as you progress
+❌ **Don't**: Batch all state updates at the end of a session
+✅ **Do**: Update state continuously AS YOU WORK - after each task, each test pass, each decision
+
+❌ **Don't**: Let the state file become stale or outdated
+✅ **Do**: Keep implementation-state.md as the accurate source of truth at all times
 
 ❌ **Don't**: Hide blockers or challenges
 ✅ **Do**: Document blockers clearly and explain impact

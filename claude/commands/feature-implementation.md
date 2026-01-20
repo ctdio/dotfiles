@@ -16,10 +16,12 @@ Execute a feature plan from `~/.ai/plans/{feature}/` with strict quality gate en
 
 ## Core Principles
 
-1. **Plan is the contract** - The plan's Completion Criteria define "done"
-2. **Verify before advancing** - Run ALL verification commands before marking phases complete
-3. **No broken code** - Never advance with failing tests, lint errors, or type errors
-4. **Reflect before claiming done** - Self-verify against criteria before outputting promise
+1. **Plan is the contract** - The plan's Completion Criteria define "done". Every deliverable is mandatory.
+2. **Exhaustive implementation** - Complete EVERY task, EVERY sub-task, EVERY detail. Partial implementation = failure.
+3. **Verify before advancing** - Run ALL verification commands before marking phases complete
+4. **No broken code** - Never advance with failing tests, lint errors, or type errors
+5. **Reflect before claiming done** - Self-verify against criteria before outputting promise
+6. **Re-read the plan constantly** - Don't rely on memory. Go back to the source document repeatedly.
 
 ---
 
@@ -29,9 +31,14 @@ Execute a feature plan from `~/.ai/plans/{feature}/` with strict quality gate en
 
 **Actions**:
 1. Read `~/.ai/plans/{feature}/implementation-guide.md` (or overview.md)
-2. Read `~/.ai/plans/{feature}/implementation-state.md` (create if missing)
-3. Identify current phase from state file
-4. Create todo list tracking all phases
+2. Read `~/.ai/plans/{feature}/spec.md` to understand all requirements
+3. Check if `~/.ai/plans/{feature}/implementation-state.md` exists
+4. **IF STATE FILE DOES NOT EXIST: CREATE IT IMMEDIATELY** (see format below)
+5. Identify current phase from state file
+6. Create todo list tracking all phases
+
+**CRITICAL: You MUST create implementation-state.md before any implementation work.**
+If the file doesn't exist, use the Write tool to create it with all phases and requirements from the plan.
 
 **State File Format** (`implementation-state.md`):
 ```markdown
@@ -68,20 +75,93 @@ Execute a feature plan from `~/.ai/plans/{feature}/` with strict quality gate en
 
 ## Phase: Implement Current Phase
 
-**Goal**: Complete the current phase according to the plan
+**Goal**: Complete EVERY deliverable in the current phase according to the plan
 
 **Actions**:
-1. Read phase-specific docs from plan (e.g., `phase-01-foundation/technical-details.md`)
-2. Read files identified in the plan
-3. Implement deliverables one by one
-4. Update todos as you progress
-5. Document any deviations in state file
+1. Read ALL phase-specific docs from plan (e.g., `phase-01-foundation/technical-details.md`, `technical-details.md`, any linked files)
+2. **Extract and enumerate ALL deliverables/tasks** - create a comprehensive checklist
+3. Read files identified in the plan
+4. Implement deliverables one by one, checking them off
+5. Update todos as you progress
+6. Document any deviations in state file
+
+### Exhaustive Implementation Protocol (CRITICAL)
+
+**Before implementing ANYTHING**, extract a complete task list:
+
+1. **Read the ENTIRE phase documentation** - don't skim, read every line
+2. **List ALL deliverables** mentioned in:
+   - The deliverables section
+   - The task breakdown
+   - Code examples that need to be implemented
+   - Integration points mentioned
+   - Tests that need to be written
+   - Any "also need to" or "don't forget to" items
+3. **Create a todo item for EACH deliverable** using TodoWrite
+4. **Cross-reference** the plan multiple times as you implement
+
+**During implementation**:
+- After completing each task, re-read that section of the plan to verify you didn't miss sub-tasks
+- If the plan says "implement X with features A, B, C" - verify A, B, AND C are all done
+- If the plan shows example code, implement ALL of it (not just parts)
+- If the plan mentions edge cases, handle ALL of them
+- **UPDATE implementation-state.md after EVERY completed task** (see below)
+
+**STATE FILE UPDATES (MANDATORY)**:
+Update `implementation-state.md` IMMEDIATELY when:
+- You complete a task → mark it ✅ with brief note
+- You start a task → mark it 🔄 in_progress
+- A test passes → update test status
+- You satisfy a spec requirement → update Spec Requirements Status
+- You discover a gotcha → add to Gotchas section
+- You encounter a blocker → mark task ⛔ with reason
+
+**DO NOT batch updates. Update after EACH task completion.**
 
 **CRITICAL RULES**:
+- **COMPLETE EVERY TASK** - partial implementation is not acceptable
+- **UPDATE STATE FILE CONTINUOUSLY** - not just at end of phase
 - Follow the plan's specified approach
 - Match existing codebase patterns
 - Write tests for new code
 - Do NOT skip to next phase until current phase passes verification
+- **Do NOT advance if ANY deliverable is incomplete**
+
+---
+
+## Phase: Completeness Check (Pre-Verification)
+
+**Goal**: Ensure EVERY deliverable is complete before running verification
+
+**This phase is MANDATORY before verification. DO NOT SKIP.**
+
+### Step 1: Re-read the Phase Plan
+Go back and read the entire phase documentation again. Don't rely on memory.
+
+### Step 2: Deliverable Audit
+For each deliverable/task in the plan:
+1. **Find the implementation** - locate the actual code you wrote
+2. **Verify completeness** - does it match what the plan specified?
+3. **Check sub-items** - if the task has multiple parts, are ALL parts done?
+4. **Mark verified** in your todo list
+
+### Step 3: Compare Against Plan Checklist
+
+Ask yourself for EACH item in the plan:
+- [ ] Is this implemented?
+- [ ] Is it implemented FULLY (not partially)?
+- [ ] Does it match the plan's specification?
+- [ ] Are there tests for it (if tests were required)?
+
+### Step 4: Fill Gaps
+
+If you find ANY incomplete deliverable:
+1. **STOP** - do not proceed to verification
+2. Implement the missing item
+3. Re-run this completeness check
+4. Only proceed when ALL items are verified complete
+
+**BLOCKER**: Do NOT proceed to Verification Gate if ANY deliverable is incomplete or partially implemented.
 
 ---
 
@@ -171,6 +251,16 @@ git commit -m "feat(<feature>): complete phase N - <phase-name>
 
 Before outputting `<promise>FEATURE_COMPLETE</promise>`, verify:
 
+**Exhaustiveness Check (CRITICAL)**:
+```
+[ ] Re-read the ENTIRE implementation-guide.md one final time
+[ ] For EACH phase: verify EVERY deliverable listed was implemented
+[ ] For EACH deliverable: verify it matches the spec exactly
+[ ] No tasks were skipped because they seemed minor or optional
+[ ] No partial implementations - everything is 100% complete
+```
+
+**Technical Verification**:
 ```
 [ ] ALL phases marked complete in implementation-state.md
 [ ] FINAL npm run build passes (run it now, don't assume)
@@ -226,6 +316,16 @@ npm run build && npm run lint && npm run type-check && npm run test && echo "ALL
 
 ## Anti-Patterns to Avoid
 
+### Exhaustiveness Violations
+- **DO NOT** implement only "the main parts" and skip details
+- **DO NOT** skim the plan - read EVERY line
+- **DO NOT** assume you know what the plan says from memory - re-read it
+- **DO NOT** mark a task complete if it's only partially done
+- **DO NOT** skip sub-tasks or "nice to have" items that are in the plan
+- **DO NOT** advance phases if ANY deliverable is incomplete
+- **DO NOT** interpret "implement X" as "implement the easy parts of X"
+
+### Verification Violations
 - **DO NOT** output `<promise>FEATURE_COMPLETE</promise>` if any verification fails
 - **DO NOT** skip running verification commands to save time
 - **DO NOT** mark phases complete without running the checks
@@ -234,6 +334,18 @@ npm run build && npm run lint && npm run type-check && npm run test && echo "ALL
 - **DO NOT** assume tests pass without running them
 - **DO NOT** lie about verification results in implementation-state.md
 - **DO NOT** advance to the next phase without creating a commit for the current phase
+
+### State Tracking Violations
+- **DO NOT** skip creating implementation-state.md at the start
+- **DO NOT** batch state updates - update after EVERY task
+- **DO NOT** wait until end of session to update the state file
+- **DO NOT** forget to mark tasks as complete when done
+- **DO NOT** forget to update Spec Requirements Status when requirements are satisfied
+- **DO NOT** leave the state file stale or outdated
+- **DO NOT** rely on TodoWrite alone - implementation-state.md is the persistent record
+
+### Completeness Mindset
+**Think of the plan as a legal contract.** Every deliverable listed is a contractual obligation. "Mostly done" is breach of contract. The feature is not complete until EVERY item is implemented EXACTLY as specified (or deviations are explicitly documented with justification).
 
 ---
 
