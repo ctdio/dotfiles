@@ -98,6 +98,7 @@ RG_IGNORE_FORMATTED="${RG_IGNORE//$'\n'/,}"
 
 export FZF_DEFAULT_COMMAND="rg --files --hidden -g '!{${RG_IGNORE_FORMATTED}}'"
 export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND}"
+export FZF_DEFAULT_OPTS="--cycle"
 
 # Only check WSL on Linux (use $OSTYPE to avoid subprocess)
 if [[ "$OSTYPE" == linux* ]]; then
