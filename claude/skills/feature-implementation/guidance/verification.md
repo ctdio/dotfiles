@@ -1,0 +1,341 @@
+# Verification Guidance
+
+This guide is for the **phase-verifier** agent. Read this for detailed guidance on how to verify a phase implementation.
+
+## Core Principles
+
+1. **Independent Verification**: You verify work done by the implementer - be thorough and objective
+2. **Evidence-Based**: Every check must have evidence (command output, file location, etc.)
+3. **Actionable Feedback**: If something fails, provide specific, actionable fix suggestions
+4. **Spec Compliance**: Verify against spec.md requirements, not just technical correctness
+
+---
+
+## Verification Process
+
+### Step 1: Run Technical Checks
+
+Run the standard verification commands in order:
+
+```bash
+# 1. Type checking (catch type errors)
+npm run type-check  # or tsc --noEmit, etc.
+
+# 2. Linting (catch style/quality issues)
+npm run lint
+
+# 3. Build (ensure it compiles)
+npm run build
+
+# 4. Tests (ensure functionality works)
+npm run test
+```
+
+**Capture the output** of each command for your result.
+
+### Step 2: Verify Deliverables
+
+For each deliverable in the plan:
+
+1. **Check it exists**: Find the file/function/class mentioned
+2. **Check it's correct**: Does it match the specification?
+3. **Check it's tested**: Are there tests covering it?
+4. **Document evidence**: File path, line number, what you found
+
+### Step 3: Check Spec Requirements
+
+Cross-reference with `spec.md`:
+
+1. **Functional Requirements**: Are the required features present and working?
+2. **Non-Functional Requirements**: Performance, security, etc. met?
+3. **Constraints**: Are any constraints violated?
+4. **Acceptance Criteria**: Does each criterion pass?
+
+### Step 4: Review Code Quality
+
+Check for common issues:
+
+- Unused imports or variables
+- Commented-out code
+- Missing error handling
+- Inconsistent patterns
+- Security vulnerabilities
+- Performance concerns
+
+---
+
+## Technical Checks Detail
+
+### Type Check
+
+**What to look for:**
+- No type errors
+- No implicit `any` types (if strict mode)
+- Proper type exports
+
+**Pass criteria:**
+```
+0 errors
+```
+
+**Failure example:**
+```
+src/services/example.ts:45:3 - error TS2322: Type 'string' is not assignable to type 'number'.
+```
+
+### Lint Check
+
+**What to look for:**
+- No lint errors
+- No warnings (or only acceptable ones)
+- Consistent code style
+
+**Pass criteria:**
+```
+No lint errors or warnings
+```
+
+**Failure example:**
+```
+src/services/example.ts:12:5 - 'unused' is defined but never used
+```
+
+### Build Check
+
+**What to look for:**
+- Build completes successfully
+- No compilation errors
+- Output files generated
+
+**Pass criteria:**
+```
+Build completed successfully
+```
+
+### Test Check
+
+**What to look for:**
+- All tests pass
+- No skipped tests (unless intentional)
+- Adequate coverage (if metrics available)
+
+**Pass criteria:**
+```
+All tests passed: 142/142
+Coverage: 85% (if applicable)
+```
+
+**Failure example:**
+```
+FAIL src/__tests__/example.test.ts
+  ✗ should handle error case (15ms)
+    Expected: "error message"
+    Received: undefined
+```
+
+---
+
+## Deliverable Verification
+
+For each deliverable, provide:
+
+```yaml
+deliverable_checks:
+  - deliverable: "Create UserService class"
+    status: "PASS"
+    evidence: "Found at src/services/user.ts:15, exports UserService class with required methods"
+
+  - deliverable: "Write unit tests"
+    status: "FAIL"
+    issue: "Missing test for error handling case"
+    location: "src/__tests__/user.test.ts"
+    suggested_fix: "Add test case for network timeout scenario"
+```
+
+### Evidence Types
+
+Good evidence includes:
+- **File paths**: `src/services/user.ts:15`
+- **Function/class names**: `UserService.fetchData()`
+- **Test output**: `15 tests passed`
+- **Command output**: Build completed in 4.2s
+
+### Common Deliverable Issues
+
+| Issue | How to Detect | Suggested Fix |
+|-------|---------------|---------------|
+| Missing file | File not found | Create the file as specified |
+| Missing function | grep/search doesn't find it | Implement the missing function |
+| Missing tests | No test file or empty tests | Write tests for the functionality |
+| Wrong signature | Function params don't match spec | Update signature to match spec |
+| Missing export | Not exported from index | Add to exports |
+
+---
+
+## Issue Severity Levels
+
+Classify issues by severity:
+
+### High Severity
+- Build failures
+- Test failures
+- Missing required functionality
+- Security vulnerabilities
+- Data corruption risks
+
+### Medium Severity
+- Missing edge case handling
+- Incomplete error handling
+- Missing tests for some cases
+- Performance concerns
+
+### Low Severity
+- Code style inconsistencies
+- Missing optional optimizations
+- Documentation gaps
+- Minor refactoring opportunities
+
+---
+
+## Spec Compliance Verification
+
+### Functional Requirements
+
+For each FR in spec.md:
+1. Identify acceptance criteria
+2. Verify each criterion is met
+3. Document evidence or gaps
+
+```yaml
+spec_compliance:
+  FR-1:
+    name: "User authentication"
+    status: "PASS"
+    criteria_checked:
+      - "Users can log in with email/password" - PASS
+      - "Invalid credentials show error" - PASS
+      - "Session persists across page refresh" - PASS
+
+  FR-2:
+    name: "Data validation"
+    status: "PARTIAL"
+    criteria_checked:
+      - "Email format validated" - PASS
+      - "Required fields enforced" - FAIL (missing validation on 'name' field)
+```
+
+### Non-Functional Requirements
+
+Check NFRs that apply to this phase:
+- **Performance**: Response times, resource usage
+- **Security**: Input validation, auth checks, data protection
+- **Reliability**: Error handling, recovery, logging
+- **Maintainability**: Code quality, test coverage
+
+---
+
+## Result Format
+
+Your result must include:
+
+```yaml
+VerifierResult:
+  verdict: "PASS" | "FAIL"
+
+  technical_checks:
+    typecheck:
+      status: "PASS" | "FAIL"
+      output: "0 type errors"
+    lint:
+      status: "PASS" | "FAIL"
+      output: "No lint errors"
+    build:
+      status: "PASS" | "FAIL"
+      output: "Build completed in 4.2s"
+    tests:
+      status: "PASS" | "FAIL"
+      output: "142 tests passed"
+      details: "142/142 passing, 85% coverage"
+
+  deliverable_checks:
+    - deliverable: "Deliverable name"
+      status: "PASS" | "FAIL"
+      evidence: "Found at file:line" | null
+      issue: null | "Description of issue"
+      suggested_fix: null | "How to fix"
+
+  issues:
+    - severity: "high" | "medium" | "low"
+      location: "file:line or component"
+      description: "What's wrong"
+      suggested_fix: "How to fix it"
+
+  summary: |
+    Brief summary of verification results.
+    What passed, what failed, what needs attention.
+```
+
+---
+
+## Verdict Criteria
+
+### PASS
+All of these must be true:
+- ✅ Type check passes
+- ✅ Lint check passes
+- ✅ Build succeeds
+- ✅ All tests pass
+- ✅ All deliverables verified
+- ✅ No high-severity issues
+
+### FAIL
+Any of these triggers a FAIL:
+- ❌ Type check fails
+- ❌ Lint check fails (errors, not warnings)
+- ❌ Build fails
+- ❌ Any test fails
+- ❌ Deliverable missing or incorrect
+- ❌ High-severity issue found
+
+---
+
+## Anti-Patterns to Avoid
+
+❌ **Don't**: Pass without running all checks
+✅ **Do**: Run every verification command
+
+❌ **Don't**: Provide vague issue descriptions
+✅ **Do**: Give specific file:line locations and fix suggestions
+
+❌ **Don't**: Ignore test failures
+✅ **Do**: Report all test failures with details
+
+❌ **Don't**: Skip spec compliance checking
+✅ **Do**: Verify against spec.md requirements
+
+❌ **Don't**: Mark PASS with known issues
+✅ **Do**: FAIL if any high-severity issues exist
+
+---
+
+## Tips for Effective Verification
+
+### Be Thorough
+- Run ALL verification commands
+- Check ALL deliverables
+- Verify against spec, not just "does it compile"
+
+### Be Specific
+- Include exact file paths and line numbers
+- Quote error messages exactly
+- Provide copy-paste-ready fix suggestions
+
+### Be Objective
+- Report what you find, not what you expect
+- Don't assume something works without checking
+- Verify independently of implementer's claims
+
+### Be Helpful
+- Prioritize issues by severity
+- Suggest specific fixes
+- Note patterns (if same issue appears multiple times)

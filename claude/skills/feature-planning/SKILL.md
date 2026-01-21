@@ -19,32 +19,47 @@ This skill helps you create comprehensive, agent-friendly feature plans in `~/.a
 3. **Agent-Friendly Documentation**: Structure content for quick navigation and context gathering
 4. **Context Preservation**: Document decisions, gotchas, and rationale for future reference
 
-## Directory Structure
+## Directory Structure (CRITICAL - EXACT FORMAT REQUIRED)
 
-Create plans following this standard structure:
+The feature-implementation orchestrator expects this **EXACT** structure. Creating files with different names or locations will waste tool calls during implementation.
 
 ```
-~/.ai/plans/feature-name/
-├── overview.md                    # High-level feature summary (START HERE)
-├── spec.md                        # REQUIREMENTS - Must be met for completion
-├── implementation-guide.md        # Phased rollout strategy
-├── phase-01-foundation/
-│   ├── technical-details.md      # Detailed implementation specs
-│   ├── files-to-modify.md        # List of affected files with context
-│   ├── context-notes.md          # Decisions, gotchas, edge cases
-│   └── testing-strategy.md       # Testing approach for this phase
-├── phase-02-core-features/
-│   ├── technical-details.md
+~/.ai/plans/{feature-name}/
+├── overview.md                       # High-level feature summary (START HERE)
+├── spec.md                           # REQUIREMENTS - Must be met for completion
+├── implementation-guide.md           # Phased rollout strategy
+├── phase-01-{name}/
+│   ├── files-to-modify.md            # EXACTLY which files to create/modify
+│   ├── technical-details.md          # HOW to implement
+│   └── testing-strategy.md           # HOW to test
+├── phase-02-{name}/
 │   ├── files-to-modify.md
-│   ├── context-notes.md
+│   ├── technical-details.md
 │   └── testing-strategy.md
-├── phase-03-polish/
+├── phase-NN-{name}/
 │   └── ...
 └── shared/
-    ├── api-contracts.md          # Shared API/interface definitions
-    ├── database-schema.md        # Schema changes across all phases
-    └── architecture-decisions.md # Key architectural choices
+    ├── architecture-decisions.md     # Cross-cutting architectural context
+    └── database-schema.md            # Schema changes (if any)
 ```
+
+### MANDATORY FILES PER PHASE
+
+Each `phase-NN-{name}/` directory **MUST** contain exactly these three files:
+
+| File | Purpose | Read By Implementer |
+|------|---------|---------------------|
+| `files-to-modify.md` | Lists EXACTLY which files to create, modify, or reference | First - to understand scope |
+| `technical-details.md` | HOW to implement - code patterns, architecture | Second - for implementation |
+| `testing-strategy.md` | HOW to test - test cases, mocks, verification | Third - for testing |
+
+### FILE NAMING RULES
+
+- Phase directories: `phase-{NN}-{kebab-case-name}` (e.g., `phase-01-foundation`)
+- All files use exact names above - NO variations like `context-notes.md` or `api-contracts.md`
+- Feature name directory: kebab-case (e.g., `salesforce-activity-email-analysis`)
+
+**DO NOT** create files with different names. The implementer reads these paths directly without searching.
 
 ## Document Templates
 
@@ -639,148 +654,7 @@ Quick lookup of where important concepts are defined:
 - **Tests**: `test/integration/feature.test.ts`
 ```
 
-### 5. Phase Directory: context-notes.md Template
-
-Capture decisions and gotchas for future agents.
-
-```markdown
-# Phase [N]: Context & Decisions
-
-## Key Decisions
-
-### Decision 1: [Decision Name]
-
-**Context**: [Why this decision was needed]
-
-**Options Considered**:
-1. **[Option A]** - [Pros/cons]
-2. **[Option B]** - [Pros/cons]
-3. **[Option C]** - [Pros/cons]
-
-**Decision**: [What was chosen]
-
-**Rationale**: [Why this option was best]
-
-**Trade-offs**: [What we're giving up]
-
----
-
-### Decision 2: [Decision Name]
-
-[Repeat structure]
-
----
-
-## Gotchas & Pitfalls
-
-### Gotcha 1: [Name]
-
-**Issue**: [What's the problem]
-
-**Why It Happens**: [Root cause]
-
-**Solution**: [How to avoid/handle]
-
-**Reference**: `file.ts:123` - [Where this is relevant]
-
----
-
-### Gotcha 2: [Name]
-
-[Repeat structure]
-
----
-
-## Implementation Notes
-
-### Optimization: [Name]
-
-**What**: [What's optimized]
-
-**Why**: [Why optimization is needed]
-
-**How**: [Implementation approach]
-
-**Measurement**: [How to verify it works]
-
----
-
-### Workaround: [Name]
-
-**Problem**: [What problem this works around]
-
-**Root Cause**: [Why the workaround is needed]
-
-**Workaround**: [What the workaround does]
-
-**Future**: [Can this be removed later? When?]
-
----
-
-## Related Code Patterns
-
-### Pattern: [Pattern Name]
-
-**Used In**: [Where in codebase]
-
-**Example**:
-```typescript
-// Show the pattern
-```
-
-**When to Use**: [Guidelines for when to apply this pattern]
-
-**When Not to Use**: [When to use a different approach]
-
----
-
-## External Dependencies
-
-### Library: [name]
-
-**Version**: [version]
-
-**Why Needed**: [Rationale for using this library]
-
-**Key APIs Used**:
-- `api.method()` - [What it does in our context]
-
-**Gotchas**: [Any library-specific gotchas]
-
-**Alternatives Considered**: [Why we didn't use X or Y]
-
----
-
-## Questions & Uncertainties
-
-### Open Question 1: [Question]
-
-**Context**: [Why this is uncertain]
-
-**Options**:
-1. [Option A] - [Impact]
-2. [Option B] - [Impact]
-
-**Current Approach**: [What we're doing for now]
-
-**Future Decision Point**: [When this needs to be resolved]
-
----
-
-## Future Considerations
-
-### Potential Enhancement: [Name]
-
-**Description**: [What could be added later]
-
-**Why Not Now**: [Why it's not in current scope]
-
-**Prerequisites**: [What needs to be done first]
-
-**Estimated Effort**: [Straightforward/moderate/complex]
-```
-
-### 6. Phase Directory: testing-strategy.md Template
+### 5. Phase Directory: testing-strategy.md Template
 
 ```markdown
 # Phase [N]: Testing Strategy
@@ -1009,7 +883,7 @@ You: Based on that:
 - Any ambiguous terms (define them explicitly)
 
 **Document Your Questions:**
-Keep a record of questions asked and answers received. This becomes valuable context in the plan's `context-notes.md` or `overview.md`.
+Keep a record of questions asked and answers received. This becomes valuable context in the plan's `overview.md` or `shared/architecture-decisions.md`.
 
 ### How to Create a Plan
 
@@ -1083,7 +957,6 @@ Use numbered prefixes for clear ordering:
 - Implement with full context
 
 **Level 5 - Deep Context** (as needed):
-- Read context-notes.md for decisions and gotchas
 - Review testing-strategy.md before writing tests
 - Check shared/ directory for cross-phase concerns
 
