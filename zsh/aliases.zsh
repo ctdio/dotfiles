@@ -61,7 +61,7 @@ alias yt='yarn test'
 alias ai="aider --read=~/dotfiles/prompts/system.md"
 alias ai-r1="ai --architect --model=fireworks_ai/accounts/fireworks/models/deepseek-r1 --editor-model=claude-3-5-sonnet-20241022"
 alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-20241022"
-alias cc='claude --add-dir ~/.ai/plans --dangerously-skip-permissions'
+alias cc='claude --add-dir ~/.ai --dangerously-skip-permissions'
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
