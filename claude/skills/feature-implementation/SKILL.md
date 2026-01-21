@@ -721,6 +721,34 @@ Final verification: PASS
 5. **State is sacred** - Spawn state-manager after every phase verification
 6. **Fail gracefully** - 3 strikes then ask for help
 7. **Complete or nothing** - Only output promise when truly done
+8. **Wait for agents** - NEVER run sub-agents in background; wait for their results
+
+---
+
+## Critical: How to Spawn Agents
+
+**ALWAYS wait for agent results. NEVER use `run_in_background: true`.**
+
+```
+# CORRECT - Wait for result
+Task(
+  subagent_type: "feature-implementation-phase-implementer",
+  prompt: "Implement Phase 1: ..."
+)
+# Orchestrator waits here until agent returns
+# Then processes the ImplementerResult
+
+# WRONG - Don't do this
+Task(
+  subagent_type: "...",
+  run_in_background: true,  # ❌ NEVER
+  prompt: "..."
+)
+```
+
+**Do NOT resume agents** unless they explicitly returned `status: "blocked"`. If an agent returns `status: "complete"`, proceed to the next step (verification or next phase).
+
+**Each agent invocation is atomic** - the agent does its full job and returns a result. You don't need to babysit or send "Continue" prompts.
 
 ---
 
