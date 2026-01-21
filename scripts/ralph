@@ -1,0 +1,23 @@
+#!/bin/zsh
+
+# Ralph loop launcher
+# Uses shell's vi mode for input
+
+echo "Prompt (vi mode enabled):"
+vared -p "> " -c prompt
+[[ -z "$prompt" ]] && echo "error: prompt required" && exit 1
+
+echo "Max iterations [10]:"
+vared -p "> " -c max_iter
+max_iter=${max_iter:-10}
+[[ ! "$max_iter" =~ ^[0-9]+$ ]] && echo "error: iterations must be a number" && exit 1
+
+echo "Completion promise:"
+vared -p "> " -c promise
+[[ -z "$promise" ]] && echo "error: completion promise required" && exit 1
+
+cmd="/ralph-loop:ralph-loop \"${prompt}\" --max-iterations ${max_iter} --completion-promise \"${promise}\""
+
+echo "\n$cmd\n"
+
+exec claude --add-dir ~/.ai --dangerously-skip-permissions "$cmd"
