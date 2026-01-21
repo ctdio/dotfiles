@@ -29,7 +29,8 @@
     "ralph-loop@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true,
+    "skim@skim": true
   },
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true
