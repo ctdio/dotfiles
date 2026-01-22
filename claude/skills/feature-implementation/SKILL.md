@@ -757,6 +757,7 @@ review_fix_context:
 
    Task(
      subagent_type: "feature-implementation-state-manager",
+     mode: "bypassPermissions",  # REQUIRED for write access
      prompt: """
      INITIALIZE state for feature: {feature}
 
@@ -800,6 +801,7 @@ Use Task tool to spawn feature-implementation-phase-implementer:
 
 Task(
   subagent_type: "feature-implementation-phase-implementer",
+  mode: "bypassPermissions",  # REQUIRED for write access
   prompt: """
   Implement Phase {N}: {Name}
 
@@ -820,6 +822,7 @@ Use Task tool to spawn feature-implementation-phase-verifier:
 
 Task(
   subagent_type: "feature-implementation-phase-verifier",
+  mode: "bypassPermissions",  # REQUIRED for running verification commands
   prompt: """
   Verify Phase {N}: {Name}
 
@@ -840,6 +843,7 @@ Task(
 
    Task(
      subagent_type: "feature-implementation-state-manager",
+     mode: "bypassPermissions",  # REQUIRED for write access
      prompt: """
      UPDATE state: Phase {N} PASSED
 
@@ -880,6 +884,7 @@ Task(
 
    Task(
      subagent_type: "feature-implementation-state-manager",
+     mode: "bypassPermissions",  # REQUIRED for write access
      prompt: """
      UPDATE state: Phase {N} FAILED (attempt {M} of 3)
 
@@ -1120,24 +1125,33 @@ Only after ALL above checks pass can you:
 
 ## Critical: How to Spawn Agents
 
-**ALWAYS wait for agent results. NEVER use `run_in_background: true`.**
+**ALWAYS use `mode: "bypassPermissions"` and wait for agent results.**
 
 ```
-# CORRECT - Wait for result
+# CORRECT - Bypass permissions and wait for result
 Task(
   subagent_type: "feature-implementation-phase-implementer",
+  mode: "bypassPermissions",  # ✅ REQUIRED - agents need write access
   prompt: "Implement Phase 1: ..."
 )
 # Orchestrator waits here until agent returns
 # Then processes the ImplementerResult
 
-# WRONG - Don't do this
+# WRONG - Missing mode or background
+Task(
+  subagent_type: "...",
+  # mode: missing  # ❌ Will cause permission issues
+  prompt: "..."
+)
+
 Task(
   subagent_type: "...",
   run_in_background: true,  # ❌ NEVER
   prompt: "..."
 )
 ```
+
+**Why `bypassPermissions`?** Sub-agents need to write files without permission prompts blocking them. Without this mode, the Write/Edit tools may fail silently and the agent will report success without actually creating files.
 
 **Do NOT resume agents** unless they explicitly returned `status: "blocked"`. If an agent returns `status: "complete"`, proceed to the next step (verification or next phase).
 
@@ -1170,6 +1184,61 @@ Sub-agents should read this skill overview first, then load relevant guidance fi
 For reference implementations, see:
 - `examples/implementation-state-example.md` - Complete state file
 - `examples/in-progress-phase-example.md` - Phase in-progress state
+
+---
+
+## Handling Compaction (CRITICAL)
+
+**Context compaction may occur during long-running feature implementations.** When compaction happens, the conversation context is summarized to fit within limits, and skill instructions may be lost.
+
+### What Happens During Compaction
+
+1. Claude Code automatically compacts the conversation when context limits are approached
+2. The compacted summary may NOT include full skill instructions
+3. Without these instructions, you may lose awareness of:
+   - The orchestrator workflow
+   - Agent handoff specifications
+   - Verification gate requirements
+   - State management protocols
+
+### Mandatory Action After Compaction
+
+**⚠️ When compaction completes, you MUST reload this skill IMMEDIATELY.**
+
+```
+After compaction:
+1. Invoke the Skill tool with skill: "feature-implementation"
+2. Wait for skill to load
+3. Re-read the current implementation-state.md to reorient
+4. Continue the orchestrator loop from current phase
+```
+
+### How to Detect Compaction Occurred
+
+You may notice compaction occurred if:
+- Your context suddenly feels "thinner" or you're missing workflow details
+- You're unsure about next steps in the orchestrator loop
+- You forgot the agent handoff data specifications
+- You're tempted to implement code directly instead of spawning agents
+
+**If any of these happen: RELOAD THE SKILL before taking any action.**
+
+### Anti-Pattern: Continuing Without Reload
+
+```
+❌ WRONG:
+[Compaction occurs]
+"I'll continue implementing phase 2..."
+[Writes code directly instead of spawning implementer]
+
+✅ CORRECT:
+[Compaction occurs]
+"Compaction completed. Reloading feature-implementation skill..."
+[Invokes Skill tool]
+[Reads implementation-state.md]
+"Resuming Phase 2 orchestration. Spawning implementer..."
+[Spawns phase-implementer agent]
+```
 
 ---
 

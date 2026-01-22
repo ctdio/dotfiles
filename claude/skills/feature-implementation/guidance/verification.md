@@ -13,6 +13,40 @@ This guide is for the **phase-verifier** agent. Read this for detailed guidance 
 
 ## Verification Process
 
+### Step 0: Verify Files Actually Exist (CRITICAL - DO THIS FIRST)
+
+**Before running any technical checks, verify that the files actually exist.**
+
+The implementer may report success without actually creating files. This happens when:
+- Permission issues silently blocked the Write tool
+- The agent planned to write but the tool failed
+- Mode restrictions prevented actual file creation
+
+**For each file in `ImplementerResult.files_modified`:**
+
+1. **Attempt to Read the file**
+   ```
+   Read(file_path)
+   ```
+
+2. **Check the result:**
+   - If "file not found" → **FAIL immediately**
+   - If file is empty → **FAIL immediately**
+   - If file has content → proceed to verify content
+
+3. **Document file existence:**
+   ```yaml
+   file_existence_checks:
+     - path: src/services/example.ts
+       exists: true | false
+       has_content: true | false
+       lines: 45
+   ```
+
+**DO NOT proceed to technical checks if ANY file is missing.**
+
+---
+
 ### Step 1: Run Technical Checks
 
 Run the standard verification commands in order:
@@ -242,6 +276,17 @@ Your result must include:
 VerifierResult:
   verdict: "PASS" | "FAIL"
 
+  # ⚠️ CRITICAL: Include file existence verification
+  file_existence_checks:
+    - path: src/services/example.ts
+      exists: true
+      has_content: true
+      lines: 145
+    - path: src/services/__tests__/example.test.ts
+      exists: false  # ← This would trigger FAIL
+      has_content: false
+      issue: "File does not exist - implementer permission failure"
+
   technical_checks:
     typecheck:
       status: "PASS" | "FAIL"
@@ -281,6 +326,8 @@ VerifierResult:
 
 ### PASS
 All of these must be true:
+- ✅ ALL files from files_modified exist (verified by Read)
+- ✅ ALL files have substantive content (not empty)
 - ✅ Type check passes
 - ✅ Lint check passes
 - ✅ Build succeeds
@@ -290,6 +337,8 @@ All of these must be true:
 
 ### FAIL
 Any of these triggers a FAIL:
+- ❌ ANY file from files_modified does not exist (permission failure)
+- ❌ ANY file is empty or just a stub
 - ❌ Type check fails
 - ❌ Lint check fails (errors, not warnings)
 - ❌ Build fails
@@ -300,6 +349,12 @@ Any of these triggers a FAIL:
 ---
 
 ## Anti-Patterns to Avoid
+
+❌ **Don't**: Trust that files exist because implementer said so
+✅ **Do**: Read EVERY file from files_modified list to verify it exists
+
+❌ **Don't**: Skip to technical checks before verifying file existence
+✅ **Do**: Verify ALL files exist FIRST - if any missing, FAIL immediately
 
 ❌ **Don't**: Pass without running all checks
 ✅ **Do**: Run every verification command
