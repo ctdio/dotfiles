@@ -65,5 +65,5 @@ alias cc='claude --add-dir ~/.ai --dangerously-skip-permissions'
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
-alias rbb='cc "/ralph-loop:ralph-loop \"Use ralph bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues.\" --max-iterations 10 --completion-promise \"BUGBOT RESOLVED\""'
+alias rbb='ralph "Use ralph bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
 

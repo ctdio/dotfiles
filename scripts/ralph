@@ -1,22 +1,206 @@
-#!/bin/zsh
+#!/bin/bash
 
-# Ralph loop launcher
+# Ralph Loop - Claude Code focused
+# Test edit for skim review
+#
+# Runs Claude Code in a loop until completion promise is detected.
+#
+# Usage:
+#   ralph "Build a todo API" --max-iterations 20 --completion-promise "DONE"
+#   ralph -f prompt.md -m 10 -c "DONE"
+#   ralph  # Interactive mode
 
-echo "Prompt:"
-vared -p "> " -c prompt
-[[ -z "$prompt" ]] && echo "error: prompt required" && exit 1
+set -euo pipefail
 
-echo "Max iterations [10]:"
-vared -p "> " -c max_iter
-max_iter=${max_iter:-10}
-[[ ! "$max_iter" =~ ^[0-9]+$ ]] && echo "error: iterations must be a number" && exit 1
+# Colors
+RESET="\033[0m"
+CYAN="\033[36m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+RED="\033[31m"
 
-echo "Completion promise:"
-vared -p "> " -c promise
-[[ -z "$promise" ]] && echo "error: completion promise required" && exit 1
+# Stream parser location
+STREAM_PARSER="${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser}"
 
-cmd="/ralph-loop:ralph-loop \"${prompt}\" --max-iterations ${max_iter} --completion-promise \"${promise}\""
+# Defaults
+MAX_ITERATIONS=10
+COMPLETION_PROMISE="ITERATION_COMPLETE"
+PROMPT=""
+PROMPT_FILE=""
 
-echo "\n$cmd\n"
+print_help() {
+  cat <<EOF
+${CYAN}Ralph Loop${RESET}
 
-exec claude --add-dir ~/.ai --dangerously-skip-permissions "$cmd"
+Runs Claude Code in a loop until completion promise is detected.
+
+${YELLOW}USAGE:${RESET}
+  ralph "PROMPT" [OPTIONS]
+  ralph  # Interactive mode
+
+${YELLOW}OPTIONS:${RESET}
+  -f, --file <path>               Read prompt from file
+  -m, --max-iterations <n>        Maximum iterations (default: 10)
+  -c, --completion-promise <text> Promise phrase to detect completion (default: ITERATION_COMPLETE)
+  -h, --help                      Show this help message
+
+${YELLOW}EXAMPLES:${RESET}
+  ralph "Build a todo API" --max-iterations 20 --completion-promise "DONE"
+  ralph "Fix the auth bug" -m 10 -c "BUG FIXED"
+  ralph -f ~/.ai/prompts/bugbot.md -m 10 -c "RESOLVED"
+
+${YELLOW}COMPLETION:${RESET}
+  Claude must output <promise>YOUR_PHRASE</promise> to signal completion.
+  The promise must be TRUE - Claude should not lie to exit the loop.
+EOF
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    -f|--file)
+      PROMPT_FILE="$2"
+      shift 2
+      ;;
+    -m|--max-iterations)
+      MAX_ITERATIONS="$2"
+      shift 2
+      ;;
+    -c|--completion-promise)
+      COMPLETION_PROMISE="$2"
+      shift 2
+      ;;
+    *)
+      if [[ -z "$PROMPT" ]]; then
+        PROMPT="$1"
+      else
+        PROMPT="$PROMPT $1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+# Read prompt from file if specified
+if [[ -n "$PROMPT_FILE" ]]; then
+  if [[ ! -f "$PROMPT_FILE" ]]; then
+    echo -e "${RED}Error: File not found: $PROMPT_FILE${RESET}"
+    exit 1
+  fi
+  PROMPT=$(cat "$PROMPT_FILE")
+fi
+
+# Interactive mode if no prompt provided
+if [[ -z "$PROMPT" ]]; then
+  echo -e "${CYAN}ralph${RESET}"
+  echo "-------------------------------------"
+  echo ""
+
+  echo "Prompt:"
+  read -r -p "> " PROMPT
+  [[ -z "$PROMPT" ]] && echo "error: prompt required" && exit 1
+
+  echo ""
+  echo "Max iterations [10]:"
+  read -r -p "> " max_input
+  MAX_ITERATIONS="${max_input:-10}"
+
+  echo ""
+  echo "Completion promise [ITERATION_COMPLETE]:"
+  read -r -p "> " promise_input
+  COMPLETION_PROMISE="${promise_input:-ITERATION_COMPLETE}"
+  echo ""
+fi
+
+# Validate
+if ! [[ "$MAX_ITERATIONS" =~ ^[0-9]+$ ]]; then
+  echo -e "${RED}Error: max-iterations must be a number${RESET}"
+  exit 1
+fi
+
+# Check stream parser exists
+if [[ ! -x "$STREAM_PARSER" ]]; then
+  echo -e "${RED}Error: Stream parser not found at $STREAM_PARSER${RESET}"
+  echo "Set CLAUDE_AGENT_STREAM_PARSER to the path of cc-stream-parser"
+  exit 1
+fi
+
+build_prompt() {
+  local iteration=$1
+  cat <<EOF
+$PROMPT
+
+═══════════════════════════════════════════════════════════
+RALPH LOOP CONTEXT - Iteration ${iteration}/${MAX_ITERATIONS}
+═══════════════════════════════════════════════════════════
+
+You are in a Ralph Loop. This means:
+- Your output will be analyzed for completion
+- If not complete, you'll receive the SAME PROMPT again
+- Your previous work persists in files and git history
+
+COMPLETION:
+To signal completion, output this EXACT text:
+  <promise>${COMPLETION_PROMISE}</promise>
+
+STRICT REQUIREMENTS:
+  ✓ Use <promise> XML tags EXACTLY as shown
+  ✓ The statement MUST be completely and unequivocally TRUE
+  ✓ Do NOT output false statements to exit the loop
+  ✓ Do NOT lie even if you think you should exit
+
+If stuck, keep trying. The loop continues until the promise is GENUINELY TRUE.
+═══════════════════════════════════════════════════════════
+EOF
+}
+
+check_completion() {
+  local output="$1"
+  # Check if output contains <promise>COMPLETION_PROMISE</promise>
+  if echo "$output" | grep -q "<promise>${COMPLETION_PROMISE}</promise>"; then
+    return 0
+  fi
+  return 1
+}
+
+# Print header
+echo -e "${CYAN}ralph${RESET}"
+echo "-------------------------------------"
+echo -e "iterations: ${MAX_ITERATIONS}"
+echo -e "promise:    ${COMPLETION_PROMISE}"
+echo ""
+
+# Main loop
+for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
+  echo -e "\n${CYAN}── iteration ${iteration}/${MAX_ITERATIONS} ──${RESET}\n"
+
+  augmented_prompt=$(build_prompt "$iteration")
+
+  # Create temp file to capture output while streaming
+  temp_output=$(mktemp)
+
+  # Run claude with streaming JSON, pipe through parser, capture output
+  claude --add-dir ~/.ai --dangerously-skip-permissions \
+    --output-format stream-json --include-partial-messages \
+    "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
+
+  output=$(cat "$temp_output")
+  rm -f "$temp_output"
+
+  # Check for completion
+  if check_completion "$output"; then
+    echo -e "\n${GREEN}✓${RESET} Promise fulfilled after ${iteration} iteration(s)"
+    exit 0
+  fi
+
+  if [[ $iteration -lt $MAX_ITERATIONS ]]; then
+    echo -e "\n${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
+  fi
+done
+
+echo -e "\n${RED}✗${RESET} Max iterations reached (${MAX_ITERATIONS}) · promise not fulfilled"
+exit 1
