@@ -1,9 +1,8 @@
 #!/bin/zsh
 
 # Ralph loop launcher
-# Uses shell's vi mode for input
 
-echo "Prompt (vi mode enabled):"
+echo "Prompt:"
 vared -p "> " -c prompt
 [[ -z "$prompt" ]] && echo "error: prompt required" && exit 1
 

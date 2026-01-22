@@ -24,7 +24,7 @@
     "frontend-design@claude-code-plugins": false,
     "datadog-cli@ctdio-datadog": true,
     "feature-dev@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": false,
     "ralph-wiggum@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
