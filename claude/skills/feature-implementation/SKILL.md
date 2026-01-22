@@ -33,118 +33,352 @@ Your responsibilities:
 
 ---
 
-## The Orchestrator Loop
+## 🎯 Mandatory Todo Templates (USE THESE)
+
+**CRITICAL: Create these todos using TodoWrite immediately. Do not proceed without tracking.**
+
+### Startup Todo (CREATE FIRST)
+
+When the skill is invoked, create this todo list IMMEDIATELY:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ORCHESTRATOR MAIN LOOP                        │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌─────────────────┐
-                    │   INITIALIZE    │
-                    │  Check for      │
-                    │  state file     │
-                    └────────┬────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              │                             │
-              ▼                             ▼
-     ┌────────────────┐           ┌────────────────┐
-     │  State exists  │           │  No state file │
-     │  Read it       │           │                │
-     └───────┬────────┘           └───────┬────────┘
-             │                            │
-             │                            ▼
-             │               ┌─────────────────────────┐
-             │               │ SPAWN: state-manager    │
-             │               │ Operation: INITIALIZE   │
-             │               │ (creates state file)    │
-             │               └────────────┬────────────┘
-             │                            │
-             └──────────────┬─────────────┘
-                            │
-                            ▼
-              ┌──────────────────────────────┐
-              │  For each PHASE (N of total) │◄─────────────────┐
-              └──────────────┬───────────────┘                  │
-                             │                                  │
-                             ▼                                  │
-                ┌────────────────────────┐                      │
-                │  GATHER PHASE CONTEXT  │                      │
-                │  Read phase docs,      │                      │
-                │  extract deliverables  │                      │
-                └───────────┬────────────┘                      │
-                            │                                   │
-                            ▼                                   │
-         ┌──────────────────────────────────────┐               │
-         │  SPAWN: phase-implementer            │               │
-         │  Hand off: ImplementerContext        │               │
-         └──────────────────┬───────────────────┘               │
-                            │                                   │
-                            ▼                                   │
-                ┌───────────────────────┐                       │
-                │  Receive:             │                       │
-                │  ImplementerResult    │                       │
-                └───────────┬───────────┘                       │
-                            │                                   │
-                            ▼                                   │
-         ┌──────────────────────────────────────┐               │
-         │  SPAWN: phase-verifier               │               │
-         │  Hand off: VerifierContext           │               │
-         └──────────────────┬───────────────────┘               │
-                            │                                   │
-                            ▼                                   │
-                ┌───────────────────────┐                       │
-                │  Receive:             │                       │
-                │  VerifierResult       │                       │
-                └───────────┬───────────┘                       │
-                            │                                   │
-                            ▼                                   │
-                   ┌────────────────┐                           │
-                   │ PASS or FAIL? │                            │
-                   └───────┬───────┘                            │
-                           │                                    │
-              ┌────────────┴────────────┐                       │
-              │                         │                       │
-              ▼                         ▼                       │
-        ┌──────────┐            ┌─────────────┐                 │
-        │   PASS   │            │    FAIL     │                 │
-        └────┬─────┘            │  (< 3 tries)│                 │
-             │                  └──────┬──────┘                 │
-             ▼                         │                        │
-   ┌─────────────────────┐             │                        │
-   │ SPAWN: state-manager│             ▼                        │
-   │ Operation: UPDATE   │    ┌─────────────────────┐           │
-   │ (PASSED + results)  │    │ SPAWN: state-manager│           │
-   └─────────┬───────────┘    │ Operation: UPDATE   │           │
-             │                │ (FAILED + issues)   │           │
-             ▼                └─────────┬───────────┘           │
-   ┌─────────────────────┐             │                        │
-   │ Create commit       │             ▼                        │
-   │ feat(...): phase N  │    ┌─────────────────────┐           │
-   └─────────┬───────────┘    │ SPAWN: implementer  │           │
-             │                │ with fix context    │───────────┤
-             │                └─────────────────────┘           │
-             ▼                                                  │
-      ┌─────────────┐                                           │
-      │ More phases?├───────────YES─────────────────────────────┘
-      └──────┬──────┘
-             │ NO
-             ▼
-    ┌─────────────────┐
-    │ FINAL VERIFY    │
-    │ Output promise  │
-    └─────────────────┘
+TodoWrite:
+- [ ] 1. Identify feature name from user request
+- [ ] 2. Read ~/.ai/plans/{feature}/implementation-guide.md
+- [ ] 3. Check if implementation-state.md exists
+- [ ] 4. If NO state: Spawn state-manager with INITIALIZE
+- [ ] 5. Read implementation-state.md (created or existing)
+- [ ] 6. Identify current phase number and name
+- [ ] 7. Count total phases
+- [ ] 8. Create Phase Loop todos for current phase
 ```
+
+### Phase Loop Todo (CREATE FOR EACH PHASE)
+
+After identifying the current phase, create this todo list:
+
+```
+TodoWrite for Phase {N}: {Name}
+- [ ] 1. Read phase-{NN}/files-to-modify.md
+- [ ] 2. Read phase-{NN}/technical-details.md
+- [ ] 3. Read phase-{NN}/testing-strategy.md
+- [ ] 4. Compile ImplementerContext from phase docs
+- [ ] 5. Spawn phase-implementer → wait for ImplementerResult
+- [ ] 6. Compile VerifierContext from ImplementerResult
+- [ ] 7. Spawn phase-verifier → wait for VerifierResult
+- [ ] 8. Check verdict: PASS → continue, FAIL → retry (go to step 5)
+- [ ] 9. Compile ReviewerContext from results
+- [ ] 10. Spawn phase-reviewer → wait for ReviewerResult
+- [ ] 11. Check verdict: APPROVED → continue, CHANGES_REQUESTED → retry
+- [ ] 12. Spawn state-manager with UPDATE (PASSED)
+- [ ] 13. Read implementation-state.md - VERIFY it shows phase completed
+- [ ] 14. Create commit: feat({feature}): complete phase {N} - {name}
+- [ ] 15. If more phases: Create Phase Loop todos for next phase
+- [ ] 16. If all phases done: Output FEATURE_COMPLETE promise
+```
+
+### Retry Todo (CREATE ON FAILURE)
+
+When verifier returns FAIL or reviewer returns CHANGES_REQUESTED:
+
+```
+TodoWrite for Retry Attempt {M}:
+- [ ] 1. Spawn state-manager with UPDATE (FAILED) - record issues
+- [ ] 2. Build fix_context from issues list
+- [ ] 3. Spawn phase-implementer with fix_context
+- [ ] 4. Wait for ImplementerResult
+- [ ] 5. Spawn phase-verifier
+- [ ] 6. Wait for VerifierResult
+- [ ] 7. If FAIL and attempt < 3: Create another Retry Todo
+- [ ] 8. If FAIL and attempt >= 3: STOP and ask user for help
+- [ ] 9. If PASS: Continue to reviewer (Phase Loop step 9)
+```
+
+### Final Verification Todo (AFTER ALL PHASES)
+
+```
+TodoWrite for Final Verification:
+- [ ] 1. Read implementation-state.md
+- [ ] 2. Confirm ALL phases show Status: completed
+- [ ] 3. Confirm ALL spec requirements show ✅
+- [ ] 4. Run final verification (spawn verifier for full feature)
+- [ ] 5. If PASS: Output <promise>FEATURE_COMPLETE</promise>
+- [ ] 6. If FAIL: Fix issues, re-verify
+```
+
+---
+
+## ✅ I Am Done When (Orchestrator Completion Criteria)
+
+**Before outputting FEATURE_COMPLETE, verify ALL of these:**
+
+```
+Completion Checklist:
+- [ ] All phases show "Status: completed" in implementation-state.md
+- [ ] Each phase has a commit hash recorded
+- [ ] All spec requirements (FR, NFR, Constraints) show ✅
+- [ ] Final verification passed (all tests, build, lint, types)
+- [ ] No pending or in_progress phases remain
+- [ ] No blockers documented
+- [ ] implementation-state.md "Overall Progress" shows X/X phases complete
+```
+
+**If ANY checkbox is unchecked, DO NOT output the completion promise.**
+
+---
+
+## 📋 Phase-Type Todo Templates
+
+Different phase types have different focus areas. Use these specialized templates when creating ImplementerContext.
+
+### Foundation/Data Model Phase
+
+Typical first phase - schemas, models, base configuration.
+
+```
+Phase Type: Foundation
+Key Focus Areas:
+- [ ] Schema/model definitions
+- [ ] Database migrations (if applicable)
+- [ ] Base configuration files
+- [ ] Type definitions
+- [ ] Repository/data access layer
+- [ ] Repository tests (even "data" phases need tests!)
+
+Implementer Should Prioritize:
+1. Types and interfaces first
+2. Schema/model definitions
+3. Migration files (generate, don't apply)
+4. Repository layer with CRUD operations
+5. Repository unit tests
+
+Verifier Should Check:
+- Types compile without errors
+- Schema matches spec requirements
+- Repository tests exist and pass
+- Exports are properly configured
+```
+
+### API/Service Phase
+
+Backend logic, endpoints, business rules.
+
+```
+Phase Type: API/Service
+Key Focus Areas:
+- [ ] Service layer with business logic
+- [ ] API route handlers
+- [ ] Input validation
+- [ ] Error handling
+- [ ] Permission checks
+- [ ] Unit tests for service
+- [ ] Integration tests for API
+
+Implementer Should Prioritize:
+1. Service class/functions structure
+2. Unit tests for each method (TDD)
+3. Implement methods to pass tests
+4. API route handlers
+5. Integration tests for endpoints
+
+Verifier Should Check:
+- All API endpoints return correct status codes
+- Permission checks enforced
+- Validation rejects bad input
+- Error responses follow project patterns
+- Both unit and integration tests pass
+```
+
+### UI/Frontend Phase
+
+Components, pages, client-side logic.
+
+```
+Phase Type: UI/Frontend
+Key Focus Areas:
+- [ ] Component structure and props
+- [ ] State management
+- [ ] API integration (hooks/fetching)
+- [ ] User interactions
+- [ ] Loading/error states
+- [ ] Component tests
+- [ ] Accessibility basics
+
+Implementer Should Prioritize:
+1. Component props interface
+2. Component tests (render, interaction)
+3. Implement component to pass tests
+4. Connect to API hooks
+5. Handle loading/error states
+
+Verifier Should Check:
+- Components render without errors
+- Props are properly typed
+- API integration works
+- Tests cover key interactions
+- No console errors/warnings
+```
+
+### Integration/Wiring Phase
+
+Connecting pieces together, cross-cutting concerns.
+
+```
+Phase Type: Integration
+Key Focus Areas:
+- [ ] Service composition
+- [ ] Event/message handling
+- [ ] Cross-module communication
+- [ ] End-to-end flows
+- [ ] Integration/E2E tests
+- [ ] Configuration for different environments
+
+Implementer Should Prioritize:
+1. Integration points identification
+2. Integration tests first (TDD)
+3. Wire up services/components
+4. Test complete flows
+5. Environment-specific config
+
+Verifier Should Check:
+- Full flows work end-to-end
+- Error propagation is correct
+- Configuration is complete
+- Integration tests pass
+- No regressions in existing features
+```
+
+---
+
+## The Orchestrator Loop
+
+⚠️ **CRITICAL: You MUST loop until ALL phases complete. Do NOT stop early.**
+
+```mermaid
+flowchart TD
+    START([Start]) --> INIT{State file exists?}
+    INIT -->|No| SPAWN_STATE_INIT[Spawn state-manager: INITIALIZE]
+    SPAWN_STATE_INIT --> READ_STATE
+    INIT -->|Yes| READ_STATE[Read state file]
+
+    READ_STATE --> PHASE_LOOP{More phases?}
+    PHASE_LOOP -->|No| FINAL[Output FEATURE_COMPLETE promise]
+    PHASE_LOOP -->|Yes| GATHER[Gather phase context]
+
+    GATHER --> IMPL[Spawn phase-implementer]
+    IMPL --> VERIFY[Spawn phase-verifier]
+    VERIFY --> VERIFY_CHECK{Verifier PASS?}
+
+    VERIFY_CHECK -->|FAIL & < 3 tries| UPDATE_FAIL[Spawn state-manager: FAILED]
+    UPDATE_FAIL --> IMPL_FIX[Spawn implementer with fix context]
+    IMPL_FIX --> VERIFY
+
+    VERIFY_CHECK -->|PASS| REVIEW[Spawn phase-reviewer]
+    REVIEW --> REVIEW_CHECK{Reviewer APPROVED?}
+
+    REVIEW_CHECK -->|CHANGES_REQUESTED & < 3 tries| IMPL_REVIEW[Spawn implementer with review feedback]
+    IMPL_REVIEW --> VERIFY
+
+    REVIEW_CHECK -->|APPROVED| UPDATE_PASS[Spawn state-manager: PASSED]
+    UPDATE_PASS --> GATE[⛔ VERIFICATION GATE]
+    GATE --> COMMIT[Create commit]
+    COMMIT --> PHASE_LOOP
+```
+
+### Step-by-Step Instructions (FOLLOW THIS EXACTLY)
+
+**INITIALIZATION:**
+
+1. **Identify feature** from user request
+2. **Check** if `~/.ai/plans/{feature}/implementation-state.md` exists
+3. **If NO state file**: Spawn `feature-implementation-state-manager` with "INITIALIZE state for {feature}"
+4. **If state exists**: Read it to find current phase
+
+**FOR EACH PHASE (repeat until all complete):**
+
+5. **Read phase docs**:
+   - `~/.ai/plans/{feature}/phase-{NN}-{name}/files-to-modify.md`
+   - `~/.ai/plans/{feature}/phase-{NN}-{name}/technical-details.md`
+   - `~/.ai/plans/{feature}/phase-{NN}-{name}/testing-strategy.md`
+
+6. **Spawn implementer**: `feature-implementation-phase-implementer`
+   - Wait for `ImplementerResult`
+
+7. **Spawn verifier**: `feature-implementation-phase-verifier`
+   - Wait for `VerifierResult`
+
+8. **Check verifier verdict**:
+   - If `FAIL` and attempts < 3: Spawn state-manager (FAILED), then go to step 6 with fix context
+   - If `FAIL` and attempts >= 3: Stop and ask user for help
+   - If `PASS`: Continue to step 9
+
+9. **Spawn reviewer**: `feature-implementation-phase-reviewer`
+   - Wait for `ReviewerResult`
+
+10. **Check reviewer verdict**:
+    - If `CHANGES_REQUESTED` and attempts < 3: Go to step 6 with review feedback
+    - If `CHANGES_REQUESTED` and attempts >= 3: Stop and ask user for help
+    - If `APPROVED`: Continue to step 11
+
+11. **Spawn state-manager**: "UPDATE state: Phase N PASSED" with results
+
+12. **⛔ VERIFICATION GATE** (MANDATORY):
+    - Read `~/.ai/plans/{feature}/implementation-state.md`
+    - Confirm current phase shows `Status: completed`
+    - Confirm `Files Created/Modified` is populated
+    - Confirm `Tests Written` lists actual tests
+    - **DO NOT ADVANCE if state doesn't match work done**
+
+13. **Create commit**: `feat({feature}): complete phase N - {name}`
+
+14. **Check for more phases**:
+    - If more phases: Go to step 5 for next phase
+    - If all phases complete: Continue to step 15
+
+15. **Output completion promise**: `<promise>FEATURE_COMPLETE</promise>`
 
 ### Agent Summary
 
 | Agent | Purpose | When Used |
 |-------|---------|-----------|
-| **state-manager** | Create/update implementation-state.md | INITIALIZE (no state), after VERIFY |
-| **phase-implementer** | Implement one phase's deliverables | For each phase, and on fix retries |
-| **phase-verifier** | Verify phase implementation | After implementer completes |
+| **state-manager** | Create/update implementation-state.md | INITIALIZE (no state), after every VERIFY |
+| **phase-implementer** | Implement one phase's deliverables | For each phase, and on fix/review retries |
+| **phase-verifier** | Verify implementation works (tests pass) | After implementer completes |
+| **phase-reviewer** | Review code quality and patterns | After verifier PASSES |
+
+---
+
+## Startup Sequence (DO THIS FIRST)
+
+**When this skill is invoked, follow these steps in order:**
+
+### Step 1: Identify the Feature
+Extract the feature name from the user's request. The plan must exist at `~/.ai/plans/{feature}/`.
+
+### Step 2: Check for Existing State
+```
+Read: ~/.ai/plans/{feature}/implementation-state.md
+```
+
+### Step 3: Initialize or Resume
+
+**If NO state file exists:**
+```
+SPAWN: feature-implementation-state-manager
+Prompt: "INITIALIZE state for {feature} feature"
+WAIT for confirmation that state file was created
+```
+
+**If state file EXISTS:**
+- Read it to determine current phase and status
+- Resume from the current incomplete phase
+
+### Step 4: Begin Orchestrator Loop
+- Read the current phase's documentation files
+- Spawn `feature-implementation-phase-implementer` with the phase context
+- **Your first Task tool call should ALWAYS be spawning an agent**
+
+⚠️ **CRITICAL**: Do NOT write implementation code. Do NOT run verification commands. Your job is to spawn agents and process their results.
 
 ---
 
@@ -400,6 +634,111 @@ fix_context:
   instruction: |
     Fix the issues identified by the verifier.
     Focus on: error handling for network timeout
+```
+
+### ReviewerContext (Orchestrator → Reviewer)
+
+After verifier PASSES, spawn the reviewer with this context:
+
+```yaml
+ReviewerContext:
+  phase:
+    number: 1
+    name: "Foundation"
+
+  feature_name: "turbopuffer-search"
+
+  spec_path: "~/.ai/plans/turbopuffer-search/spec.md"
+
+  files_modified:                         # From ImplementerResult
+    - path: src/services/turbopuffer.ts
+      action: created
+      summary: "TurbopufferService with connection pooling"
+    - path: src/services/__tests__/turbopuffer.test.ts
+      action: created
+      summary: "Unit tests for TurbopufferService"
+
+  implementation_notes: |                 # From ImplementerResult
+    Used the same pattern as PineconeService.
+    Added retry logic for transient failures.
+
+  deliverables_completed:                 # From ImplementerResult
+    - "Create TurbopufferService class"
+    - "Write unit tests"
+
+  deviations:                             # From ImplementerResult
+    - description: "Added retry logic not in plan"
+      justification: "Turbopuffer API has occasional timeouts"
+```
+
+### ReviewerResult (Reviewer → Orchestrator)
+
+```yaml
+ReviewerResult:
+  verdict: "APPROVED" | "CHANGES_REQUESTED"
+
+  # If APPROVED
+  summary: |
+    Code follows existing patterns. Good error handling.
+    Retry logic is a reasonable addition.
+
+  highlights:
+    - "Clean separation of concerns in TurbopufferService"
+    - "Good test coverage for error cases"
+
+  # If CHANGES_REQUESTED
+  issues:
+    - severity: "blocking"                # blocking = must fix
+      file: "src/services/turbopuffer.ts"
+      line: 42
+      description: "Hardcoded timeout value"
+      suggestion: "Move to config object"
+    - severity: "suggestion"              # suggestion = nice to have
+      file: "src/services/turbopuffer.ts"
+      line: 78
+      description: "Consider adding debug logging"
+      suggestion: "Add logger.debug() calls"
+
+  files_reviewed:
+    - "src/services/turbopuffer.ts"
+    - "src/services/__tests__/turbopuffer.test.ts"
+
+  spec_compliance:
+    - requirement: "FR-1"
+      status: "satisfied"
+      notes: "Service correctly implements vector upsert"
+    - requirement: "FR-2"
+      status: "partial"
+      notes: "Query works but missing filter support mentioned in spec"
+
+  pattern_adherence: |
+    Follows existing service patterns from pinecone.ts.
+    Naming conventions match project standards.
+```
+
+### ReviewFixContext (For Review Retry)
+
+When reviewer requests changes, pass this to implementer:
+
+```yaml
+review_fix_context:
+  attempt: 1
+  max_attempts: 3
+
+  review_issues:                          # From ReviewerResult
+    - severity: "blocking"
+      file: "src/services/turbopuffer.ts"
+      line: 42
+      description: "Hardcoded timeout value"
+      suggestion: "Move to config object"
+
+  reviewer_summary: |
+    Code quality good overall. One blocking issue:
+    hardcoded timeout should be configurable.
+
+  instruction: |
+    Address the blocking issues from code review.
+    Suggestions are optional but recommended.
 ```
 
 ---
@@ -717,11 +1056,65 @@ Final verification: PASS
 1. **You coordinate, agents execute** - Never write implementation code
 2. **Delegate state management** - Use state-manager agent for all state file operations (saves your context)
 3. **Rich context handoffs** - Give agents everything they need
-4. **Trust but verify** - Always run verifier after implementer
+4. **Verify THEN review** - Run verifier (tests pass?), then reviewer (code good?)
 5. **State is sacred** - Spawn state-manager after every phase verification
 6. **Fail gracefully** - 3 strikes then ask for help
-7. **Complete or nothing** - Only output promise when truly done
+7. **Complete or nothing** - Only output promise when ALL phases complete
 8. **Wait for agents** - NEVER run sub-agents in background; wait for their results
+9. **Loop until done** - Keep iterating through phases until ALL are complete. Do NOT stop early.
+10. **Gate on state** - Before advancing phases, READ the state file and CONFIRM it reflects completed work
+
+---
+
+## ⛔ Mandatory Verification Gate
+
+**Before advancing to the next phase, you MUST complete ALL these checks:**
+
+### 1. Verifier Must PASS
+The `VerifierResult` must have `verdict: "PASS"`. If not, retry with implementer.
+
+### 2. Reviewer Must APPROVE
+The `ReviewerResult` must have `verdict: "APPROVED"`. If not, retry with implementer using review feedback.
+
+### 3. State File Must Be Updated
+After spawning state-manager with UPDATE operation, **you MUST read the state file**:
+```
+Read: ~/.ai/plans/{feature}/implementation-state.md
+```
+
+### 4. Confirm State Matches Work Done
+When reading the state file, verify:
+- [ ] Current phase shows `Status: completed`
+- [ ] `Files Created/Modified` section is populated
+- [ ] `Tests Written` section lists actual tests
+- [ ] `Pre-Completion Verification` checkboxes are checked
+- [ ] `Commit` field has the commit hash
+
+### 5. Only THEN Advance
+Only after ALL above checks pass can you:
+- Create the commit (if not already done)
+- Advance to the next phase
+
+**If ANY check fails, DO NOT ADVANCE. Fix the issue first.**
+
+### Anti-Pattern: Advancing Without Verification
+```
+❌ WRONG:
+1. Spawn implementer
+2. Spawn verifier (passes)
+3. Create commit
+4. Move to next phase  <-- SKIPPED: reviewer, state-manager, state verification
+
+✅ CORRECT:
+1. Spawn implementer -> ImplementerResult
+2. Spawn verifier -> VerifierResult (PASS)
+3. Spawn reviewer -> ReviewerResult (APPROVED)
+4. Spawn state-manager (UPDATE)
+5. Read implementation-state.md
+6. Confirm state shows phase completed with all details
+7. Create commit
+8. Move to next phase
+```
 
 ---
 
@@ -760,6 +1153,7 @@ Sub-agents should read this skill overview first, then load relevant guidance fi
 |-------|------------------|-----------|
 | **phase-implementer** | `guidance/implementation.md` | `guidance/shared.md` |
 | **phase-verifier** | `guidance/verification.md` | `guidance/shared.md` |
+| **phase-reviewer** | (embedded in agent definition) | `guidance/shared.md`, spec.md |
 | **state-manager** | `guidance/state-management.md` | `guidance/shared.md` |
 
 **Guidance files location**: `guidance/` (relative to this skill)
