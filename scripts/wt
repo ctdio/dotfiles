@@ -48,6 +48,22 @@ EOF
     local dir="../$(repo_dir)-$branch"
     if git worktree add "$dir" "$branch" 2>/dev/null || git worktree add "$dir" -b "$branch"; then
       echo "Created worktree at $dir"
+
+      # Sync MCP servers from ~/.claude.json
+      local src_path="$toplevel"
+      local dst_path="$(cd "$dir" && pwd)"
+      local claude_json="$HOME/.claude.json"
+      if [ -f "$claude_json" ]; then
+        local src_mcps
+        src_mcps=$(jq -r --arg p "$src_path" '.projects[$p].mcpServers // empty' "$claude_json")
+        if [ -n "$src_mcps" ] && [ "$src_mcps" != "null" ] && [ "$src_mcps" != "{}" ]; then
+          jq --arg src "$src_path" --arg dst "$dst_path" \
+            'if .projects[$dst] == null then .projects[$dst] = {} else . end | .projects[$dst].mcpServers = .projects[$src].mcpServers' \
+            "$claude_json" > "$claude_json.tmp" && mv "$claude_json.tmp" "$claude_json"
+          echo "Synced MCP servers to $dst_path"
+        fi
+      fi
+
       # Change into the new worktree
       cd "$dir"
       # Bookmark for tms (tmux-sessionizer)
