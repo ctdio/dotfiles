@@ -24,7 +24,7 @@ STREAM_PARSER="${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/z
 
 # Defaults
 MAX_ITERATIONS=10
-COMPLETION_PROMISE="ITERATION_COMPLETE"
+COMPLETION_PROMISE="TASK_COMPLETE"
 PROMPT=""
 PROMPT_FILE=""
 
@@ -41,7 +41,7 @@ ${YELLOW}USAGE:${RESET}
 ${YELLOW}OPTIONS:${RESET}
   -f, --file <path>               Read prompt from file
   -m, --max-iterations <n>        Maximum iterations (default: 10)
-  -c, --completion-promise <text> Promise phrase to detect completion (default: ITERATION_COMPLETE)
+  -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
   -h, --help                      Show this help message
 
 ${YELLOW}EXAMPLES:${RESET}
@@ -110,9 +110,9 @@ if [[ -z "$PROMPT" ]]; then
   MAX_ITERATIONS="${max_input:-10}"
 
   echo ""
-  echo "Completion promise [ITERATION_COMPLETE]:"
+  echo "Completion promise [TASK_COMPLETE]:"
   read -r -p "> " promise_input
-  COMPLETION_PROMISE="${promise_input:-ITERATION_COMPLETE}"
+  COMPLETION_PROMISE="${promise_input:-TASK_COMPLETE}"
   echo ""
 fi
 
@@ -159,9 +159,10 @@ EOF
 }
 
 check_completion() {
-  local output="$1"
-  # Check if output contains <promise>COMPLETION_PROMISE</promise>
-  if echo "$output" | grep -q "<promise>${COMPLETION_PROMISE}</promise>"; then
+  local file="$1"
+  # Check if file contains <promise>COMPLETION_PROMISE</promise>
+  # Strip ANSI codes before checking to handle tool output bleeding
+  if sed 's/\x1b\[[0-9;]*m//g' "$file" | grep -q "<promise>${COMPLETION_PROMISE}</promise>"; then
     return 0
   fi
   return 1
@@ -188,14 +189,14 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
     --output-format stream-json --include-partial-messages \
     "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
 
-  output=$(cat "$temp_output")
-  rm -f "$temp_output"
-
-  # Check for completion
-  if check_completion "$output"; then
+  # Check for completion (check file directly, stripping ANSI codes)
+  if check_completion "$temp_output"; then
+    rm -f "$temp_output"
     echo -e "\n${GREEN}✓${RESET} Promise fulfilled after ${iteration} iteration(s)"
     exit 0
   fi
+
+  rm -f "$temp_output"
 
   if [[ $iteration -lt $MAX_ITERATIONS ]]; then
     echo -e "\n${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
