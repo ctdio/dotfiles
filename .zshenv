@@ -28,7 +28,7 @@ export PATH=${PATH}:${HOME}/.turso
 # export PATH="/opt/homebrew/opt/libpq/bin:$PATH" >> ~/.zshrc
 
 # temp, add skim
-export PATH="/Users/charlieduong/projects/open-source/skim/zig-out/bin:$PATH"
+export PATH="$HOME/projects/open-source/skim/zig-out/bin:$PATH"
 
 export LANG="en_US.UTF-8"
 export LC_COLLATE="en_US.UTF-8"
@@ -44,8 +44,8 @@ export PNPM_HOME="/home/charlieduong/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 # pnpm end
 
-export MODULAR_HOME="/Users/charlieduong/.modular"
-export PATH="/Users/charlieduong/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+export MODULAR_HOME="$HOME/.modular"
+export PATH="$HOME/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
 
 export EDITOR="nvim"
 

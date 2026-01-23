@@ -60,11 +60,11 @@ if [ -f ${HOME}/.turso/env ]; then
 fi
 
 # Additional PATH entries
-export PATH="/Users/charlieduong/.opencode/bin:$PATH"
-export PATH="/Users/charlieduong/bin:$PATH"
+export PATH="$HOME/.opencode/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
 
 # LM Studio CLI
-export PATH="$PATH:/Users/charlieduong/.lmstudio/bin"
+export PATH="$PATH:$HOME/.lmstudio/bin"
 
 # Source additional scripts
 source ~/dotfiles/scripts/wt

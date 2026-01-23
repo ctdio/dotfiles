@@ -31,7 +31,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-SOURCE_DIR="/Users/charlieduong/projects/private/opine/platform"
+SOURCE_DIR="$HOME/projects/private/opine/platform"
 BACKUP_DIR="${HOME}/.sync-worktree-backups"
 
 # Convert worktree suffix to slot number

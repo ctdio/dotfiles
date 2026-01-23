@@ -13,7 +13,7 @@ shell-integration = zsh
 
 # NVIDIA Wayland fixes
 window-vsync = true
-gtk-single-instance = false
+gtk-single-instance = true
 
 quick-terminal-screen = main
 quick-terminal-position = right

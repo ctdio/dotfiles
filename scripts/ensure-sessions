@@ -5,14 +5,14 @@
 
 # Session directories (session name = directory basename)
 SESSION_DIRS=(
-  "/Users/charlieduong/projects/private/opine/platform-wta"
-  "/Users/charlieduong/projects/private/opine/platform-wtb"
-  "/Users/charlieduong/projects/private/opine/platform-wtc"
-  "/Users/charlieduong/projects/private/opine/platform-wtd"
-  "/Users/charlieduong/projects/private/opine/platform-wte"
-  "/Users/charlieduong/projects/private/opine/platform-wtf"
-  "/Users/charlieduong/dotfiles"
-  "/Users/charlieduong/projects/open-source/skim"
+  "$HOME/projects/private/opine/platform-wta"
+  "$HOME/projects/private/opine/platform-wtb"
+  "$HOME/projects/private/opine/platform-wtc"
+  "$HOME/projects/private/opine/platform-wtd"
+  "$HOME/projects/private/opine/platform-wte"
+  "$HOME/projects/private/opine/platform-wtf"
+  "$HOME/dotfiles"
+  "$HOME/projects/open-source/skim"
 )
 
 attach_first=false
