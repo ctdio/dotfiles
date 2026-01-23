@@ -1,0 +1,4 @@
+# Memory usage (used)
+[memory]
+interval=10
+display=used
