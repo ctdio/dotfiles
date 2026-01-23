@@ -217,6 +217,10 @@ function link_dotfiles () {
     mkdir -p ~/.config/sway
     ln -nsf ${DOTFILES_DIR}/ubuntu/sway/config ~/.config/sway/config
 
+    echo "Linking Regolith sway keyboard config"
+    mkdir -p ~/.config/regolith3/sway/config.d
+    ln -nsf ${DOTFILES_DIR}/ubuntu/sway/00_keyboard ~/.config/regolith3/sway/config.d/00_keyboard
+
     echo "Linking waybar config to ~/.config/waybar"
     mkdir -p ~/.config/waybar
     ln -nsf ${DOTFILES_DIR}/ubuntu/waybar/config ~/.config/waybar/config

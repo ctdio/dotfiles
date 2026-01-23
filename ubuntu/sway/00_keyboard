@@ -1,0 +1,4 @@
+# Keyboard configuration
+input type:keyboard {
+    xkb_options "ctrl:nocaps"
+}
