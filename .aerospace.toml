@@ -76,6 +76,7 @@ alt-w = 'layout h_accordion' # 'layout tabbed' in i3
 alt-e = 'layout tiles horizontal vertical' # 'layout toggle split' in i3
 
 alt-shift-space = 'layout floating tiling' # 'floating toggle' in i3
+alt-c = 'exec-and-forget /Users/charlieduong/dotfiles/scripts/center-window'
 
 cmd-1 = 'workspace 1'
 cmd-2 = 'workspace 2'
