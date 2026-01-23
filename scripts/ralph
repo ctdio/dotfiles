@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Ralph Loop - Claude Code focused
-# Test edit for skim review
 #
 # Runs Claude Code in a loop until completion promise is detected.
 #
