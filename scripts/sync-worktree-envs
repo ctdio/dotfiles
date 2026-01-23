@@ -23,6 +23,13 @@
 
 set -e  # Exit on any error
 
+# Detect OS for sed compatibility (macOS needs -i '', Linux needs -i)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_INPLACE=(sed -i '')
+else
+    SED_INPLACE=(sed -i)
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -101,7 +108,7 @@ update_port_for_worktree() {
     # Replace :3000 in URLs (e.g., localhost:3000)
     if grep -q ":3000" "$target_file" 2>/dev/null; then
         local url_count=$(grep -o ":3000" "$target_file" | wc -l | tr -d ' ')
-        sed -i '' "s/:3000/:$new_port/g" "$target_file"
+        "${SED_INPLACE[@]}" "s/:3000/:$new_port/g" "$target_file"
     else
         local url_count=0
     fi
@@ -109,14 +116,14 @@ update_port_for_worktree() {
     # Replace PORT=3000 (no colon before the number)
     if grep -q "^PORT=3000" "$target_file" 2>/dev/null; then
         local port_count=$(grep "^PORT=3000" "$target_file" | wc -l | tr -d ' ')
-        sed -i '' "s/^PORT=3000/PORT=$new_port/g" "$target_file"
+        "${SED_INPLACE[@]}" "s/^PORT=3000/PORT=$new_port/g" "$target_file"
     else
         local port_count=0
     fi
 
     # Replace INNGEST_BASE_URL port (8288 -> 9000 + wt_num)
     if grep -q "INNGEST_BASE_URL.*:8288" "$target_file" 2>/dev/null; then
-        sed -i '' "s/\(INNGEST_BASE_URL.*\):8288/\1:$new_inngest_port/g" "$target_file"
+        "${SED_INPLACE[@]}" "s/\(INNGEST_BASE_URL.*\):8288/\1:$new_inngest_port/g" "$target_file"
         print_success "    ✓ Updated INNGEST_BASE_URL port: 8288 -> $new_inngest_port"
     fi
 
@@ -280,11 +287,11 @@ for worktree in "${WORKTREES[@]}"; do
         target_file="$worktree/$filename"
 
         if sync_file "$env_file" "$target_file" "Root level" "$worktree"; then
-            ((SYNC_COUNT++))
+            SYNC_COUNT=$((SYNC_COUNT + 1))
             # Update PORT for worktree-specific port assignment
             update_port_for_worktree "$target_file" "$SLOT"
         else
-            ((ERROR_COUNT++))
+            ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
     done
 
@@ -294,11 +301,11 @@ for worktree in "${WORKTREES[@]}"; do
         target_file="$worktree/apps/platform/$filename"
 
         if sync_file "$env_file" "$target_file" "Platform app" "$worktree"; then
-            ((SYNC_COUNT++))
+            SYNC_COUNT=$((SYNC_COUNT + 1))
             # Update PORT for worktree-specific port assignment
             update_port_for_worktree "$target_file" "$SLOT"
         else
-            ((ERROR_COUNT++))
+            ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
     done
 
@@ -308,9 +315,9 @@ for worktree in "${WORKTREES[@]}"; do
         target_file="$worktree/.claude/settings.local.json"
 
         if sync_file "$CLAUDE_SETTINGS_FILE" "$target_file" "Claude settings" "$worktree" false; then
-            ((SYNC_COUNT++))
+            SYNC_COUNT=$((SYNC_COUNT + 1))
         else
-            ((ERROR_COUNT++))
+            ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
     fi
 done
