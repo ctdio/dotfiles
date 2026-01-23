@@ -13,6 +13,22 @@ This guide is for the **phase-verifier** agent. Read this for detailed guidance 
 
 ## Verification Process
 
+### Step -1: Verify Implementation State File (CRITICAL)
+
+Before anything else, validate the state file against reality:
+
+1. **Read the state file**
+   ```
+   ~/.ai/plans/{feature}/implementation-state.md
+   ```
+2. **Cross-check claims**
+   - Files listed exist and contain substantive code
+   - Phase status matches actual code completeness
+   - Reported test results match current test output
+   - Deliverables listed are present in code
+
+**If the state file is missing or inconsistent, FAIL immediately.**
+
 ### Step 0: Verify Files Actually Exist (CRITICAL - DO THIS FIRST)
 
 **Before running any technical checks, verify that the files actually exist.**
@@ -328,6 +344,7 @@ VerifierResult:
 All of these must be true:
 - ✅ ALL files from files_modified exist (verified by Read)
 - ✅ ALL files have substantive content (not empty)
+- ✅ Implementation state file exists and matches observed reality
 - ✅ Type check passes
 - ✅ Lint check passes
 - ✅ Build succeeds
@@ -339,6 +356,7 @@ All of these must be true:
 Any of these triggers a FAIL:
 - ❌ ANY file from files_modified does not exist (permission failure)
 - ❌ ANY file is empty or just a stub
+- ❌ Implementation state file missing or inconsistent with evidence
 - ❌ Type check fails
 - ❌ Lint check fails (errors, not warnings)
 - ❌ Build fails

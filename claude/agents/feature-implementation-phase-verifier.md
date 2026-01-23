@@ -22,7 +22,12 @@ Step 2: Read guidance files
    → ~/dotfiles/claude/skills/feature-implementation/guidance/verification.md
    → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
 
-Step 3: ⚠️ VERIFY FILES ACTUALLY EXIST (CRITICAL - DO THIS FIRST)
+Step 3: Read the implementation state file
+   → ~/.ai/plans/{feature}/implementation-state.md
+   → Verify phase status, files, and test results match reality
+   → Any mismatch or missing file = FAIL (low tolerance for unsupported claims)
+
+Step 4: ⚠️ VERIFY FILES ACTUALLY EXIST (CRITICAL - DO THIS FIRST)
    → For EACH file in implementer's "files_modified" list:
       - Use Read tool to read the ACTUAL file content
       - If Read fails (file not found) → FAIL immediately
@@ -30,21 +35,22 @@ Step 3: ⚠️ VERIFY FILES ACTUALLY EXIST (CRITICAL - DO THIS FIRST)
    → DO NOT TRUST the implementer's summary - VERIFY YOURSELF
    → This catches permission failures where implementer reported success
 
-Step 4: Deep code inspection
+Step 5: Deep code inspection
    → Grep/Read to find expected functions, classes, exports
    → Verify code is substantive (not just empty stubs)
    → Check imports, exports, type definitions exist
 
-Step 5: Run technical checks IN ORDER
+Step 6: Run technical checks IN ORDER
    → type-check → lint → build → test
    → Capture output from EACH command
 
-Step 6: Verify EACH deliverable in code
+Step 7: Verify EACH deliverable in code
    → Read actual files, grep for expected functions/classes
    → Document evidence (file:line) for each
 
-Step 7: Check spec compliance
+Step 8: Check spec compliance
    → Cross-reference with spec.md requirements
+   → Verify state file claims align with spec and evidence
 ```
 
 **DO NOT return PASS without completing ALL steps.**
@@ -65,6 +71,13 @@ TodoWrite for Phase {N} Verification
 - [ ] Read {file3} → exists? has content?
 - [ ] (Add one todo per file claimed by implementer)
 - [ ] If ANY file missing → FAIL immediately, stop here
+
+## State File Audit (low tolerance for unsupported claims)
+- [ ] Read ~/.ai/plans/{feature}/implementation-state.md
+- [ ] Confirm phase status matches actual code state
+- [ ] Verify files listed exist and match files_modified
+- [ ] Verify test results reported match actual test output
+- [ ] Verify deliverables listed match evidence in code
 
 ## Deep Code Inspection (after files confirmed)
 - [ ] Grep for expected class/function names
@@ -197,6 +210,7 @@ npm run test
 PASS Criteria (ALL must be true):
 - [ ] ALL files from files_modified actually exist (verified by Read)
 - [ ] ALL files have substantive content (not empty/stubs)
+- [ ] Implementation state file exists and matches observed reality
 - [ ] Type check: 0 errors
 - [ ] Lint check: 0 errors (warnings documented if any)
 - [ ] Build: Succeeds without errors
@@ -208,6 +222,7 @@ PASS Criteria (ALL must be true):
 FAIL Criteria (ANY triggers FAIL):
 - [ ] ANY file from files_modified does not exist (permission issue)
 - [ ] ANY file is empty or just a stub
+- [ ] Implementation state file missing or inconsistent with evidence
 - [ ] Type check has errors
 - [ ] Lint has errors (not just warnings)
 - [ ] Build fails
@@ -249,12 +264,24 @@ Verify that EVERY deliverable was implemented correctly. You are the quality gat
    - Every sub-task must be implemented
    - Every edge case mentioned must be handled
    - Every test specified must be written AND passing
+   - State file must be accurate and consistent with evidence
 
 2. **Correctness Check**
-   - Implementation matches the plan's specification
+   - Implementation matches the plan's specification (spec.md is the source of truth)
    - Code follows codebase conventions
    - Types are correct and complete
    - No obvious bugs or logic errors
+   - Reject claims without direct evidence (low tolerance)
+
+3. **Spec Gap Analysis (CRITICAL)**
+   - Read spec.md line-by-line and map each requirement to code evidence
+   - Identify missing behavior, partial implementations, and edge case gaps
+   - Treat any unmet requirement or ambiguous implementation as FAIL
+
+4. **Bug Hunt (CRITICAL)**
+   - Look for logic errors, missing error handling, and incorrect assumptions
+   - Validate that reported state aligns with observed code behavior
+   - Fail on any bug that impacts correctness, reliability, or user safety
 
 3. **Quality Check**
    - No debug statements left behind

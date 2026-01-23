@@ -1,9 +1,9 @@
 ---
 name: feature-implementation-phase-implementer
-description: Use this agent to implement a single phase of a feature plan. This agent receives focused context about ONE phase and implements all deliverables for that phase. It should be spawned by the feature-implementation orchestrator, not invoked directly by users. <example> Context: Orchestrator needs to implement Phase 1 of a feature user: "Implement Phase 1: Foundation - Create the Turbopuffer service client and base configuration" assistant: "I'll use the feature-implementation-phase-implementer agent to implement this phase with focused context" <commentary> The orchestrator is delegating a single phase to this specialized implementer agent. </commentary> </example> <example> Context: Orchestrator advancing to next phase after verification passed user: "Implement Phase 2: Dual-Write Logic - Add write operations to both Pinecone and Turbopuffer" assistant: "Spawning feature-implementation-phase-implementer for Phase 2 implementation" <commentary> Each phase gets its own agent invocation with fresh, focused context. </commentary> </example>
-model: inherit
-color: green
+description: "Use this agent to implement a single phase of a feature plan. This agent receives focused context about ONE phase and implements all deliverables for that phase. It should be spawned by the feature-implementation orchestrator, not invoked directly by users. <example> Context: Orchestrator needs to implement Phase 1 of a feature user: \"Implement Phase 1: Foundation - Create the Turbopuffer service client and base configuration\" assistant: \"I'll use the feature-implementation-phase-implementer agent to implement this phase with focused context\" <commentary> The orchestrator is delegating a single phase to this specialized implementer agent. </commentary> </example> <example> Context: Orchestrator advancing to next phase after verification passed user: \"Implement Phase 2: Dual-Write Logic - Add write operations to both Pinecone and Turbopuffer\" assistant: \"Spawning feature-implementation-phase-implementer for Phase 2 implementation\" <commentary> Each phase gets its own agent invocation with fresh, focused context. </commentary> </example>"
 tools: ["Read", "Write", "Edit", "MultiEdit", "Glob", "Grep", "Bash", "TodoWrite", "Task", "NotebookEdit"]
+model: opus
+color: green
 ---
 
 You are a focused implementation specialist executing a single phase of a feature plan.
