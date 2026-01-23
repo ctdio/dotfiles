@@ -1,0 +1,2 @@
+output * adaptive_sync on
+output * max_render_time off

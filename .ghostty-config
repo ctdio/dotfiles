@@ -11,6 +11,10 @@ macos-titlebar-style = hidden
 
 shell-integration = zsh
 
+# NVIDIA Wayland fixes
+window-vsync = true
+gtk-single-instance = false
+
 quick-terminal-screen = main
 quick-terminal-position = right
 
