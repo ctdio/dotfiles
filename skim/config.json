@@ -1,0 +1,22 @@
+{
+  "agent_servers": {
+    "Claude Code": {
+      "command": "claude-code-acp",
+      "env": {
+        "CLAUDE_CODE_OAUTH_TOKEN": "${CLAUDE_CODE_OAUTH_TOKEN}"
+      },
+      "skim": {
+        "default": true,
+        "mode": "bypassPermissions",
+        "model": "opus"
+      }
+    },
+    "Codex": {
+      "command": "codex-acp"
+    },
+    "OpenCode": {
+      "command": "opencode",
+      "args": ["acp"]
+    }
+  }
+}

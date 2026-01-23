@@ -239,6 +239,10 @@ function link_dotfiles () {
   ln -nsf ${DOTFILES_DIR}/claude/settings.json ~/.claude/settings.json
   ln -nsf ${DOTFILES_DIR}/claude/skills ~/.claude/skills
 
+  echo "Linking skim config to ~/.skim/config.json"
+  mkdir -p ~/.skim
+  ln -nsf ${DOTFILES_DIR}/skim/config.json ~/.skim/config.json
+
   local dotfiles_karabiner_mods_dir=${DOTFILES_DIR}/karabiner
   local os_karabiner_mods_dir=~/.config/karabiner/assets/complex_modifications
 
