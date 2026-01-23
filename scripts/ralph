@@ -20,13 +20,15 @@ YELLOW="\033[33m"
 RED="\033[31m"
 
 # Stream parser location
-STREAM_PARSER="${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser}"
+STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser}}"
 
 # Defaults
 MAX_ITERATIONS=10
 COMPLETION_PROMISE="TASK_COMPLETE"
 PROMPT=""
 PROMPT_FILE=""
+AGENT="claude"
+AGENT_CMD_OVERRIDE="${RALPH_AGENT_CMD:-}"
 
 print_help() {
   cat <<EOF
@@ -42,6 +44,7 @@ ${YELLOW}OPTIONS:${RESET}
   -f, --file <path>               Read prompt from file
   -m, --max-iterations <n>        Maximum iterations (default: 10)
   -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
+  -a, --agent <claude|codex>      Agent preset to use (default: claude)
   -h, --help                      Show this help message
 
 ${YELLOW}EXAMPLES:${RESET}
@@ -52,6 +55,10 @@ ${YELLOW}EXAMPLES:${RESET}
 ${YELLOW}COMPLETION:${RESET}
   Claude must output <promise>YOUR_PHRASE</promise> to signal completion.
   The promise must be TRUE - Claude should not lie to exit the loop.
+
+${YELLOW}ENV VARS:${RESET}
+  RALPH_AGENT_CMD     Full command string override (takes precedence over --agent)
+  RALPH_STREAM_PARSER Stream parser command (set empty to disable parsing)
 EOF
 }
 
@@ -72,6 +79,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -c|--completion-promise)
       COMPLETION_PROMISE="$2"
+      shift 2
+      ;;
+    -a|--agent)
+      AGENT="$2"
       shift 2
       ;;
     *)
@@ -122,10 +133,32 @@ if ! [[ "$MAX_ITERATIONS" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-# Check stream parser exists
-if [[ ! -x "$STREAM_PARSER" ]]; then
+resolve_agent_cmd() {
+  if [[ -n "$AGENT_CMD_OVERRIDE" ]]; then
+    echo "$AGENT_CMD_OVERRIDE"
+    return
+  fi
+
+  case "$AGENT" in
+    claude)
+      echo "claude --add-dir ~/.ai --dangerously-skip-permissions --output-format stream-json --include-partial-messages"
+      ;;
+    codex)
+      echo "codex exec --json"
+      ;;
+    *)
+      echo -e "${RED}Error: Unknown agent preset: $AGENT${RESET}"
+      exit 1
+      ;;
+  esac
+}
+
+AGENT_CMD=$(resolve_agent_cmd)
+
+# Check stream parser exists (only if set)
+if [[ -n "$STREAM_PARSER" ]] && [[ ! -x "$STREAM_PARSER" ]]; then
   echo -e "${RED}Error: Stream parser not found at $STREAM_PARSER${RESET}"
-  echo "Set CLAUDE_AGENT_STREAM_PARSER to the path of cc-stream-parser"
+  echo "Set RALPH_STREAM_PARSER to the path of a parser or empty to disable"
   exit 1
 fi
 
@@ -171,6 +204,7 @@ check_completion() {
 # Print header
 echo -e "${CYAN}ralph${RESET}"
 echo "-------------------------------------"
+echo -e "agent:      ${AGENT}"
 echo -e "iterations: ${MAX_ITERATIONS}"
 echo -e "promise:    ${COMPLETION_PROMISE}"
 echo ""
@@ -184,10 +218,13 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
   # Create temp file to capture output while streaming
   temp_output=$(mktemp)
 
-  # Run claude with streaming JSON, pipe through parser, capture output
-  claude --add-dir ~/.ai --dangerously-skip-permissions \
-    --output-format stream-json --include-partial-messages \
-    "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
+  # Run agent with streaming JSON, pipe through parser when configured, capture output
+  read -r -a agent_cmd_parts <<< "$AGENT_CMD"
+  if [[ -n "$STREAM_PARSER" ]]; then
+    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
+  else
+    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output"
+  fi
 
   # Check for completion (check file directly, stripping ANSI codes)
   if check_completion "$temp_output"; then
