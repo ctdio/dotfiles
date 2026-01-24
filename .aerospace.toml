@@ -66,8 +66,9 @@ alt-shift-j = 'move down'
 alt-shift-k = 'move up'
 alt-shift-l = 'move right'
 
-alt-ctrl-h = 'focus-monitor left'
-alt-ctrl-l = 'focus-monitor right'
+# alt-ctrl-h conflicts with word deletion in kanata, so use alt-shift-ctrl
+alt-shift-ctrl-h = 'focus-monitor --wrap-around left'
+alt-shift-ctrl-l = 'focus-monitor --wrap-around right'
 
 alt-f = 'fullscreen'
 
