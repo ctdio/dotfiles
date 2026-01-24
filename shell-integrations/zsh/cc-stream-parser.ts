@@ -38,6 +38,7 @@ let lastBlockIndex = -1;
 let lastBlockType = '';
 let currentToolName = '';
 let currentToolInput = '';
+let lastToolName = '';
 
 // Main formatters
 function formatTodoStatus(status: string): { icon: string; color: string } {
@@ -354,6 +355,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function formatToolResult(text: string): string {
+  const lines = text.split('\n');
+  const maxLines = 10;
+
+  if (lines.length > maxLines) {
+    const shown = lines.slice(0, maxLines);
+    return shown.map(l => `${c.dim}${box.v}${c.reset} ${l}`).join('\n') +
+      `\n${c.dim}${box.v} ... ${lines.length - maxLines} more lines${c.reset}\n`;
+  }
+
+  return lines.map(l => `${c.dim}${box.v}${c.reset} ${l}`).join('\n') + '\n';
+}
+
 function handleCodexEvent(json: Record<string, unknown>): boolean {
   const type = json.type;
   if (typeof type !== 'string') return false;
@@ -444,6 +458,7 @@ for await (const chunk of Bun.stdin.stream()) {
       else if (json.type === 'stream_event' && json.event?.type === 'content_block_stop') {
         if (lastBlockType === 'tool_use' && currentToolInput) {
           process.stdout.write(formatToolOutput(currentToolName, currentToolInput));
+          lastToolName = currentToolName;
           currentToolName = '';
           currentToolInput = '';
         } else if (lastBlockType === 'text') {
@@ -452,25 +467,27 @@ for await (const chunk of Bun.stdin.stream()) {
       }
       // Handle tool results (sub-agent output, bash output, etc.)
       else if (json.type === 'user' && json.message?.content) {
+        // Skip results for Edit/Write - we already show the diff
+        if (['Edit', 'MultiEdit', 'Write'].includes(lastToolName)) {
+          lastToolName = '';
+          continue;
+        }
+
         for (const block of json.message.content) {
           if (block.type === 'tool_result') {
             const content = block.content;
-            if (typeof content === 'string' && content.trim()) {
-              // Format multi-line output
-              for (const line of content.split('\n')) {
-                process.stdout.write(`${c.dim}${box.v}${c.reset} ${line}\n`);
-              }
-            } else if (Array.isArray(content)) {
-              for (const item of content) {
-                if (item.type === 'text' && item.text?.trim()) {
-                  for (const line of item.text.split('\n')) {
-                    process.stdout.write(`${c.dim}${box.v}${c.reset} ${line}\n`);
-                  }
-                }
-              }
+            const text = typeof content === 'string'
+              ? content
+              : Array.isArray(content)
+                ? content.filter((i: { type: string }) => i.type === 'text').map((i: { text: string }) => i.text).join('\n')
+                : '';
+
+            if (text.trim()) {
+              process.stdout.write(formatToolResult(text));
             }
           }
         }
+        lastToolName = '';
       }
       // Final result
       else if (json.type === 'result' && json.subtype === 'success') {
