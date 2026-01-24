@@ -46,7 +46,7 @@ echo "Starting opine-dev for $DIR_NAME (server: $PORT, inngest: $INNGEST_PORT)"
 tmux kill-pane -a
 
 # Start server in current pane
-tmux send-keys "nx run platform:serve:turbo" C-m
+tmux send-keys "nx run platform:serve:turbo --exclude-task-dependencies" C-m
 
 # Create right pane (35%) for inngest
 tmux split-window -h -l 35% -c "$CURRENT_DIR"
