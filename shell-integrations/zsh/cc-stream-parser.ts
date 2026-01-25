@@ -19,6 +19,9 @@ const c = {
   gray: '\x1b[90m',
   bgGreen: '\x1b[42m',
   bgRed: '\x1b[41m',
+  bgCyan: '\x1b[46m',
+  bgMagenta: '\x1b[45m',
+  black: '\x1b[30m',
 };
 
 // Box drawing characters
@@ -43,14 +46,16 @@ let lastToolName = '';
 
 // Subagent state - track active subagents by their parent_tool_use_id
 interface SubagentState {
-  name: string; // e.g., "Explore: cc-stream-parser"
+  agentType: string; // e.g., "Explore"
+  description: string; // e.g., "Explore ralph script"
+  promptPreview: string; // First line of prompt
   toolCount: number;
 }
 const activeSubagents = new Map<string, SubagentState>();
 let lastOutputAgent: string | null = null; // Track which agent last produced output
 
-function registerSubagent(toolUseId: string, name: string): void {
-  activeSubagents.set(toolUseId, { name, toolCount: 0 });
+function registerSubagent(toolUseId: string, agentType: string, description: string, promptPreview: string): void {
+  activeSubagents.set(toolUseId, { agentType, description, promptPreview, toolCount: 0 });
 }
 
 function unregisterSubagent(parentId: string): void {
@@ -69,7 +74,10 @@ function printAgentContextSwitch(parentId: string | null): void {
   if (parentId) {
     const state = activeSubagents.get(parentId);
     if (state) {
-      process.stdout.write(`\n${c.cyan}${state.name}${c.reset}\n`);
+      // Color block for agent type, then description
+      const typeBlock = `${c.bgCyan}${c.black} ${state.agentType} ${c.reset}`;
+      const desc = state.description ? ` ${state.description}` : '';
+      process.stdout.write(`\n${typeBlock}${desc}\n`);
     }
   }
 }
@@ -233,15 +241,39 @@ function formatWrite(input: { file_path: string; content: string }): string {
 }
 
 // Track pending Task info for registration
-const pendingTasks = new Map<string, string>(); // toolUseId -> name
+interface PendingTask {
+  agentType: string;
+  description: string;
+  promptPreview: string;
+}
+const pendingTasks = new Map<string, PendingTask>();
 
 function formatTask(input: { prompt: string; subagent_type: string; description?: string }): string {
-  const agentName = input.subagent_type || 'agent';
+  const agentType = input.subagent_type || 'agent';
   const desc = input.description || '';
-  const name = desc ? `${agentName}: ${desc}` : agentName;
+  const termWidth = getTermWidth();
+  const pipePrefix = '│ ';
 
-  // Simple one-line format
-  return `\n${c.magenta}Task${c.reset} ${c.dim}${box.arrow}${c.reset} ${c.cyan}${name}${c.reset}\n`;
+  // Get first 10 non-empty lines of prompt
+  const promptLines = input.prompt
+    .split('\n')
+    .filter(l => l.trim())
+    .slice(0, 10);
+
+  // Color block for agent type
+  const typeBlock = `${c.bgCyan}${c.black} ${agentType} ${c.reset}`;
+  const descPart = desc ? ` ${desc}` : '';
+
+  // Build output with pipe prefix for prompt lines, wrapped to terminal width
+  const lines = [`\n${c.magenta}Task${c.reset} ${c.dim}${box.arrow}${c.reset} ${typeBlock}${descPart}`];
+  for (const line of promptLines) {
+    const wrapped = wrapLine(line, termWidth, pipePrefix.length);
+    for (const wrappedLine of wrapped) {
+      lines.push(`${c.dim}${pipePrefix}${wrappedLine}${c.reset}`);
+    }
+  }
+
+  return lines.join('\n') + '\n';
 }
 
 function formatRead(input: { file_path: string; offset?: number; limit?: number }): string {
@@ -343,14 +375,24 @@ function formatSubagentCompletion(result: {
   totalDurationMs?: number;
   totalToolUseCount?: number;
   content?: Array<{ type: string; text?: string }>;
-}, parentId: string | null): string {
+}, _parentId: string | null): string {
   const lines: string[] = [];
+  const termWidth = getTermWidth();
+  // subagentIndent has ANSI codes, so use raw prefix length for wrapping
+  const prefixLen = 2; // "│ "
 
-  // Find the text content (summary) and indent it
+  // Find the text content (summary) and indent it with wrapping
   const textContent = result.content?.find((c) => c.type === 'text' && c.text);
   if (textContent?.text) {
     for (const line of textContent.text.split('\n')) {
-      lines.push(subagentIndent + line);
+      if (!line.trim()) {
+        lines.push(subagentIndent);
+        continue;
+      }
+      const wrapped = wrapLine(line, termWidth, prefixLen);
+      for (const wrappedLine of wrapped) {
+        lines.push(subagentIndent + wrappedLine);
+      }
     }
   }
 
@@ -552,7 +594,13 @@ for await (const chunk of Bun.stdin.stream()) {
 
         // Register subagent if we see a new parent_tool_use_id
         if (parentId && !activeSubagents.has(parentId)) {
-          registerSubagent(parentId, null);
+          const pending = pendingTasks.get(parentId);
+          if (pending) {
+            pendingTasks.delete(parentId);
+            registerSubagent(parentId, pending.agentType, pending.description, pending.promptPreview);
+          } else {
+            registerSubagent(parentId, 'agent', '', '');
+          }
         }
 
         if (blockType === 'tool_use') {
@@ -587,16 +635,17 @@ for await (const chunk of Bun.stdin.stream()) {
         const parentId = json.parent_tool_use_id;
 
         if (lastBlockType === 'tool_use' && currentToolInput) {
-          // Register Task tool calls - store the name for when we see child events
+          // Register Task tool calls - store info for when we see child events
           if (currentToolName === 'Task' && currentToolUseId) {
             try {
               const taskInput = JSON.parse(currentToolInput);
-              const agentType = taskInput.subagent_type || 'agent';
-              const desc = taskInput.description || '';
-              const name = desc ? `${agentType}: ${desc}` : agentType;
-              pendingTasks.set(currentToolUseId, name);
+              pendingTasks.set(currentToolUseId, {
+                agentType: taskInput.subagent_type || 'agent',
+                description: taskInput.description || '',
+                promptPreview: taskInput.prompt?.split('\n')[0]?.slice(0, 80) || '',
+              });
             } catch {
-              pendingTasks.set(currentToolUseId, 'agent');
+              pendingTasks.set(currentToolUseId, { agentType: 'agent', description: '', promptPreview: '' });
             }
           }
 
@@ -651,9 +700,13 @@ for await (const chunk of Bun.stdin.stream()) {
 
         // Register subagent if we see a new parent_tool_use_id
         if (parentId && !activeSubagents.has(parentId)) {
-          const name = pendingTasks.get(parentId) || 'agent';
-          pendingTasks.delete(parentId);
-          registerSubagent(parentId, name);
+          const pending = pendingTasks.get(parentId);
+          if (pending) {
+            pendingTasks.delete(parentId);
+            registerSubagent(parentId, pending.agentType, pending.description, pending.promptPreview);
+          } else {
+            registerSubagent(parentId, 'agent', '', '');
+          }
         }
 
         // Skip results for Edit/Write - we already show the diff
@@ -690,9 +743,13 @@ for await (const chunk of Bun.stdin.stream()) {
 
         // Register subagent if not already tracked
         if (!activeSubagents.has(parentId)) {
-          const name = pendingTasks.get(parentId) || 'agent';
-          pendingTasks.delete(parentId);
-          registerSubagent(parentId, name);
+          const pending = pendingTasks.get(parentId);
+          if (pending) {
+            pendingTasks.delete(parentId);
+            registerSubagent(parentId, pending.agentType, pending.description, pending.promptPreview);
+          } else {
+            registerSubagent(parentId, 'agent', '', '');
+          }
         }
 
         // Print context header if switching agents
