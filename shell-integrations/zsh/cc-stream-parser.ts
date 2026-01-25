@@ -38,7 +38,75 @@ let lastBlockIndex = -1;
 let lastBlockType = '';
 let currentToolName = '';
 let currentToolInput = '';
+let currentToolUseId = '';
 let lastToolName = '';
+
+// Subagent state - track active subagents by their parent_tool_use_id
+interface SubagentState {
+  name: string; // e.g., "Explore: cc-stream-parser"
+  toolCount: number;
+}
+const activeSubagents = new Map<string, SubagentState>();
+let lastOutputAgent: string | null = null; // Track which agent last produced output
+
+function registerSubagent(toolUseId: string, name: string): void {
+  activeSubagents.set(toolUseId, { name, toolCount: 0 });
+}
+
+function unregisterSubagent(parentId: string): void {
+  activeSubagents.delete(parentId);
+}
+
+function isInSubagent(parentId: string | null): boolean {
+  return parentId !== null && activeSubagents.has(parentId);
+}
+
+// Print agent name header if switching to a different agent
+function printAgentContextSwitch(parentId: string | null): void {
+  if (parentId === lastOutputAgent) return;
+  lastOutputAgent = parentId;
+
+  if (parentId) {
+    const state = activeSubagents.get(parentId);
+    if (state) {
+      process.stdout.write(`\n${c.cyan}${state.name}${c.reset}\n`);
+    }
+  }
+}
+
+// Indent for subagent content
+const subagentIndent = `${c.dim}│${c.reset} `;
+
+// Get terminal width for line wrapping
+function getTermWidth(): number {
+  return process.stdout.columns || 80;
+}
+
+// Wrap text to fit within terminal width, accounting for prefix
+function wrapLine(line: string, maxWidth: number, prefixLen: number): string[] {
+  const contentWidth = maxWidth - prefixLen;
+  if (contentWidth <= 20) return [line]; // Too narrow, don't wrap
+
+  const result: string[] = [];
+  let remaining = line;
+
+  while (remaining.length > contentWidth) {
+    // Find a good break point (space, punctuation)
+    let breakAt = remaining.lastIndexOf(' ', contentWidth);
+    if (breakAt <= contentWidth * 0.5) {
+      // No good break point, break at max width
+      breakAt = contentWidth;
+    }
+    result.push(remaining.slice(0, breakAt));
+    remaining = remaining.slice(breakAt).trimStart();
+  }
+
+  if (remaining) {
+    result.push(remaining);
+  }
+
+  return result;
+}
 
 // Main formatters
 function formatTodoStatus(status: string): { icon: string; color: string } {
@@ -164,31 +232,16 @@ function formatWrite(input: { file_path: string; content: string }): string {
   return lines.join('\n') + '\n';
 }
 
+// Track pending Task info for registration
+const pendingTasks = new Map<string, string>(); // toolUseId -> name
+
 function formatTask(input: { prompt: string; subagent_type: string; description?: string }): string {
-  const lines: string[] = [];
   const agentName = input.subagent_type || 'agent';
-  const desc = input.description || 'task';
+  const desc = input.description || '';
+  const name = desc ? `${agentName}: ${desc}` : agentName;
 
-  lines.push(`\n${c.magenta}${c.bold}Task${c.reset} ${c.dim}${box.arrow}${c.reset} ${c.cyan}${agentName}${c.reset} ${c.dim}(${desc})${c.reset}`);
-
-  // Truncate prompt - show first 10 lines
-  const promptLines = input.prompt.split('\n');
-  const maxLines = 10;
-
-  const previewLines = promptLines.slice(0, maxLines);
-
-  if (previewLines.length > 0) {
-    lines.push(`${c.dim}${box.tl}${box.h.repeat(60)}${c.reset}`);
-    for (const line of previewLines) {
-      lines.push(`${c.dim}${box.v}${c.reset} ${line}`);
-    }
-    if (promptLines.length > maxLines) {
-      lines.push(`${c.dim}${box.v} ... (${promptLines.length} lines total)${c.reset}`);
-    }
-    lines.push(`${c.dim}${box.bl}${box.h.repeat(60)}${c.reset}`);
-  }
-
-  return lines.join('\n') + '\n';
+  // Simple one-line format
+  return `\n${c.magenta}Task${c.reset} ${c.dim}${box.arrow}${c.reset} ${c.cyan}${name}${c.reset}\n`;
 }
 
 function formatRead(input: { file_path: string; offset?: number; limit?: number }): string {
@@ -252,6 +305,70 @@ function formatAskUserQuestion(input: { questions: Array<{ question: string; hea
 function formatSkill(input: { skill: string; args?: string }): string {
   const args = input.args ? ` ${c.dim}${input.args}${c.reset}` : '';
   return `\n${c.magenta}/${input.skill}${c.reset}${args}\n`;
+}
+
+function formatCompactTool(toolName: string, input: unknown): string | null {
+  try {
+    const parsed = typeof input === 'string' ? JSON.parse(input) : input;
+
+    switch (toolName) {
+      case 'Read':
+        return `Read ${parsed.file_path?.split('/').pop() || '...'}`;
+      case 'Glob':
+        return `Glob ${parsed.pattern}`;
+      case 'Grep':
+        return `Grep /${parsed.pattern}/`;
+      case 'Edit':
+      case 'MultiEdit':
+        return `Edit ${parsed.file_path?.split('/').pop() || '...'}`;
+      case 'Write':
+        return `Write ${parsed.file_path?.split('/').pop() || '...'}`;
+      case 'Bash':
+        const cmd = parsed.command?.slice(0, 40) || '';
+        return `$ ${cmd}${parsed.command?.length > 40 ? '...' : ''}`;
+      case 'WebSearch':
+        return `Search "${parsed.query?.slice(0, 30)}..."`;
+      case 'WebFetch':
+        return `Fetch ${parsed.url?.slice(0, 40)}...`;
+      default:
+        return `${toolName}`;
+    }
+  } catch {
+    return toolName;
+  }
+}
+
+function formatSubagentCompletion(result: {
+  agentId?: string;
+  totalDurationMs?: number;
+  totalToolUseCount?: number;
+  content?: Array<{ type: string; text?: string }>;
+}, parentId: string | null): string {
+  const lines: string[] = [];
+
+  // Find the text content (summary) and indent it
+  const textContent = result.content?.find((c) => c.type === 'text' && c.text);
+  if (textContent?.text) {
+    for (const line of textContent.text.split('\n')) {
+      lines.push(subagentIndent + line);
+    }
+  }
+
+  // Show completion stats
+  const stats: string[] = [];
+  if (result.totalToolUseCount) {
+    stats.push(`${result.totalToolUseCount} tools`);
+  }
+  if (result.totalDurationMs) {
+    const secs = (result.totalDurationMs / 1000).toFixed(1);
+    stats.push(`${secs}s`);
+  }
+
+  if (stats.length > 0) {
+    lines.push(`${subagentIndent}${c.green}✓${c.reset} ${c.dim}${stats.join(' · ')}${c.reset}`);
+  }
+
+  return lines.join('\n') + '\n';
 }
 
 function formatCodexCommandStart(command: string): string {
@@ -431,9 +548,16 @@ for await (const chunk of Bun.stdin.stream()) {
       if (json.type === 'stream_event' && json.event?.type === 'content_block_start') {
         const blockType = json.event?.content_block?.type;
         const blockIndex = json.event?.index;
+        const parentId = json.parent_tool_use_id;
+
+        // Register subagent if we see a new parent_tool_use_id
+        if (parentId && !activeSubagents.has(parentId)) {
+          registerSubagent(parentId, null);
+        }
 
         if (blockType === 'tool_use') {
           currentToolName = json.event?.content_block?.name || '';
+          currentToolUseId = json.event?.content_block?.id || '';
           currentToolInput = '';
         } else if (lastBlockIndex !== -1 && blockIndex !== lastBlockIndex) {
           process.stdout.write('\n');
@@ -452,23 +576,94 @@ for await (const chunk of Bun.stdin.stream()) {
       else if (json.type === 'stream_event' &&
           json.event?.type === 'content_block_delta' &&
           json.event?.delta?.type === 'text_delta') {
-        process.stdout.write(json.event.delta.text);
+        const parentId = json.parent_tool_use_id;
+        // Skip subagent text streaming - we show the final summary instead
+        if (!isInSubagent(parentId)) {
+          process.stdout.write(json.event.delta.text);
+        }
       }
       // Handle content block stop - format tool output
       else if (json.type === 'stream_event' && json.event?.type === 'content_block_stop') {
+        const parentId = json.parent_tool_use_id;
+
         if (lastBlockType === 'tool_use' && currentToolInput) {
-          process.stdout.write(formatToolOutput(currentToolName, currentToolInput));
+          // Register Task tool calls - store the name for when we see child events
+          if (currentToolName === 'Task' && currentToolUseId) {
+            try {
+              const taskInput = JSON.parse(currentToolInput);
+              const agentType = taskInput.subagent_type || 'agent';
+              const desc = taskInput.description || '';
+              const name = desc ? `${agentType}: ${desc}` : agentType;
+              pendingTasks.set(currentToolUseId, name);
+            } catch {
+              pendingTasks.set(currentToolUseId, 'agent');
+            }
+          }
+
+          // In subagent context - show tool indented under agent
+          if (isInSubagent(parentId)) {
+            printAgentContextSwitch(parentId);
+            const state = activeSubagents.get(parentId);
+            if (state) {
+              state.toolCount++;
+            }
+            // Indent the output, strip leading newline since header provides separation
+            const output = formatToolOutput(currentToolName, currentToolInput).replace(/^\n/, '');
+            process.stdout.write(output.split('\n').map(l => l ? subagentIndent + l : l).join('\n'));
+          } else {
+            process.stdout.write(formatToolOutput(currentToolName, currentToolInput));
+          }
+          currentToolUseId = '';
           lastToolName = currentToolName;
           currentToolName = '';
           currentToolInput = '';
         } else if (lastBlockType === 'text') {
-          process.stdout.write('\n');
+          if (!isInSubagent(parentId)) {
+            process.stdout.write('\n');
+          }
         }
       }
       // Handle tool results (sub-agent output, bash output, etc.)
       else if (json.type === 'user' && json.message?.content) {
+        const parentId = json.parent_tool_use_id;
+
+        // Check if this is a subagent completing (Task tool_use_result with agentId)
+        if (json.tool_use_result?.agentId) {
+          // Find which subagent this completes by looking at the tool_use_id in content
+          const toolUseId = json.message?.content?.find(
+            (b: { type: string; tool_use_id?: string }) => b.type === 'tool_result'
+          )?.tool_use_id;
+
+          // Show context header if switching to this agent
+          if (toolUseId) {
+            printAgentContextSwitch(toolUseId);
+          }
+
+          process.stdout.write(formatSubagentCompletion(json.tool_use_result, toolUseId));
+
+          if (toolUseId) {
+            unregisterSubagent(toolUseId);
+            lastOutputAgent = null; // Reset so next output shows header
+          }
+          lastToolName = '';
+          continue;
+        }
+
+        // Register subagent if we see a new parent_tool_use_id
+        if (parentId && !activeSubagents.has(parentId)) {
+          const name = pendingTasks.get(parentId) || 'agent';
+          pendingTasks.delete(parentId);
+          registerSubagent(parentId, name);
+        }
+
         // Skip results for Edit/Write - we already show the diff
         if (['Edit', 'MultiEdit', 'Write'].includes(lastToolName)) {
+          lastToolName = '';
+          continue;
+        }
+
+        // In subagent context - skip tool results (we show the final summary)
+        if (isInSubagent(parentId)) {
           lastToolName = '';
           continue;
         }
@@ -488,6 +683,35 @@ for await (const chunk of Bun.stdin.stream()) {
           }
         }
         lastToolName = '';
+      }
+      // Handle subagent assistant messages (tool calls from subagents)
+      else if (json.type === 'assistant' && json.parent_tool_use_id) {
+        const parentId = json.parent_tool_use_id;
+
+        // Register subagent if not already tracked
+        if (!activeSubagents.has(parentId)) {
+          const name = pendingTasks.get(parentId) || 'agent';
+          pendingTasks.delete(parentId);
+          registerSubagent(parentId, name);
+        }
+
+        // Print context header if switching agents
+        printAgentContextSwitch(parentId);
+
+        // Show tool calls in normal format (like main agent)
+        const toolUses = json.message?.content?.filter(
+          (b: { type: string }) => b.type === 'tool_use'
+        ) || [];
+
+        for (const tool of toolUses) {
+          const state = activeSubagents.get(parentId);
+          if (state) {
+            state.toolCount++;
+          }
+          // Show tool call indented, strip leading newline
+          const output = formatToolOutput(tool.name, tool.input).replace(/^\n/, '');
+          process.stdout.write(output.split('\n').map(l => l ? subagentIndent + l : l).join('\n'));
+        }
       }
       // Final result
       else if (json.type === 'result' && json.subtype === 'success') {
