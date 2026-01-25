@@ -514,8 +514,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+// Patterns to skip in tool results (redundant confirmations)
+const skipResultPatterns = [
+  /has been (updated|created|modified|written) successfully/i,
+  /^The file .* has been/,
+  /Todos have been modified/i,
+];
+
 function formatToolResult(text: string): string {
-  const lines = text.split('\n');
+  // Filter out lines matching skip patterns
+  const lines = text.split('\n').filter(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return true; // keep empty lines
+    return !skipResultPatterns.some(p => p.test(trimmed));
+  });
+
+  // If all lines were filtered, return empty
+  if (lines.every(l => !l.trim())) return '';
+
   const maxLines = 10;
 
   if (lines.length > maxLines) {
@@ -709,8 +725,12 @@ for await (const chunk of Bun.stdin.stream()) {
           }
         }
 
-        // Skip results for Edit/Write - we already show the diff
-        if (['Edit', 'MultiEdit', 'Write'].includes(lastToolName)) {
+        // Skip results for tools where we already show formatted output
+        const skipResultTools = [
+          'Edit', 'MultiEdit', 'Write',
+          'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskList', 'TaskGet',
+        ];
+        if (skipResultTools.includes(lastToolName)) {
           lastToolName = '';
           continue;
         }
