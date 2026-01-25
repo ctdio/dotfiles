@@ -19,7 +19,7 @@ YELLOW="\033[33m"
 RED="\033[31m"
 
 # Stream parser location
-STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser}}"
+STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser/cc-stream-parser}}"
 
 # Defaults
 MAX_ITERATIONS=10
