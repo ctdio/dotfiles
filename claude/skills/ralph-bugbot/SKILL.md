@@ -112,10 +112,30 @@ Categorize before investigating:
 
 #### Resolve False Positives
 
-**ONLY after rigorous verification, resolve the thread:**
+**ONLY after rigorous verification:**
+
+1. **First, post a reply explaining the false positive:**
 
 ```bash
 # THREAD_ID from Step 2's output (the "id" field)
+# Replace REASON with your specific evidence-based explanation
+
+REASON="[Your explanation here - be specific about why this is safe]"
+
+gh api graphql -f query='
+mutation {
+  addPullRequestReviewThreadReply(input: {
+    pullRequestReviewThreadId: "'"$THREAD_ID"'",
+    body: "### ✅ Resolved as False Positive\n\n**Reason:** '"$REASON"'\n\n---\n<sub>🤖 *Automatically triaged by **Claude** via Ralph Bugbot skill — if this seems wrong, please reopen and flag for human review.*</sub>"
+  }) {
+    comment { id }
+  }
+}'
+```
+
+2. **Then resolve the thread:**
+
+```bash
 gh api graphql -f query='
 mutation {
   resolveReviewThread(input: {threadId: "'"$THREAD_ID"'"}) {
@@ -129,6 +149,11 @@ mutation {
 ```
 
 **Do not resolve unless you can explain WHY it's a false positive with evidence.**
+
+**The reply MUST include:**
+- A clear, evidence-based explanation of why it's a false positive
+- Reference to the specific defensive code, type system, or validation that makes it safe
+- The automated disclaimer so reviewers know it was triaged by Ralph Bugbot
 
 ### Step 5: Commit and Push
 
@@ -152,7 +177,7 @@ Run the `wait-for-bugbot.sh` script in this skill's directory.
 
 ```
 Fixed: [list files:lines]
-Resolved as false positive: [list files:lines with brief reason]
+Resolved as false positive (replied + resolved): [list files:lines with brief reason]
 Remaining: [count]
 ```
 
