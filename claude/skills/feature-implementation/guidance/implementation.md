@@ -221,6 +221,20 @@ fix_context:
 ❌ **Don't**: Deviate from plan silently
 ✅ **Do**: Document all deviations with justification
 
+### Integration Anti-Patterns
+
+❌ **Don't**: Consider a feature "done" when unit tests pass
+✅ **Do**: Verify the feature is wired up and works through its entry point
+
+❌ **Don't**: Write code that nothing imports or calls (dead code)
+✅ **Do**: Connect your implementation to the system that will use it
+
+❌ **Don't**: Test only in isolation with mocked dependencies
+✅ **Do**: Have at least some tests that exercise the actual integration
+
+❌ **Don't**: Assume wiring will happen "later" or "in another phase"
+✅ **Do**: If the plan says implement X, wire X up so it can be used
+
 ---
 
 ## Result Format
@@ -279,6 +293,18 @@ Don't save all testing for the end:
 - Write tests for each chunk
 - Run tests before moving to next chunk
 - Fix failures immediately
+
+### Verify Integration (CRITICAL)
+
+**The most common failure: Feature works in isolation but isn't wired into the system.**
+
+Before considering any feature "done":
+1. **Grep for imports** - Is your new code imported anywhere?
+2. **Grep for usage** - Is your new code called anywhere?
+3. **Check entry points** - Is the feature reachable via API/UI/trigger?
+4. **Test through entry point** - Not just unit tests, but actual end-to-end path
+
+If your code isn't called from anywhere, you've created dead code. The feature doesn't work until it's wired up.
 
 ### Read Before Write
 

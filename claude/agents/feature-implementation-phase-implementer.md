@@ -67,6 +67,13 @@ TodoWrite for Phase {N}: {Name}
 - [ ] (Add one todo per deliverable)
 - [ ] Verify all tests PASS (green phase)
 
+## Integration Wiring (CRITICAL)
+- [ ] Grep: Is new code imported anywhere? (must be YES)
+- [ ] Grep: Is new code called anywhere? (must be YES)
+- [ ] Entry point exists (route/handler/UI component wired)
+- [ ] Feature tested through actual entry point (not just unit tests)
+- [ ] Can demonstrate feature works end-to-end
+
 ## Cleanup
 - [ ] Remove any debug code
 - [ ] Check for unused imports
@@ -104,6 +111,94 @@ REPEAT for next feature
 
 ---
 
+## 🔌 Integration Verification (CRITICAL - DON'T SKIP)
+
+**After implementing, you MUST verify the feature is actually CONNECTED to the system.**
+
+Writing code that works in isolation is only half the job. If your feature isn't called from anywhere, it's dead code.
+
+### Integration Checklist
+
+```
+For EACH major deliverable:
+
+1. ENTRY POINT CHECK:
+   - [ ] Where does this get called from?
+   - [ ] Is there a route/handler/trigger that invokes this?
+   - [ ] If UI feature: Is there a button/link/component that uses it?
+   - [ ] If API feature: Is the endpoint registered in the router?
+   - [ ] If service: Is it instantiated/injected where needed?
+
+2. WIRING VERIFICATION:
+   - [ ] Grep for imports of your new module - is it imported anywhere?
+   - [ ] Grep for function/class name - is it called anywhere?
+   - [ ] If nothing imports/calls it → YOU'RE NOT DONE
+
+3. END-TO-END PROOF:
+   - [ ] Verify the feature works through its ACTUAL entry point
+   - [ ] Not just unit tests - test the FULL path users/systems will use
+   - [ ] Integration/API/e2e test: entry point → your code → expected outcome
+   - [ ] If you can't demonstrate it works end-to-end, it's not done
+```
+
+### Example: Integration Failure
+
+```
+❌ FAILURE SCENARIO:
+   - Implemented TurbopufferService with all methods
+   - Wrote unit tests for TurbopufferService - all pass
+   - But TurbopufferService is never imported or called
+   - Feature doesn't actually work because it's not wired up
+
+✅ CORRECT:
+   - Implemented TurbopufferService
+   - Added TurbopufferService to dependency injection
+   - Updated SearchHandler to use TurbopufferService
+   - Wrote integration test: "search returns Turbopuffer results"
+   - Test calls SearchHandler → SearchHandler calls TurbopufferService → results returned
+```
+
+### End-to-End Test Examples
+
+```typescript
+// API Feature - test through the route
+describe('Feature: Search API', () => {
+  it('returns results through the actual endpoint', async () => {
+    const response = await request(app)
+      .get('/api/search')
+      .query({ q: 'test' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.results).toBeDefined();
+  });
+});
+
+// Service Feature - test through the handler that uses it
+describe('Feature: Email Service', () => {
+  it('sends email when contact form is submitted', async () => {
+    const response = await request(app)
+      .post('/api/contact')
+      .send({ email: 'test@example.com', message: 'Hello' });
+
+    expect(response.status).toBe(200);
+    expect(mockEmailService.send).toHaveBeenCalled();
+  });
+});
+
+// UI Feature - test the component renders and triggers the feature
+describe('Feature: Delete Button', () => {
+  it('deletes item when clicked', async () => {
+    render(<ItemList items={[testItem]} />);
+    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    expect(mockDeleteItem).toHaveBeenCalledWith(testItem.id);
+  });
+});
+```
+
+**The key:** Start from what users/systems actually call, not from internal functions.
+
+---
+
 ## ✅ I Am Done When (Implementer Completion Criteria)
 
 **Before returning ImplementerResult, verify ALL of these:**
@@ -121,6 +216,14 @@ Completion Checklist:
 - [ ] No commented-out code left
 - [ ] All files follow existing codebase patterns
 - [ ] Deviations documented with justification
+
+## INTEGRATION CHECKS (CRITICAL - DON'T SKIP):
+- [ ] New code is IMPORTED somewhere (grep confirms imports exist)
+- [ ] New code is CALLED somewhere (grep confirms function/class usage)
+- [ ] Entry point exists (route registered, handler wired, UI component mounted)
+- [ ] Feature tested through actual entry point (not just isolated unit tests)
+- [ ] Can demonstrate feature works end-to-end when triggered normally
+- [ ] If nothing calls your code → YOU ARE NOT DONE
 ```
 
 **If ANY checkbox is unchecked, you are NOT done. Keep working.**
@@ -285,4 +388,16 @@ ImplementerResult:
 
 ❌ FAILURE: Tests pass but don't actually test functionality
    → FIX: Verify tests fail before implementation (red phase)
+
+❌ FAILURE: Feature implemented but not wired into the system
+   → FIX: Grep for imports/usage of your code - if nothing, add the wiring
+   → FIX: Write a "prove it works" test that exercises the full path
+
+❌ FAILURE: Unit tests pass but feature doesn't work end-to-end
+   → FIX: Add integration test that calls from entry point (API, UI action, etc.)
+   → FIX: Test the ACTUAL path a user/system would take
+
+❌ FAILURE: Code exists but nothing imports or calls it (dead code)
+   → FIX: Wire the feature to its entry point
+   → FIX: Verify: Can you trace from user action → your code?
 ```

@@ -40,20 +40,98 @@ Step 5: Deep code inspection
    → Verify code is substantive (not just empty stubs)
    → Check imports, exports, type definitions exist
 
-Step 6: Run technical checks IN ORDER
+Step 6: ⚠️ INTEGRATION GAP DETECTION (CRITICAL)
+   → For EACH new file/function/class created:
+      - Grep codebase for imports of the new module
+      - Grep codebase for calls to the new function/class
+      - If NOTHING imports or calls it → FAIL (dead code)
+   → Verify entry points exist:
+      - API routes registered in router?
+      - UI components mounted/rendered?
+      - Services injected into handlers?
+   → Check for "prove it works" test:
+      - Is there at least ONE integration test?
+      - Does it exercise the feature through its entry point?
+      - A feature with only unit tests but no integration test = SUSPICIOUS
+
+Step 7: Run technical checks IN ORDER
    → type-check → lint → build → test
    → Capture output from EACH command
 
-Step 7: Verify EACH deliverable in code
+Step 8: Verify EACH deliverable in code
    → Read actual files, grep for expected functions/classes
    → Document evidence (file:line) for each
 
-Step 8: Check spec compliance
+Step 9: Check spec compliance
    → Cross-reference with spec.md requirements
    → Verify state file claims align with spec and evidence
 ```
 
 **DO NOT return PASS without completing ALL steps.**
+
+---
+
+## 🔌 Integration Gap Detection (CRITICAL)
+
+**The most common implementation failure: Feature works in isolation but isn't wired into the system.**
+
+A feature that isn't called from anywhere is dead code. Tests can pass while the feature is completely unusable because nothing invokes it.
+
+### Integration Verification Process
+
+```
+For EACH new file/function/class the implementer created:
+
+1. IMPORT CHECK:
+   → Grep: `import.*from.*{new_file}` or `require.*{new_file}`
+   → Is the new module imported ANYWHERE in the codebase?
+   → If NO imports found → FAIL "Dead code: {file} not imported anywhere"
+
+2. USAGE CHECK:
+   → Grep: `{NewClass}` or `{newFunction}(`
+   → Is the new code CALLED anywhere?
+   → If NO calls found → FAIL "Dead code: {function/class} never called"
+
+3. ENTRY POINT CHECK:
+   → Can you trace from user action → new code?
+   → API route: Is it registered in the router/server?
+   → UI feature: Is the component mounted/rendered?
+   → Service: Is it instantiated/injected where needed?
+   → If NO entry point → FAIL "Feature not reachable"
+
+4. END-TO-END PROOF CHECK:
+   → Is there evidence the feature ACTUALLY WORKS through its intended path?
+   → Unit tests alone are NOT sufficient proof
+   → Look for: integration test, API test, or e2e test that exercises the feature
+   → The test should: trigger via entry point → execute feature → verify outcome
+   → If feature is only tested in isolation → SUSPICIOUS, investigate wiring
+```
+
+### Example: Detecting Integration Failure
+
+```yaml
+# Implementer reported:
+files_modified:
+  - src/services/turbopuffer/client.ts (created)
+  - src/services/turbopuffer/client.test.ts (created)
+
+# Verifier checks:
+grep -r "from.*turbopuffer/client" src/
+# Result: No matches
+
+grep -r "TurbopufferClient" src/
+# Result: Only in client.ts and client.test.ts
+
+# VERDICT: FAIL
+issues:
+  - severity: "high"
+    location: "src/services/turbopuffer/client.ts"
+    description: "Integration gap: TurbopufferClient is never imported or used outside its own file. The feature is implemented but not wired into the system."
+    suggested_fix: |
+      1. Import TurbopufferClient in the SearchService
+      2. Add route handler for /api/search/turbopuffer
+      3. Write integration test that calls the API endpoint
+```
 
 ---
 
@@ -84,6 +162,15 @@ TodoWrite for Phase {N} Verification
 - [ ] Verify exports are properly configured
 - [ ] Check code is substantive (not empty stubs)
 - [ ] Verify imports resolve correctly
+
+## ⚠️ Integration Gap Detection (CRITICAL)
+- [ ] For new file {file1}: Grep for imports → is it imported? by what?
+- [ ] For new function {func1}: Grep for calls → is it called? from where?
+- [ ] (Add one todo per new export/function/class)
+- [ ] Entry point check: Is feature reachable from user action/API call?
+- [ ] Wiring check: Route registered? Handler connected? Component mounted?
+- [ ] End-to-end proof: Feature tested through actual entry point?
+- [ ] If ANYTHING is not imported/called/wired → FAIL (dead code)
 
 ## Technical Checks (run in order, capture output)
 - [ ] Run type-check command → capture output
@@ -218,6 +305,9 @@ PASS Criteria (ALL must be true):
 - [ ] EVERY deliverable verified with evidence (file:line)
 - [ ] No high-severity issues found
 - [ ] Spec requirements for this phase are satisfied
+- [ ] INTEGRATION: New code is imported/called from somewhere (not dead code)
+- [ ] INTEGRATION: Entry point exists and is wired correctly
+- [ ] INTEGRATION: Feature tested through actual entry point (not just unit tests)
 
 FAIL Criteria (ANY triggers FAIL):
 - [ ] ANY file from files_modified does not exist (permission issue)
@@ -229,6 +319,10 @@ FAIL Criteria (ANY triggers FAIL):
 - [ ] ANY test fails
 - [ ] ANY deliverable is missing or incomplete
 - [ ] High-severity issue found (security, data corruption, etc.)
+- [ ] INTEGRATION GAP: New code is not imported anywhere (dead code)
+- [ ] INTEGRATION GAP: New code is not called from anywhere
+- [ ] INTEGRATION GAP: No entry point exists (feature unreachable)
+- [ ] INTEGRATION GAP: Only unit tests, no end-to-end proof feature works
 ```
 
 **Your verdict MUST match these criteria. Be objective.**
@@ -439,6 +533,18 @@ VerifierResult:
 
 ❌ FAILURE: Files reported as created but don't exist
    → FIX: This is a permission/mode issue - FAIL and suggest re-running implementer with bypassPermissions
+
+❌ FAILURE: Missing integration gap detection
+   → FIX: For EACH new file/function, grep to verify it's imported/called somewhere
+   → FIX: If nothing imports or calls the new code, it's dead code - FAIL
+
+❌ FAILURE: Feature has unit tests but isn't wired into system
+   → FIX: Verify entry point exists (route registered, handler connected, etc.)
+   → FIX: Check that feature is tested through actual entry point, not just in isolation
+
+❌ FAILURE: Tests pass but feature doesn't actually work
+   → FIX: Look for integration/e2e tests that exercise the full path
+   → FIX: If only unit tests exist and code isn't wired up, FAIL
 ```
 
 ---

@@ -101,7 +101,22 @@ Cross-reference with `spec.md`:
 3. **Constraints**: Are any constraints violated?
 4. **Acceptance Criteria**: Does each criterion pass?
 
-### Step 4: Review Code Quality
+### Step 4: Verify Integration (CRITICAL)
+
+**The most common verification miss: Feature exists but isn't wired into the system.**
+
+For EACH new file/function/class:
+1. **Grep for imports** - Is it imported anywhere in the codebase?
+2. **Grep for calls** - Is it called anywhere?
+3. **Check entry points** - Is there a route/handler/component that uses it?
+4. **End-to-end proof** - Is there a test that exercises the full path?
+
+If new code is not imported/called from anywhere:
+- It's dead code
+- The feature doesn't actually work
+- **FAIL immediately** - this is a high-severity issue
+
+### Step 5: Review Code Quality
 
 Check for common issues:
 
@@ -220,6 +235,16 @@ Good evidence includes:
 | Wrong signature | Function params don't match spec | Update signature to match spec |
 | Missing export | Not exported from index | Add to exports |
 
+### Common Integration Issues
+
+| Issue | How to Detect | Suggested Fix |
+|-------|---------------|---------------|
+| Dead code | Grep finds no imports of new file | Import and use in calling code |
+| Unused function | Grep finds no calls to function | Wire up to handler/route/component |
+| No entry point | Can't trace from user action to code | Register route, mount component, etc. |
+| Only unit tests | No tests exercise the integration | Add test that calls through entry point |
+| Incomplete wiring | Import exists but no actual call | Add the call site in handler/service |
+
 ---
 
 ## Issue Severity Levels
@@ -302,6 +327,15 @@ VerifierResult:
       exists: false  # ← This would trigger FAIL
       has_content: false
       issue: "File does not exist - implementer permission failure"
+
+  # ⚠️ CRITICAL: Include integration checks
+  integration_checks:
+    - file: src/services/example.ts
+      exported_items: ["ExampleService", "createExample"]
+      imported_by: ["src/handlers/example.handler.ts"]  # Or empty = FAIL
+      called_from: ["src/routes/api.ts:45"]  # Or empty = FAIL
+      entry_point: "POST /api/examples"  # Or "NONE FOUND" = FAIL
+      has_integration_test: true  # Or false = SUSPICIOUS
 
   technical_checks:
     typecheck:
@@ -388,6 +422,15 @@ Any of these triggers a FAIL:
 
 ❌ **Don't**: Mark PASS with known issues
 ✅ **Do**: FAIL if any high-severity issues exist
+
+❌ **Don't**: Skip integration verification because unit tests pass
+✅ **Do**: Grep to verify new code is imported/called somewhere
+
+❌ **Don't**: Assume wiring is "someone else's problem"
+✅ **Do**: Verify feature is reachable through its intended entry point
+
+❌ **Don't**: Accept unit tests as proof the feature works
+✅ **Do**: Look for tests that exercise the actual integration path
 
 ---
 
