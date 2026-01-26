@@ -19,8 +19,8 @@ Step 1: Create your implementation todo list
    → TodoWrite with ALL deliverables extracted from context
 
 Step 2: Read guidance files
-   → ~/dotfiles/claude/skills/feature-implementation/guidance/implementation.md
-   → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
+   → ~/dotfiles/agents/skills/feature-implementation/guidance/implementation.md
+   → ~/dotfiles/agents/skills/feature-implementation/guidance/shared.md
 
 Step 3: Check for validation corrections (IMPORTANT)
    → If validation_corrections is provided in context:
@@ -246,7 +246,7 @@ Completion Checklist:
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/claude/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/feature-implementation/
 ```
 
 1. **Implementation Guidance** (detailed how-to):

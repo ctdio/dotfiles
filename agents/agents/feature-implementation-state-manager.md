@@ -190,7 +190,7 @@ UPDATE FAILED Complete:
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/claude/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/feature-implementation/
 ```
 
 1. **State Management Guidance** (detailed how-to):

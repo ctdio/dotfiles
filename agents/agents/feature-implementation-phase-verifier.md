@@ -19,8 +19,8 @@ Step 1: Create your verification todo list
    → TodoWrite with ALL checks you will perform
 
 Step 2: Read guidance files
-   → ~/dotfiles/claude/skills/feature-implementation/guidance/verification.md
-   → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
+   → ~/dotfiles/agents/skills/feature-implementation/guidance/verification.md
+   → ~/dotfiles/agents/skills/feature-implementation/guidance/shared.md
 
 Step 3: Read the implementation state file
    → ~/.ai/plans/{feature}/implementation-state.md
@@ -334,7 +334,7 @@ FAIL Criteria (ANY triggers FAIL):
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/claude/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/feature-implementation/
 ```
 
 1. **Verification Guidance** (detailed how-to):

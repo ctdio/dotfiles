@@ -1,28 +1,31 @@
 #!/usr/bin/env bash
-# Fetch logs for failing checks on a PR
-# Usage: get-check-logs [CHECK_NAME] [PR_NUMBER]
+# Fetch logs for a specific failing check on a PR
+# Usage: get-check-logs CHECK_NAME [PR_NUMBER]
 #
-# If CHECK_NAME provided: fetches logs for that specific check
-# If no CHECK_NAME: fetches failed logs for all failing checks
+# CHECK_NAME is required - use check-ci-status.sh first to see failing checks
 #
 # Examples:
-#   get-check-logs                    # Get all failed logs
-#   get-check-logs "lint"             # Get logs matching "lint"
-#   get-check-logs "lint-type-check" 123
+#   get-check-logs "lint"                 # Get logs for failing "lint" check
+#   get-check-logs "lint-type-check" 123  # Specific check on specific PR
 
 set -euo pipefail
 
 CHECK_NAME="${1:-}"
 PR_NUM="${2:-$(gh pr view --json number -q '.number' 2>/dev/null)}"
 
+if [[ -z "$CHECK_NAME" ]]; then
+  echo "Error: CHECK_NAME is required. Use check-ci-status.sh to see available checks." >&2
+  exit 1
+fi
+
 if [[ -z "$PR_NUM" ]]; then
   echo "Error: No PR number provided and not in a PR context" >&2
   exit 1
 fi
 
-echo "Fetching CI logs for PR #$PR_NUM..."
+echo "Fetching '$CHECK_NAME' logs for PR #$PR_NUM..."
 
-# Get the failing checks with their workflow/run info
+# Get all checks with their workflow/run info
 CHECKS=$(gh pr checks "$PR_NUM" --json name,state,link,workflow 2>/dev/null || echo "[]")
 
 if [[ -z "$CHECKS" ]] || [[ "$CHECKS" == "[]" ]]; then
@@ -30,25 +33,17 @@ if [[ -z "$CHECKS" ]] || [[ "$CHECKS" == "[]" ]]; then
   exit 1
 fi
 
-# Filter to failing checks, optionally by name
-if [[ -n "$CHECK_NAME" ]]; then
-  FAILING=$(echo "$CHECKS" | jq -r --arg name "$CHECK_NAME" \
-    '.[] | select(.state == "FAILURE") | select(.name | test($name; "i")) | .link')
-else
-  FAILING=$(echo "$CHECKS" | jq -r '.[] | select(.state == "FAILURE") | .link')
-fi
+# Filter to failing checks matching the name
+MATCHING=$(echo "$CHECKS" | jq -r --arg name "$CHECK_NAME" \
+  '.[] | select(.state == "FAILURE") | select(.name | test($name; "i")) | .link')
 
-if [[ -z "$FAILING" ]]; then
-  if [[ -n "$CHECK_NAME" ]]; then
-    echo "No failing checks found matching '$CHECK_NAME'"
-  else
-    echo "No failing checks found"
-  fi
+if [[ -z "$MATCHING" ]]; then
+  echo "No failing checks found matching '$CHECK_NAME'"
   exit 0
 fi
 
 # Extract run IDs from the URLs and fetch logs
-echo "$FAILING" | while read -r url; do
+echo "$MATCHING" | while read -r url; do
   # GitHub Actions URLs look like: https://github.com/owner/repo/actions/runs/12345/job/67890
   if [[ "$url" =~ actions/runs/([0-9]+) ]]; then
     RUN_ID="${BASH_REMATCH[1]}"

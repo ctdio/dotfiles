@@ -19,7 +19,7 @@ Step 1: Create your review todo list
    → TodoWrite with ALL files to review
 
 Step 2: Read guidance files
-   → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
+   → ~/dotfiles/agents/skills/feature-implementation/guidance/shared.md
 
 Step 3: Search for and read project rule files (CRITICAL)
    → Search for: .cursorrules, .cursor/rules, cursor.rules
@@ -195,7 +195,7 @@ You do NOT:
 ## First: Load Your Guidance
 
 ```
-Skill directory: ~/dotfiles/claude/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/feature-implementation/
 ```
 
 1. **Shared Guidance**: `guidance/shared.md`

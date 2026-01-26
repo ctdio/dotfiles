@@ -1,0 +1,193 @@
+#!/bin/bash
+
+# Sync agents, skills, and commands to tool-specific directories
+# Creates symlinks for Claude Code/Codex/OpenCode, copies for Cursor
+#
+# Usage: sync-agents
+#
+# Run this after:
+#   - Adding/modifying skills in ~/dotfiles/agents/skills/
+#   - Adding/modifying agents in ~/dotfiles/agents/agents/
+#   - Installing external skills (they get picked up from ~/.agents/skills/)
+#
+# KNOWN LIMITATION - Cursor symlink bug:
+#   Cursor doesn't follow symlinks to discover skills.
+#   See: https://forum.cursor.com/t/cursor-doesnt-follow-symlinks-to-discover-skills/149693
+#
+#   Workaround: This script uses rsync to COPY skills to ~/.cursor/skills/
+#   instead of symlinking. This means:
+#     - Changes to skills require re-running sync-agents for Cursor
+#     - Claude Code, Codex, and OpenCode see changes immediately (symlinks)
+#     - Cursor only sees changes after sync-agents runs
+#
+# Structure:
+#   ~/dotfiles/agents/skills/   → Shared skills (SKILL.md format)
+#   ~/dotfiles/agents/agents/   → Shared agents (Claude + Cursor)
+#   ~/dotfiles/agents/commands/ → Claude-only slash commands
+
+set -e
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+AGENTS_DIR="${DOTFILES_DIR}/agents"
+
+echo "Syncing agents from ${AGENTS_DIR}..."
+
+# Sync skills to a tool (symlinks for Claude/Codex, copies for Cursor)
+function sync_skills_symlink() {
+  local tool_dir="$1"
+  local skills_dir="${tool_dir}/skills"
+
+  echo "  Syncing skills to ${skills_dir} (symlinks)"
+
+  # Remove existing symlink if it's a directory symlink (old setup)
+  if [[ -L "${skills_dir}" ]]; then
+    rm "${skills_dir}"
+  fi
+
+  mkdir -p "${skills_dir}"
+
+  # Create symlinks for each skill in dotfiles
+  for skill in "${AGENTS_DIR}/skills"/*/; do
+    if [[ -d "$skill" ]]; then
+      local skill_name=$(basename "$skill")
+      local target="${skills_dir}/${skill_name}"
+
+      # Remove existing symlink or directory if it points elsewhere
+      if [[ -L "$target" ]]; then
+        rm "$target"
+      fi
+
+      ln -sf "$skill" "$target"
+      echo "    Linked: ${skill_name}"
+    fi
+  done
+
+  # Also link any external skills from ~/.agents/skills/ if they exist
+  if [[ -d "$HOME/.agents/skills" ]]; then
+    for skill in "$HOME/.agents/skills"/*/; do
+      if [[ -d "$skill" ]]; then
+        local skill_name=$(basename "$skill")
+        local target="${skills_dir}/${skill_name}"
+
+        # Don't overwrite dotfiles skills
+        if [[ ! -e "$target" ]]; then
+          ln -sf "$skill" "$target"
+          echo "    Linked (external): ${skill_name}"
+        fi
+      fi
+    done
+  fi
+}
+
+# Sync skills using rsync (for Cursor which doesn't follow symlinks)
+function sync_skills_copy() {
+  local tool_dir="$1"
+  local skills_dir="${tool_dir}/skills"
+
+  echo "  Syncing skills to ${skills_dir} (rsync copy)"
+
+  # Remove existing symlink if present
+  if [[ -L "${skills_dir}" ]]; then
+    rm "${skills_dir}"
+  fi
+
+  mkdir -p "${skills_dir}"
+
+  # Copy skills from dotfiles (rsync handles updates efficiently)
+  # Note: no trailing slash on source to copy the directory itself
+  for skill_path in "${AGENTS_DIR}/skills"/*; do
+    if [[ -d "$skill_path" ]]; then
+      local skill_name=$(basename "$skill_path")
+      rsync -a --delete "${skill_path}/" "${skills_dir}/${skill_name}/"
+      echo "    Copied: ${skill_name}"
+    fi
+  done
+
+  # Also copy any external skills from ~/.agents/skills/ if they exist
+  if [[ -d "$HOME/.agents/skills" ]]; then
+    for skill_path in "$HOME/.agents/skills"/*; do
+      if [[ -d "$skill_path" ]]; then
+        local skill_name=$(basename "$skill_path")
+        local target="${skills_dir}/${skill_name}"
+
+        # Don't overwrite dotfiles skills
+        if [[ ! -d "$target" ]]; then
+          rsync -a --delete "${skill_path}/" "${target}/"
+          echo "    Copied (external): ${skill_name}"
+        fi
+      fi
+    done
+  fi
+}
+
+# Sync agents (Claude Code + Cursor only)
+function sync_agents() {
+  local tool_dir="$1"
+  local agents_target="${tool_dir}/agents"
+
+  echo "  Syncing agents to ${agents_target}"
+
+  # Remove existing symlink
+  if [[ -L "$agents_target" ]]; then
+    rm "$agents_target"
+  fi
+
+  ln -sf "${AGENTS_DIR}/agents" "$agents_target"
+}
+
+# Sync commands (Claude Code only)
+function sync_commands() {
+  local tool_dir="$1"
+  local commands_target="${tool_dir}/commands"
+
+  echo "  Syncing commands to ${commands_target}"
+
+  # Remove existing symlink
+  if [[ -L "$commands_target" ]]; then
+    rm "$commands_target"
+  fi
+
+  ln -sf "${AGENTS_DIR}/commands" "$commands_target"
+}
+
+# Claude Code
+echo "Claude Code (~/.claude):"
+mkdir -p ~/.claude
+sync_skills_symlink ~/.claude
+sync_agents ~/.claude
+sync_commands ~/.claude
+
+# Also link settings.json and hooks from claude/ dir
+ln -sf "${DOTFILES_DIR}/claude/settings.json" ~/.claude/settings.json
+echo "  Linked: settings.json"
+
+# Cursor (uses rsync because Cursor doesn't follow symlinks for skills)
+# See: https://forum.cursor.com/t/cursor-doesnt-follow-symlinks-to-discover-skills/149693
+echo "Cursor (~/.cursor):"
+mkdir -p ~/.cursor
+sync_skills_copy ~/.cursor
+sync_agents ~/.cursor
+# Note: Commands are Claude-specific, Cursor uses different mechanism
+
+# Codex
+echo "Codex (~/.codex):"
+mkdir -p ~/.codex/skills
+sync_skills_symlink ~/.codex
+# Note: Codex doesn't support agents/subagents yet
+
+# OpenCode
+echo "OpenCode (~/.opencode):"
+mkdir -p ~/.opencode/skills
+sync_skills_symlink ~/.opencode
+# Note: OpenCode agents are configured differently (not agent/*.md files)
+
+echo ""
+echo "Sync complete!"
+echo ""
+echo "Structure:"
+echo "  ~/dotfiles/agents/skills/  → ~/.claude/skills/, ~/.cursor/skills/, ~/.codex/skills/, ~/.opencode/skills/"
+echo "  ~/dotfiles/agents/agents/  → ~/.claude/agents/, ~/.cursor/agents/"
+echo "  ~/dotfiles/agents/commands/ → ~/.claude/commands/"
+echo ""
+echo "Note: Cursor skills are COPIED (not symlinked) due to a Cursor bug."
+echo "      Re-run sync-agents after modifying skills to update Cursor."

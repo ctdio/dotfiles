@@ -232,12 +232,8 @@ function link_dotfiles () {
     ln -nsf ${DOTFILES_DIR}/ubuntu/wofi/style.css ~/.config/wofi/style.css
   fi
 
-  echo "Linking claude agents, commands, settings, and skills to ~/.claude"
-  mkdir -p ~/.claude
-  ln -nsf ${DOTFILES_DIR}/claude/agents ~/.claude/agents
-  ln -nsf ${DOTFILES_DIR}/claude/commands ~/.claude/commands
-  ln -nsf ${DOTFILES_DIR}/claude/settings.json ~/.claude/settings.json
-  ln -nsf ${DOTFILES_DIR}/claude/skills ~/.claude/skills
+  echo "Syncing agents, skills, and commands to Claude Code, Cursor, and Codex"
+  ${DOTFILES_DIR}/scripts/sync-agents
 
   echo "Linking skim config to ~/.skim/config.json"
   mkdir -p ~/.skim
