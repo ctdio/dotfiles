@@ -22,6 +22,9 @@ const c = {
   bgCyan: '\x1b[46m',
   bgMagenta: '\x1b[45m',
   black: '\x1b[30m',
+  // Subtle diff backgrounds (256-color)
+  bgDiffAdd: '\x1b[48;5;22m',    // dark green bg
+  bgDiffRemove: '\x1b[48;5;52m', // dark red bg
 };
 
 // Box drawing characters
@@ -43,6 +46,40 @@ let currentToolName = '';
 let currentToolInput = '';
 let currentToolUseId = '';
 let lastToolName = '';
+let lastToolCategory = ''; // Track category for spacing between groups
+
+// Tool categories for visual grouping
+type ToolCategory = 'meta' | 'file' | 'search' | 'command' | 'web' | 'agent' | 'other';
+
+function getToolCategory(toolName: string): ToolCategory {
+  switch (toolName) {
+    case 'TodoWrite':
+    case 'TaskCreate':
+    case 'TaskUpdate':
+    case 'TaskList':
+    case 'TaskGet':
+      return 'meta';
+    case 'Read':
+    case 'Edit':
+    case 'MultiEdit':
+    case 'Write':
+    case 'NotebookEdit':
+      return 'file';
+    case 'Glob':
+    case 'Grep':
+      return 'search';
+    case 'Bash':
+      return 'command';
+    case 'WebSearch':
+    case 'WebFetch':
+      return 'web';
+    case 'Task':
+    case 'Skill':
+      return 'agent';
+    default:
+      return 'other';
+  }
+}
 
 // Subagent state - track active subagents by their parent_tool_use_id
 interface SubagentState {
@@ -70,6 +107,10 @@ function isInSubagent(parentId: string | null): boolean {
 function printAgentContextSwitch(parentId: string | null): void {
   if (parentId === lastOutputAgent) return;
   lastOutputAgent = parentId;
+  lastToolCategory = ''; // Reset category when switching agents
+  // Reset todo state for new agent context
+  lastTodoState = new Map();
+  isFirstTodoUpdate = true;
 
   if (parentId) {
     const state = activeSubagents.get(parentId);
@@ -116,6 +157,15 @@ function wrapLine(line: string, maxWidth: number, prefixLen: number): string[] {
   return result;
 }
 
+// Todo state tracking for incremental display
+interface TodoItem {
+  id?: string;
+  content: string;
+  status: string;
+}
+let lastTodoState: Map<string, string> = new Map(); // content -> status (using content as key since id may not exist)
+let isFirstTodoUpdate = true;
+
 // Main formatters
 function formatTodoStatus(status: string): { icon: string; color: string } {
   switch (status) {
@@ -129,27 +179,73 @@ function formatTodoStatus(status: string): { icon: string; color: string } {
   }
 }
 
-function formatTodoWrite(input: { todos: Array<{ id: string; content: string; status: string }> }): string {
+function formatTodoWrite(input: { todos: Array<TodoItem> }): string {
+  const todos = input.todos || [];
   const lines: string[] = [];
-  lines.push(`\n${c.bold}${c.cyan} Todos${c.reset}`);
 
-  for (const todo of input.todos || []) {
-    const { icon, color } = formatTodoStatus(todo.status);
-    lines.push(` ${color}${icon}${c.reset}  ${todo.content}`);
+  // Calculate progress
+  const completed = todos.filter(t => t.status === 'completed').length;
+  const total = todos.length;
+  const inProgress = todos.find(t => t.status === 'in_progress');
+
+  // First update: show full list
+  if (isFirstTodoUpdate) {
+    isFirstTodoUpdate = false;
+    lines.push(`${c.bold}${c.cyan}Todos${c.reset} ${c.dim}(${completed}/${total})${c.reset}`);
+    for (const todo of todos) {
+      const { icon, color } = formatTodoStatus(todo.status);
+      lines.push(`${color}${icon}${c.reset} ${todo.content}`);
+    }
+    // Save state (use content as key since id may not exist)
+    lastTodoState = new Map(todos.map(t => [t.content, t.status]));
+    return '\n' + lines.join('\n') + '\n';
   }
 
-  return lines.join('\n') + '\n';
+  // Incremental update: find what just changed
+  const newlyCompleted: TodoItem[] = [];
+  const newlyStarted: TodoItem[] = [];
+
+  for (const todo of todos) {
+    const prevStatus = lastTodoState.get(todo.content);
+    if (todo.status === 'completed' && prevStatus !== 'completed') {
+      newlyCompleted.push(todo);
+    }
+    if (todo.status === 'in_progress' && prevStatus !== 'in_progress') {
+      newlyStarted.push(todo);
+    }
+  }
+
+  // Update saved state
+  lastTodoState = new Map(todos.map(t => [t.content, t.status]));
+
+  // Only show if something changed
+  if (newlyCompleted.length === 0 && newlyStarted.length === 0) {
+    return '';
+  }
+
+  // Compact display: progress + only the changes
+  lines.push(`${c.bold}${c.cyan}Todos${c.reset} ${c.dim}(${completed}/${total})${c.reset}`);
+
+  for (const todo of newlyCompleted) {
+    lines.push(`${c.green}✓${c.reset} ${todo.content}`);
+  }
+
+  for (const todo of newlyStarted) {
+    lines.push(`${c.yellow}◉${c.reset} ${todo.content}`);
+  }
+
+  return '\n' + lines.join('\n') + '\n';
 }
 
 function formatTaskCreate(input: { subject: string; description?: string; activeForm?: string }): string {
   const lines: string[] = [];
-  lines.push(`\n${c.cyan}${c.bold} + Task${c.reset}`);
-  lines.push(` ${c.gray}○${c.reset}  ${input.subject}`);
+  lines.push(`${c.cyan}${c.bold}+ Task${c.reset}`);
+  lines.push(`${c.gray}○${c.reset} ${input.subject}`);
   if (input.description) {
     const desc = input.description.length > 60 ? input.description.slice(0, 57) + '...' : input.description;
-    lines.push(`     ${c.dim}${desc}${c.reset}`);
+    lines.push(`  ${c.dim}${desc}${c.reset}`);
   }
-  return lines.join('\n') + '\n';
+  return '\n' + lines.join('\n') + '\n';
 }
 
 function formatTaskUpdate(input: { taskId: string; status?: string; subject?: string }): string {
@@ -157,15 +253,24 @@ function formatTaskUpdate(input: { taskId: string; status?: string; subject?: st
   const statusText = input.status || 'update';
   const { icon, color } = formatTodoStatus(input.status || 'pending');
 
-  lines.push(`\n${c.cyan}${c.bold} ↻ Task #${input.taskId}${c.reset} ${c.dim}→ ${statusText}${c.reset}`);
+  lines.push(`${c.cyan}${c.bold}↻ Task #${input.taskId}${c.reset} ${c.dim}→ ${statusText}${c.reset}`);
   if (input.subject) {
-    lines.push(` ${color}${icon}${c.reset}  ${input.subject}`);
+    lines.push(`${color}${icon}${c.reset} ${input.subject}`);
   }
-  return lines.join('\n') + '\n';
+  return '\n' + lines.join('\n') + '\n';
 }
 
 function formatTaskList(): string {
   return `\n${c.blue}TaskList${c.reset}\n`;
+}
+
+// Helper to check if we should add spacing before this tool
+function shouldAddCategorySpacing(toolName: string): boolean {
+  const category = getToolCategory(toolName);
+  if (lastToolCategory === '' || lastToolCategory === category) {
+    return false;
+  }
+  return true;
 }
 
 function formatEdit(input: { file_path: string; old_string: string; new_string: string }): string {
@@ -202,13 +307,13 @@ function formatEdit(input: { file_path: string; old_string: string; new_string: 
       // Show removed lines
       if (oldIdx < oldLines.length && (newIdx >= newLines.length || oldLine !== newLines[newIdx])) {
         const lineNum = String(oldIdx + 1).padStart(3);
-        lines.push(`${c.dim}${box.v}${c.reset} ${c.red}${lineNum}-${c.reset} ${c.red}${oldLine}${c.reset}`);
+        lines.push(`${c.dim}${box.v}${c.reset} ${c.bgDiffRemove}${c.red}${lineNum}-${c.reset} ${c.bgDiffRemove}${oldLine}${c.reset}`);
         oldIdx++;
       }
       // Show added lines
       if (newIdx < newLines.length && (oldIdx >= oldLines.length || newLine !== oldLines[oldIdx - 1])) {
         const lineNum = String(newIdx + 1).padStart(3);
-        lines.push(`${c.dim}${box.v}${c.reset} ${c.green}${lineNum}+${c.reset} ${c.green}${newLine}${c.reset}`);
+        lines.push(`${c.dim}${box.v}${c.reset} ${c.bgDiffAdd}${c.green}${lineNum}+${c.reset} ${c.bgDiffAdd}${newLine}${c.reset}`);
         newIdx++;
       }
     }
@@ -665,6 +770,10 @@ for await (const chunk of Bun.stdin.stream()) {
             }
           }
 
+          // Check if we need spacing between tool categories
+          const currentCategory = getToolCategory(currentToolName);
+          const needsCategorySpacing = lastToolCategory !== '' && lastToolCategory !== currentCategory;
+
           // In subagent context - show tool indented under agent
           if (isInSubagent(parentId)) {
             printAgentContextSwitch(parentId);
@@ -672,14 +781,23 @@ for await (const chunk of Bun.stdin.stream()) {
             if (state) {
               state.toolCount++;
             }
+            // Add spacing between categories
+            if (needsCategorySpacing) {
+              process.stdout.write(subagentIndent + '\n');
+            }
             // Indent the output, strip leading newline since header provides separation
             const output = formatToolOutput(currentToolName, currentToolInput).replace(/^\n/, '');
             process.stdout.write(output.split('\n').map(l => l ? subagentIndent + l : l).join('\n'));
           } else {
+            // Add spacing between categories for main agent
+            if (needsCategorySpacing) {
+              process.stdout.write('\n');
+            }
             process.stdout.write(formatToolOutput(currentToolName, currentToolInput));
           }
           currentToolUseId = '';
           lastToolName = currentToolName;
+          lastToolCategory = currentCategory;
           currentToolName = '';
           currentToolInput = '';
         } else if (lastBlockType === 'text') {
