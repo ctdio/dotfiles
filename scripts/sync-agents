@@ -175,18 +175,18 @@ mkdir -p ~/.codex/skills
 sync_skills_symlink ~/.codex
 # Note: Codex doesn't support agents/subagents yet
 
-# OpenCode
+# OpenCode (also supports agents/*.md with YAML frontmatter)
 echo "OpenCode (~/.opencode):"
 mkdir -p ~/.opencode/skills
 sync_skills_symlink ~/.opencode
-# Note: OpenCode agents are configured differently (not agent/*.md files)
+sync_agents ~/.opencode
 
 echo ""
 echo "Sync complete!"
 echo ""
 echo "Structure:"
 echo "  ~/dotfiles/agents/skills/  → ~/.claude/skills/, ~/.cursor/skills/, ~/.codex/skills/, ~/.opencode/skills/"
-echo "  ~/dotfiles/agents/agents/  → ~/.claude/agents/, ~/.cursor/agents/"
+echo "  ~/dotfiles/agents/agents/  → ~/.claude/agents/, ~/.cursor/agents/, ~/.opencode/agents/"
 echo "  ~/dotfiles/agents/commands/ → ~/.claude/commands/"
 echo ""
 echo "Note: Cursor skills are COPIED (not symlinked) due to a Cursor bug."
