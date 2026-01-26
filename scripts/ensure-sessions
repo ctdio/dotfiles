@@ -3,14 +3,17 @@
 # Ensure standard tmux sessions exist
 # Usage: ensure-sessions [--attach]
 
-# Session directories (session name = directory basename)
-SESSION_DIRS=(
-  "$HOME/projects/private/opine/platform-wta"
-  "$HOME/projects/private/opine/platform-wtb"
-  "$HOME/projects/private/opine/platform-wtc"
-  "$HOME/projects/private/opine/platform-wtd"
-  "$HOME/projects/private/opine/platform-wte"
-  "$HOME/projects/private/opine/platform-wtf"
+# Build session directories dynamically
+SESSION_DIRS=()
+
+# Platform worktrees: a-z (only if directory exists)
+for letter in {a..z}; do
+  path="$HOME/projects/private/opine/platform-wt$letter"
+  [[ -d "$path" ]] && SESSION_DIRS+=("$path")
+done
+
+# Other projects
+SESSION_DIRS+=(
   "$HOME/dotfiles"
   "$HOME/projects/open-source/skim"
 )
@@ -25,13 +28,12 @@ first_session=""
 for path in "${SESSION_DIRS[@]}"; do
   name=$(basename "$path")
 
+  # Skip if directory doesn't exist
+  [[ ! -d "$path" ]] && continue
+
   if ! tmux has-session -t "$name" 2>/dev/null; then
-    if [[ -d "$path" ]]; then
-      tmux new-session -d -s "$name" -c "$path"
-      echo "Created session: $name"
-    else
-      echo "Warning: Directory not found: $path"
-    fi
+    tmux new-session -d -s "$name" -c "$path"
+    echo "Created session: $name"
   else
     echo "Session exists: $name"
   fi
