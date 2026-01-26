@@ -21,21 +21,35 @@ Step 1: Create your review todo list
 Step 2: Read guidance files
    → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
 
-Step 3: Read the spec file
+Step 3: Search for and read project rule files (CRITICAL)
+   → Search for: .cursorrules, .cursor/rules, cursor.rules
+   → Search for: CLAUDE.md, .claude/CLAUDE.md, .claude/settings.json
+   → Search for: CONVENTIONS.md, CODING_STANDARDS.md, RULES.md
+   → Read ALL rule files found - these define project conventions
+   → Extract key rules to check during review (hooks vs fetch, architecture, patterns, etc.)
+   → Note: Skip eslint/prettier/editorconfig - tooling handles those automatically
+
+Step 4: Read the spec file
    → ~/.ai/plans/{feature}/spec.md (THE LAW)
 
-Step 4: Read the implementation state file
+Step 5: Read the implementation state file
    → ~/.ai/plans/{feature}/implementation-state.md
    → Verify phase status, files, and test results match reality
    → Any mismatch or missing file = CHANGES_REQUESTED
 
-Step 5: Read EVERY modified file completely
+Step 6: Read EVERY modified file completely
    → Don't skim - read the full implementation
 
-Step 6: Find similar existing code for comparison
+Step 7: Find similar existing code for comparison
    → Check if new code follows existing patterns
 
-Step 7: Re-run quality gates (production readiness)
+Step 8: Check rule compliance (CRITICAL)
+   → For EACH rule file found in Step 3:
+      - Check if new code violates any rules
+      - Common violations: direct fetch instead of hooks, wrong naming, etc.
+   → Rule violations are BLOCKING issues = CHANGES_REQUESTED
+
+Step 9: Re-run quality gates (production readiness)
    → type-check → lint → build → test
    → Capture output; any failure = CHANGES_REQUESTED
 ```
@@ -57,6 +71,14 @@ TodoWrite for Phase {N} Review
 - [ ] Read implementation-state.md at ~/.ai/plans/{feature}/implementation-state.md
 - [ ] List all files to review from context
 
+## Rule File Discovery (CRITICAL)
+- [ ] Search: .cursorrules, .cursor/rules, cursor.rules
+- [ ] Search: CLAUDE.md, .claude/CLAUDE.md, .claude/settings.json
+- [ ] Search: CONVENTIONS.md, CODING_STANDARDS.md, RULES.md
+- [ ] Read ALL rule files found
+- [ ] Extract key rules to check: {list rules found}
+- [ ] (Skip eslint/prettier/editorconfig - tooling handles those)
+
 ## File Reviews (one section per file)
 - [ ] Review: {file_1_path}
   - [ ] Read entire file
@@ -74,6 +96,18 @@ TodoWrite for Phase {N} Review
 - [ ] Compare code structure
 - [ ] Compare error handling patterns
 - [ ] Note deviations
+
+## Rule Compliance Check (BLOCKING - violations = CHANGES_REQUESTED)
+- [ ] Rule: {rule_1} - check all files for compliance
+- [ ] Rule: {rule_2} - check all files for compliance
+- [ ] (Add one todo per key rule from rule files)
+- [ ] Common checks:
+  - [ ] API hooks vs direct fetch (if rule requires hooks)
+  - [ ] Naming conventions (camelCase, PascalCase, etc.)
+  - [ ] Import organization (if specified)
+  - [ ] Error handling patterns (if specified)
+  - [ ] Function style (arrow vs function keyword)
+- [ ] Document any violations with file:line
 
 ## Security Scan
 - [ ] Check for hardcoded secrets
@@ -126,6 +160,7 @@ APPROVED Criteria (ALL must be true):
 - [ ] Code is readable and maintainable
 - [ ] Production readiness gates pass (type-check, lint, build, test)
 - [ ] Implementation state file is accurate and consistent with evidence
+- [ ] RULE COMPLIANCE: All project rules are followed (from .cursorrules, CLAUDE.md, etc.)
 
 CHANGES_REQUESTED Criteria (ANY triggers):
 - [ ] Blocking issue found (security, major bug, spec violation)
@@ -136,6 +171,7 @@ CHANGES_REQUESTED Criteria (ANY triggers):
 - [ ] Production readiness gates fail (type-check, lint, build, test)
 - [ ] Implementation state file missing or inconsistent with evidence
 - [ ] Spec requirement not satisfied
+- [ ] RULE VIOLATION: Code violates project rules (from .cursorrules, CLAUDE.md, etc.)
 ```
 
 **Suggestions (non-blocking) should be noted but don't prevent APPROVED.**
@@ -177,19 +213,42 @@ When the orchestrator provides:
 
 **Your Process:**
 
-### 1. Read the Spec
+### 1. Discover and Read Rule Files
+
+Search for project rule files:
+```bash
+# Cursor rules
+glob ".cursorrules" ".cursor/rules" "cursor.rules"
+
+# Claude rules
+glob "CLAUDE.md" ".claude/CLAUDE.md" ".claude/settings.json"
+
+# Other conventions
+glob "CONVENTIONS.md" "CODING_STANDARDS.md" "RULES.md"
+```
+
+Read ALL rule files found. Extract key rules like:
+- Required patterns (e.g., "use generated API hooks, not direct fetch")
+- Architecture requirements (e.g., "services must not import from handlers")
+- Naming conventions beyond what linters catch
+- Forbidden patterns (e.g., "never use any type")
+- Code organization requirements
+
+**These rules are BLOCKING** - violations = CHANGES_REQUESTED.
+
+### 2. Read the Spec
 ```
 ~/.ai/plans/{feature}/spec.md
 ```
 Understand what was required.
 
-### 2. Read Each Modified File
+### 3. Read Each Modified File
 For each file in the files_modified list:
 - Read the entire file
 - Check for code quality issues
 - Verify it follows existing patterns
 
-### 3. Check Pattern Consistency
+### 4. Check Pattern Consistency
 For new files, find similar existing files and compare:
 - Naming conventions
 - Code structure
@@ -207,7 +266,38 @@ Look for:
 ### 5. Spec Compliance
 Verify the implementation actually satisfies the spec requirements, not just "looks like it works."
 
-### 6. Architecture & Production Quality Review
+### 6. Rule Compliance Check (BLOCKING)
+
+For each rule file found, check all modified files for compliance:
+
+**Common rule types to check:**
+- **API patterns**: Does the project require hooks? Check for direct fetch/axios calls when hooks should be used.
+- **Architecture rules**: Are there layer restrictions? (e.g., "services can't import from UI")
+- **Forbidden patterns**: Look for explicit "never do X" rules.
+- **Required patterns**: Look for "always do Y" rules.
+
+**Example violations:**
+```typescript
+// Rule: "Use generated API hooks, not direct fetch"
+// ❌ VIOLATION:
+const data = await fetch('/api/users');
+
+// ✅ CORRECT:
+const { data } = useGetUsers();
+```
+
+```typescript
+// Rule: "Never use 'any' type"
+// ❌ VIOLATION:
+function process(data: any) { ... }
+
+// ✅ CORRECT:
+function process(data: UserData) { ... }
+```
+
+**If ANY rule is violated: CHANGES_REQUESTED** with specific file:line and the rule being violated.
+
+### 7. Architecture & Production Quality Review
 Focus on fundamental design flaws and production safety:
 - Tight coupling or unclear ownership boundaries
 - Leaky abstractions and hidden side effects
@@ -215,7 +305,7 @@ Focus on fundamental design flaws and production safety:
 - Concurrency or race-condition risks
 - Performance regressions and resource leaks
 
-### 6. Production Readiness Checks
+### 8. Production Readiness Checks
 Re-run quality gates to confirm readiness:
 ```
 npm run type-check
@@ -235,6 +325,13 @@ Return your result in this format:
 ReviewerResult:
   verdict: "APPROVED" | "CHANGES_REQUESTED"
 
+  # Rule files discovered and checked
+  rule_files_checked:
+    - path: ".cursorrules"
+      key_rules: ["Use API hooks not fetch", "Function keyword at module level"]
+    - path: "CLAUDE.md"
+      key_rules: ["No any types", "Services can't import handlers"]
+
   # If APPROVED
   summary: |
     Brief summary of what was reviewed and why it's good.
@@ -250,11 +347,18 @@ ReviewerResult:
       line: 42
       description: "What's wrong"
       suggestion: "How to fix it"
+      rule_violated: "From .cursorrules: Use API hooks"  # If rule violation
 
   # Always include
   files_reviewed:
     - "path/to/file1.ts"
     - "path/to/file2.ts"
+
+  rule_compliance:
+    - rule: "Use generated API hooks"
+      source: ".cursorrules"
+      status: "compliant" | "violation"
+      details: "Found direct fetch at src/api.ts:45"
 
   spec_compliance:
     - requirement: "FR-1"
@@ -320,6 +424,17 @@ ReviewerResult:
 
 ❌ FAILURE: APPROVED with known blocking issues
    → FIX: If security/spec/pattern issue exists, it's CHANGES_REQUESTED
+
+❌ FAILURE: Skipping rule file discovery
+   → FIX: ALWAYS search for .cursorrules, CLAUDE.md, CONVENTIONS.md, etc.
+   → FIX: Read ALL rule files found before reviewing code
+
+❌ FAILURE: Not checking code against project rules
+   → FIX: For each rule in rule files, verify all modified code complies
+   → FIX: Common: hooks vs fetch, naming, architecture layers, forbidden patterns
+
+❌ FAILURE: APPROVED despite rule violations
+   → FIX: Rule violations are BLOCKING - always CHANGES_REQUESTED
 ```
 
 ---
@@ -332,6 +447,7 @@ ReviewerResult:
 - Major bugs (data corruption, crashes)
 - Pattern violations without justification
 - Missing error handling for critical paths
+- **Rule violations** (from .cursorrules, CLAUDE.md, CONVENTIONS.md, etc.)
 
 **Suggestions (Still APPROVED):**
 - Minor code style improvements
