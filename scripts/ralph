@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Ralph Loop - Claude Code focused
 #
@@ -17,6 +17,60 @@ CYAN="\033[36m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 RED="\033[31m"
+DIM="\033[2m"
+
+# Timing
+TOTAL_START_TIME=0
+ITERATION_START_TIME=0
+
+# Ctrl-C protection
+LAST_INTERRUPT=0
+
+format_duration() {
+  local seconds=$1
+  if ((seconds < 60)); then
+    echo "${seconds}s"
+  elif ((seconds < 3600)); then
+    local mins=$((seconds / 60))
+    local secs=$((seconds % 60))
+    if ((secs > 0)); then
+      echo "${mins}m ${secs}s"
+    else
+      echo "${mins}m"
+    fi
+  else
+    local hours=$((seconds / 3600))
+    local mins=$(((seconds % 3600) / 60))
+    local secs=$((seconds % 60))
+    if ((secs > 0)); then
+      echo "${hours}h ${mins}m ${secs}s"
+    elif ((mins > 0)); then
+      echo "${hours}h ${mins}m"
+    else
+      echo "${hours}h"
+    fi
+  fi
+}
+
+handle_interrupt() {
+  local now
+  now=$(date +%s)
+  if ((now - LAST_INTERRUPT <= 2)); then
+    echo -e "\n${RED}Interrupted${RESET}"
+    # Clean up temp file if it exists
+    [[ -n "${temp_output:-}" ]] && rm -f "$temp_output" 2>/dev/null
+    # Print total time if we started
+    if ((TOTAL_START_TIME > 0)); then
+      local total_elapsed=$((now - TOTAL_START_TIME))
+      echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
+    fi
+    exit 130
+  fi
+  LAST_INTERRUPT=$now
+  echo -e "\n${YELLOW}Press Ctrl-C again within 2s to exit${RESET}"
+}
+
+trap handle_interrupt SIGINT
 
 # Stream parser location
 STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser/cc-stream-parser}}"
@@ -111,17 +165,20 @@ if [[ -z "$PROMPT" ]]; then
   echo ""
 
   echo "Prompt:"
-  read -r -p "> " PROMPT
+  PROMPT=""
+  vared -p "> " PROMPT
   [[ -z "$PROMPT" ]] && echo "error: prompt required" && exit 1
 
   echo ""
   echo "Max iterations [10]:"
-  read -r -p "> " max_input
+  local max_input=""
+  vared -p "> " max_input
   MAX_ITERATIONS="${max_input:-10}"
 
   echo ""
   echo "Completion promise [TASK_COMPLETE]:"
-  read -r -p "> " promise_input
+  local promise_input=""
+  vared -p "> " promise_input
   COMPLETION_PROMISE="${promise_input:-TASK_COMPLETE}"
   echo ""
 fi
@@ -208,36 +265,50 @@ echo -e "iterations: ${MAX_ITERATIONS}"
 echo -e "promise:    ${COMPLETION_PROMISE}"
 echo ""
 
+# Start total timer
+TOTAL_START_TIME=$(date +%s)
+
 # Main loop
 for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
   echo -e "\n${CYAN}── iteration ${iteration}/${MAX_ITERATIONS} ──${RESET}\n"
 
+  ITERATION_START_TIME=$(date +%s)
   augmented_prompt=$(build_prompt "$iteration")
 
   # Create temp file to capture output while streaming
   temp_output=$(mktemp)
 
   # Run agent with streaming JSON, pipe through parser when configured, capture output
-  read -r -a agent_cmd_parts <<< "$AGENT_CMD"
+  # Use || true to prevent script exit on ctrl-c (trap handles exit logic)
+  local -a agent_cmd_parts=(${=AGENT_CMD})
   if [[ -n "$STREAM_PARSER" ]]; then
-    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
+    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output" || true
   else
-    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output"
+    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output" || true
   fi
+
+  # Calculate iteration duration
+  iteration_end=$(date +%s)
+  iteration_elapsed=$((iteration_end - ITERATION_START_TIME))
+  echo -e "\n${DIM}iteration ${iteration} completed in $(format_duration $iteration_elapsed)${RESET}"
 
   # Check for completion (check file directly, stripping ANSI codes)
   if check_completion "$temp_output"; then
     rm -f "$temp_output"
+    total_elapsed=$((iteration_end - TOTAL_START_TIME))
     echo -e "\n${GREEN}✓${RESET} Promise fulfilled after ${iteration} iteration(s)"
+    echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
     exit 0
   fi
 
   rm -f "$temp_output"
 
   if [[ $iteration -lt $MAX_ITERATIONS ]]; then
-    echo -e "\n${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
+    echo -e "${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
   fi
 done
 
+total_elapsed=$(($(date +%s) - TOTAL_START_TIME))
 echo -e "\n${RED}✗${RESET} Max iterations reached (${MAX_ITERATIONS}) · promise not fulfilled"
+echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
 exit 1
