@@ -1,22 +1,24 @@
 ---
 name: ralph-bugbot
-description: Loop-aware skill for iteratively addressing bugbot feedback on PRs. Fetches unresolved bugbot comments, triages them, fixes valid bugs, resolves false positives, and commits changes. Designed to be used with ralph-loop.
+description: Loop-aware skill for iteratively addressing bugbot feedback and CI failures on PRs. Fetches unresolved bugbot comments, triages them, fixes valid bugs, resolves false positives, checks CI status, fixes lint/format/test failures, and commits changes. Designed to be used with ralph-loop.
 color: orange
 ---
 
 # Ralph Bugbot
 
-Loop-aware skill for iteratively addressing bugbot feedback. Designed to be used with `/ralph-loop`.
+Loop-aware skill for iteratively addressing bugbot feedback and CI failures. Designed to be used with `/ralph-loop`.
 
 ## Purpose
 
-This skill helps you systematically address bugbot feedback on pull requests by:
+This skill helps you systematically address bugbot feedback and CI failures on pull requests by:
 1. Fetching unresolved bugbot comments
 2. Triaging each comment (bug vs false positive)
 3. Fixing valid bugs with surgical edits
 4. Resolving verified false positives via GraphQL
 5. Committing and pushing changes
 6. Waiting for bugbot to re-analyze
+7. Checking CI status (lint, format, tests, build)
+8. Fixing any CI failures found
 
 ## CRITICAL: Execute Commands Immediately
 
@@ -171,22 +173,97 @@ mutation {
 
 Run the `wait-for-bugbot.sh` script in this skill's directory.
 
-### Step 7: Report Progress
+### Step 7: Check CI Status and Fix Failures
+
+**RUN THIS IMMEDIATELY after bugbot completes:**
+
+Run the `check-ci-status.sh` script in this skill's directory.
+
+**Evaluate the result:**
+- **Exit code 0 (SUCCESS):** All checks passing → Continue to Step 8
+- **Exit code 2 (PENDING):** Checks still running → Wait 30s and re-run `check-ci-status.sh`
+- **Exit code 1 (FAILURE):** Failing checks found → Fix them (see below)
+
+#### Fixing CI Failures
+
+When checks fail, follow this process for each failing check:
+
+**1. Get failure details:**
+
+Run the `get-check-logs.sh` script:
+```bash
+# Get all failed logs
+./get-check-logs.sh
+
+# Or filter by check name
+./get-check-logs.sh "lint"
+./get-check-logs.sh "test"
+```
+
+The script extracts run IDs from check URLs and uses `gh run view --log-failed` to fetch the actual error output.
+
+**2. Identify the issue type and fix:**
+
+| Check Type | Common Issues | Fix Approach |
+|------------|---------------|--------------|
+| **Lint** | ESLint, TSLint, Pylint errors | Run linter locally, fix reported errors |
+| **Format** | Prettier, Black, gofmt | Run formatter: `npm run format` or equivalent |
+| **Type Check** | TypeScript, mypy errors | Fix type errors in reported files |
+| **Tests** | Unit/integration test failures | Read test output, fix failing assertions |
+| **Build** | Compilation errors | Fix syntax/import errors |
+
+**3. Common fix commands (run locally first):**
+
+```bash
+# JavaScript/TypeScript
+npm run lint -- --fix    # Auto-fix lint errors
+npm run format           # Run formatter
+npm run typecheck        # Check types
+npm test                 # Run tests locally
+
+# Python
+ruff check --fix .       # Auto-fix lint
+black .                  # Format
+mypy .                   # Type check
+pytest                   # Run tests
+
+# Go
+go fmt ./...             # Format
+golangci-lint run        # Lint
+go test ./...            # Run tests
+```
+
+**4. After fixing:**
+- Stage changes: `git add -A`
+- Commit: `git commit -m "fix: address CI failures"`
+- Push: `git push`
+- Re-run `check-ci-status.sh` to verify
+
+**5. If you cannot fix a CI failure:**
+- Note it in the progress report
+- Let the human know what's failing and why you couldn't fix it
+- Continue with other fixable issues
+
+### Step 8: Report Progress
 
 **Brief summary only** (don't over-explain):
 
 ```
 Fixed: [list files:lines]
 Resolved as false positive (replied + resolved): [list files:lines with brief reason]
-Remaining: [count]
+CI fixes: [list what was fixed - lint, format, tests, etc.]
+Remaining bugbot comments: [count]
+CI status: [PASSING/FAILING with details]
 ```
 
-### Step 8: Loop Behavior
+### Step 9: Loop Behavior
 
-After pushing and waiting for bugbot check:
+After pushing and waiting for checks:
 - The ralph-loop will re-run this skill
 - Next iteration will re-fetch comments (bugbot has finished re-analyzing)
-- Task is complete when Step 2 finds zero unresolved comments
+- Task is complete when:
+  - Step 2 finds zero unresolved bugbot comments, AND
+  - Step 7 shows all CI checks passing
 
 ## Rules
 
@@ -199,12 +276,15 @@ After pushing and waiting for bugbot check:
 7. **When uncertain, skip** - Flag for human review instead of guessing
 8. **Always commit and push** - After fixes or resolving false positives
 9. **One iteration = one pass** - Don't try to loop internally; let ralph-loop handle iteration
+10. **Fix CI failures** - After addressing bugbot, check and fix lint/format/test failures
+11. **Run locally first** - For CI failures, run the failing check locally before pushing fixes
 
 ## Usage
 
 Invoke this skill when:
 - You need to address bugbot feedback on a PR
+- You need to fix CI failures (lint, format, tests)
 - Used with `/ralph-wiggum:ralph-loop` for automated iteration
-- User says "fix bugbot comments" or similar
+- User says "fix bugbot comments", "fix CI", or similar
 
-The skill will loop via ralph-loop until all bugbot comments are resolved or fixed.
+The skill will loop via ralph-loop until all bugbot comments are resolved and all CI checks pass.
