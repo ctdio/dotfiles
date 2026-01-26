@@ -62,19 +62,24 @@ TodoWrite for Phase {N}: {Name}
 - [ ] 1. Read phase-{NN}/files-to-modify.md
 - [ ] 2. Read phase-{NN}/technical-details.md
 - [ ] 3. Read phase-{NN}/testing-strategy.md
-- [ ] 4. Compile ImplementerContext from phase docs
-- [ ] 5. Spawn phase-implementer → wait for ImplementerResult
-- [ ] 6. Compile VerifierContext from ImplementerResult
-- [ ] 7. Spawn phase-verifier → wait for VerifierResult
-- [ ] 8. Check verdict: PASS → continue, FAIL → retry (go to step 5)
-- [ ] 9. Compile ReviewerContext from results
-- [ ] 10. Spawn phase-reviewer → wait for ReviewerResult
-- [ ] 11. Check verdict: APPROVED → continue, CHANGES_REQUESTED → retry
-- [ ] 12. Spawn state-manager with UPDATE (PASSED)
-- [ ] 13. Read implementation-state.md - VERIFY it shows phase completed
-- [ ] 14. Create commit: feat({feature}): complete phase {N} - {name}
-- [ ] 15. If more phases: Create Phase Loop todos for next phase
-- [ ] 16. If all phases done: Output FEATURE_COMPLETE promise
+- [ ] 4. Check if validation warranted (see "When to Validate")
+- [ ] 4a. IF warranted: Extract assumptions from phase docs
+- [ ] 4b. IF warranted: Spawn plan-validator → wait for ValidationReport
+- [ ] 4c. IF BLOCKED: Stop, report to user, await resolution
+- [ ] 4d. IF NEEDS_ATTENTION: Note corrections for ImplementerContext
+- [ ] 5. Compile ImplementerContext from phase docs (+ validation corrections)
+- [ ] 6. Spawn phase-implementer → wait for ImplementerResult
+- [ ] 7. Compile VerifierContext from ImplementerResult
+- [ ] 8. Spawn phase-verifier → wait for VerifierResult
+- [ ] 9. Check verdict: PASS → continue, FAIL → retry (go to step 6)
+- [ ] 10. Compile ReviewerContext from results
+- [ ] 11. Spawn phase-reviewer → wait for ReviewerResult
+- [ ] 12. Check verdict: APPROVED → continue, CHANGES_REQUESTED → retry
+- [ ] 13. Spawn state-manager with UPDATE (PASSED)
+- [ ] 14. Read implementation-state.md - VERIFY it shows phase completed
+- [ ] 15. Create commit: feat({feature}): complete phase {N} - {name}
+- [ ] 16. If more phases: Create Phase Loop todos for next phase
+- [ ] 17. If all phases done: Output FEATURE_COMPLETE promise
 ```
 
 ### Retry Todo (CREATE ON FAILURE)
@@ -265,7 +270,14 @@ flowchart TD
     PHASE_LOOP -->|No| FINAL[Output FEATURE_COMPLETE promise]
     PHASE_LOOP -->|Yes| GATHER[Gather phase context]
 
-    GATHER --> IMPL[Spawn phase-implementer]
+    GATHER --> VALIDATE_CHECK{Validation warranted?}
+    VALIDATE_CHECK -->|No| IMPL[Spawn phase-implementer]
+    VALIDATE_CHECK -->|Yes| VALIDATE[Spawn plan-validator]
+    VALIDATE --> VALIDATE_RESULT{Validation status?}
+    VALIDATE_RESULT -->|BLOCKED| USER_HELP[Ask user to resolve]
+    USER_HELP --> VALIDATE
+    VALIDATE_RESULT -->|VALID/NEEDS_ATTENTION| IMPL
+
     IMPL --> VERIFY[Spawn phase-verifier]
     VERIFY --> VERIFY_CHECK{Verifier PASS?}
 
@@ -300,6 +312,14 @@ flowchart TD
    - `~/.ai/plans/{feature}/phase-{NN}-{name}/files-to-modify.md`
    - `~/.ai/plans/{feature}/phase-{NN}-{name}/technical-details.md`
    - `~/.ai/plans/{feature}/phase-{NN}-{name}/testing-strategy.md`
+
+5.5 **Validate plan assumptions** (if warranted - see "When to Validate"):
+   - Extract assumptions from phase docs (files, patterns, dependencies)
+   - Spawn `feature-implementation-plan-validator` with ValidatorContext
+   - Wait for `ValidationReport`
+   - If `BLOCKED`: Stop, report issues to user, do NOT spawn implementer
+   - If `NEEDS_ATTENTION`: Include corrections in ImplementerContext
+   - If `VALID`: Proceed normally
 
 6. **Spawn implementer**: `feature-implementation-phase-implementer`
    - Wait for `ImplementerResult`
@@ -342,6 +362,7 @@ flowchart TD
 | Agent | Purpose | When Used |
 |-------|---------|-----------|
 | **state-manager** | Create/update implementation-state.md | INITIALIZE (no state), after every VERIFY |
+| **plan-validator** | Validate plan assumptions against codebase | Before implementer, when validation warranted |
 | **phase-implementer** | Implement one phase's deliverables | For each phase, and on fix/review retries |
 | **phase-verifier** | Verify implementation works (tests pass) | After implementer completes |
 | **phase-reviewer** | Review code quality and patterns | After verifier PASSES |
@@ -505,6 +526,20 @@ ImplementerContext:
   # Fix context (only populated on retry after verification failure)
   # ═══════════════════════════════════════════════════════════════════
   fix_context: null
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Validation corrections (from plan-validator if NEEDS_ATTENTION)
+  # IMPORTANT: Apply these corrections BEFORE following the plan
+  # ═══════════════════════════════════════════════════════════════════
+  validation_corrections: null  # or:
+  # validation_corrections:
+  #   verified_patterns:
+  #     - "PineconeService class at src/services/pinecone.ts:23-89"
+  #   corrections_needed:
+  #     - "HttpClient moved to src/core/http/client.ts (not src/lib/)"
+  #     - "Install @turbopuffer/sdk before starting"
+  #   new_discoveries:
+  #     - "PineconeService also exports PineconeError - follow this pattern"
 ```
 
 ### ImplementerResult (Implementer → Orchestrator)
@@ -743,6 +778,141 @@ review_fix_context:
 
 ---
 
+## Plan Validation (Pre-Implementation Check)
+
+### When to Validate
+
+Run the plan-validator **IF ANY** of these conditions are true:
+
+| Condition | Rationale |
+|-----------|-----------|
+| Plan modified > 24 hours ago | Codebase may have drifted |
+| Previous phase had failures | Assumptions may be wrong |
+| Phase touches > 3 files | Higher risk of conflicts |
+| State file shows `validation_needed: true` | Explicit request |
+| First attempt at Phase 1 | Establish baseline |
+
+**SKIP validation IF ALL** of these are true:
+- Plan created < 2 hours ago
+- First attempt (no failures)
+- Phase is simple (1-2 files)
+- Resuming mid-phase (already validated this phase)
+
+### ValidatorContext (Orchestrator → Validator)
+
+Extract these assumptions from the phase docs and send to validator:
+
+```yaml
+ValidatorContext:
+  feature: "turbopuffer-search"
+  phase_number: 2
+  phase_name: "dual-write"
+  plan_directory: "~/.ai/plans/turbopuffer-search"
+
+  assumptions:
+    # From files-to-modify.md - files the plan expects to exist
+    files:
+      - path: src/services/pinecone.ts
+        expectation: "exists, exports PineconeService class"
+        why: "Reference pattern for new TurbopufferService"
+
+      - path: src/services/index.ts
+        expectation: "barrel export file exists"
+        why: "Need to add new service export"
+
+    # From technical-details.md - patterns the plan references
+    patterns:
+      - name: "service class structure"
+        expected_location: src/services/pinecone.ts
+        expected_pattern: "class with constructor taking config"
+        why: "Follow same pattern for new service"
+
+    # From technical-details.md - packages used in examples
+    dependencies:
+      - package: "@turbopuffer/sdk"
+        expectation: "installed and importable"
+        why: "Required for Turbopuffer integration"
+
+    # From files-to-modify.md - exports the plan references
+    exports:
+      - module: src/services/pinecone.ts
+        expected_exports: ["PineconeService", "PineconeConfig"]
+        why: "Plan references these for pattern matching"
+```
+
+### ValidationReport (Validator → Orchestrator)
+
+```yaml
+ValidationReport:
+  overall_status: "VALID" | "NEEDS_ATTENTION" | "BLOCKED"
+
+  # VALID: All assumptions hold, proceed normally
+  # NEEDS_ATTENTION: Some drift, implementer needs adjustments
+  # BLOCKED: Critical issues, cannot proceed without intervention
+
+  validation_summary:
+    files: "3/3 valid"
+    patterns: "2/2 found"
+    dependencies: "1/2 installed"
+    exports: "4/4 match"
+
+  findings:
+    - category: "file"
+      assumption: "src/services/pinecone.ts exists"
+      status: "VALID"
+      details: "File exists, 245 lines"
+
+    - category: "dependency"
+      assumption: "@turbopuffer/sdk installed"
+      status: "MISSING"
+      details: "Not found in package.json"
+      action_required: "npm install @turbopuffer/sdk"
+      blocks_implementation: true
+
+  issues:  # Only if NEEDS_ATTENTION or BLOCKED
+    - severity: "blocking"
+      assumption: "@turbopuffer/sdk installed"
+      expected: "Package in dependencies"
+      actual: "Not found"
+      action: "Run: npm install @turbopuffer/sdk"
+
+    - severity: "warning"
+      assumption: "HttpClient at src/lib/http-client.ts"
+      expected: "File exists at this path"
+      actual: "Moved to src/core/http/client.ts"
+      action: "Update import paths"
+
+  context_for_implementer:
+    verified_patterns:
+      - "PineconeService class structure at src/services/pinecone.ts:23-89"
+      - "Error handling pattern at src/services/pinecone.ts:112-134"
+
+    corrections_needed:
+      - "Install @turbopuffer/sdk before starting"
+      - "HttpClient path changed to src/core/http/client.ts"
+
+    new_discoveries:
+      - "PineconeService also exports PineconeError - consider following pattern"
+```
+
+### Handling Validation Results
+
+**If VALID:**
+- Proceed to spawn implementer normally
+- Optionally include `context_for_implementer.verified_patterns` in ImplementerContext
+
+**If NEEDS_ATTENTION:**
+- Include `context_for_implementer.corrections_needed` in ImplementerContext
+- Proceed to spawn implementer with corrections noted
+
+**If BLOCKED:**
+- Do NOT spawn implementer
+- Report blocking issues to user
+- Wait for user to resolve (e.g., install missing dependencies)
+- Re-run validation after user confirms resolution
+
+---
+
 ## Orchestrator Actions
 
 ### 1. INITIALIZE
@@ -791,6 +961,57 @@ review_fix_context:
 4. Note any codebase patterns the implementer should follow
 5. Summarize previous phase if applicable
 6. Compile ImplementerContext
+```
+
+### 2.5 VALIDATE PLAN (CONDITIONAL)
+
+```markdown
+**When to Run:**
+Check "When to Validate" conditions. If validation warranted:
+
+**Actions:**
+1. Extract assumptions from phase docs:
+   - Files referenced in files-to-modify.md
+   - Patterns mentioned in technical-details.md
+   - Dependencies used in code examples
+   - Exports referenced for patterns
+
+2. Spawn plan-validator:
+
+   Task(
+     subagent_type: "feature-implementation-plan-validator",
+     prompt: """
+     Validate plan assumptions for Phase {N}: {Name}
+
+     Feature: {feature}
+     Plan directory: ~/.ai/plans/{feature}/
+
+     ## Assumptions to Validate
+
+     ### Files
+     {list of files from files-to-modify.md}
+
+     ### Patterns
+     {patterns referenced in technical-details.md}
+
+     ### Dependencies
+     {packages used in code examples}
+
+     ### Exports
+     {exports referenced for pattern matching}
+
+     Return ValidationReport with overall_status and findings.
+     """
+   )
+
+3. Process ValidationReport:
+   - If VALID: Proceed to SPAWN IMPLEMENTER
+   - If NEEDS_ATTENTION: Add corrections_needed to ImplementerContext
+   - If BLOCKED: Stop, report to user, await resolution
+
+**If validation blocked:**
+Ask user: "Plan validation found blocking issues: {issues}. Please resolve and confirm."
+Do NOT spawn implementer until resolved.
 ```
 
 ### 3. SPAWN IMPLEMENTER

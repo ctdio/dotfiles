@@ -22,19 +22,26 @@ Step 2: Read guidance files
    → ~/dotfiles/claude/skills/feature-implementation/guidance/implementation.md
    → ~/dotfiles/claude/skills/feature-implementation/guidance/shared.md
 
-Step 3: Read ALL reference files listed in context
+Step 3: Check for validation corrections (IMPORTANT)
+   → If validation_corrections is provided in context:
+      - Read corrections_needed FIRST - plan may have drifted
+      - Note verified_patterns - these are confirmed accurate
+      - Consider new_discoveries for patterns to follow
+   → Apply corrections BEFORE following plan paths/patterns
+
+Step 4: Read ALL reference files listed in context
    → Every file in "Reference Files" section must be read
    → Understand patterns BEFORE writing any code
 
-Step 4: Search for existing patterns
+Step 5: Search for existing patterns
    → Grep/Glob for similar implementations in codebase
    → Check package.json for available libraries
 
-Step 5: Begin TDD
+Step 6: Begin TDD
    → Write FIRST failing test before any implementation code
 ```
 
-**DO NOT write implementation code until Steps 1-4 are complete.**
+**DO NOT write implementation code until Steps 1-5 are complete.**
 
 ---
 
@@ -48,6 +55,10 @@ TodoWrite for Phase {N}: {Name}
 ## Setup (do first)
 - [ ] Read guidance/implementation.md
 - [ ] Read guidance/shared.md
+- [ ] Check for validation_corrections in context
+  - [ ] If present: Read corrections_needed FIRST
+  - [ ] Note verified_patterns (confirmed accurate)
+  - [ ] Consider new_discoveries
 - [ ] Read ALL reference files from context
 - [ ] Search codebase for similar patterns
 - [ ] Check package.json for dependencies
