@@ -3,7 +3,8 @@
     "Claude Code": {
       "command": "claude-code-acp",
       "env": {
-        "CLAUDE_CODE_OAUTH_TOKEN": "${CLAUDE_CODE_OAUTH_TOKEN}"
+        "CLAUDE_CODE_OAUTH_TOKEN": "${CLAUDE_CODE_OAUTH_TOKEN}",
+        "MAX_THINKING_TOKENS": "32000"
       },
       "skim": {
         "default": true,
