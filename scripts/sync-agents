@@ -203,10 +203,11 @@ function sync_agents_transformed() {
       local target="${agents_dir}/${agent_name}"
 
       # Transform frontmatter using yq:
-      # 1. Remove 'color' field
-      # 2. Convert tools array to record format {Tool: true, ...}
+      # 1. Remove 'color' field (Claude-specific)
+      # 2. Remove 'model' field (Claude-specific, e.g. "opus")
+      # 3. Convert tools array to record format {Tool: true, ...}
       yq --front-matter=process \
-        'del(.color) | .tools = (.tools | to_entries | map({"key": .value, "value": true}) | from_entries)' \
+        'del(.color) | del(.model) | .tools = (.tools | to_entries | map({"key": .value, "value": true}) | from_entries)' \
         "$agent_file" > "$target"
 
       echo "    Transformed: ${agent_name}"
