@@ -33,9 +33,11 @@ if [[ -z "$CHECKS" ]] || [[ "$CHECKS" == "[]" ]]; then
   exit 1
 fi
 
-# Filter to failing checks matching the name
+# Filter to failing checks matching the name (includes FAILURE and other problematic states)
+# Use ascii_downcase and contains for case-insensitive literal matching (not regex)
+# This avoids issues with special characters in check names like "build (ubuntu-latest)"
 MATCHING=$(echo "$CHECKS" | jq -r --arg name "$CHECK_NAME" \
-  '.[] | select(.state == "FAILURE") | select(.name | test($name; "i")) | .link')
+  '.[] | select(.state == "FAILURE" or .state == "CANCELLED" or .state == "TIMED_OUT" or .state == "ERROR" or .state == "ACTION_REQUIRED" or .state == "STALE") | select(.name | ascii_downcase | contains($name | ascii_downcase)) | .link')
 
 if [[ -z "$MATCHING" ]]; then
   echo "No failing checks found matching '$CHECK_NAME'"

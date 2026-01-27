@@ -11,6 +11,7 @@ Loop-aware skill for iteratively addressing bugbot feedback and CI failures. Des
 ## Purpose
 
 This skill helps you systematically address bugbot feedback and CI failures on pull requests by:
+
 1. Fetching unresolved bugbot comments
 2. Triaging each comment (bug vs false positive)
 3. Fixing valid bugs with surgical edits
@@ -72,11 +73,11 @@ query {
 }' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | select(.comments.nodes[0].author.login == "cursor")'
 ```
 
-### Step 3: Evaluate Completion
+### Step 3: Evaluate Bugbot Comments
 
 **IMMEDIATELY after Step 2:**
 
-- **Zero comments?** → Task complete. STOP.
+- **Zero comments?** → Skip to Step 7 (Check CI Status). Bugbot is satisfied but CI may still need fixes.
 - **Has comments?** → Continue to Step 4. Do not deliberate.
 
 ### Step 4: Process Each Comment
@@ -86,6 +87,7 @@ For each unresolved bugbot comment:
 #### Triage
 
 Categorize before investigating:
+
 - **Likely bug**: Logic errors, null checks, race conditions, security issues
 - **Likely false positive**: Style suggestions, "consider using", optional improvements
 - **Needs investigation**: Unclear without reading code
@@ -124,11 +126,16 @@ Categorize before investigating:
 
 REASON="[Your explanation here - be specific about why this is safe]"
 
+# JSON-escape the reason to handle quotes and special characters
+ESCAPED_REASON=$(echo "$REASON" | jq -Rs '.')
+# Remove the outer quotes that jq adds (we'll add them in the query)
+ESCAPED_REASON="${ESCAPED_REASON:1:-1}"
+
 gh api graphql -f query='
 mutation {
   addPullRequestReviewThreadReply(input: {
     pullRequestReviewThreadId: "'"$THREAD_ID"'",
-    body: "### ✅ Resolved as False Positive\n\n**Reason:** '"$REASON"'\n\n---\n<sub>🤖 *Automatically triaged by **Claude** via Ralph Bugbot skill — if this seems wrong, please reopen and flag for human review.*</sub>"
+    body: "### ✅ Resolved as False Positive\n\n**Reason:** '"$ESCAPED_REASON"'\n\n---\n<sub>🤖 *Automatically triaged by **Claude** via Ralph Bugbot skill — if this seems wrong, please reopen and flag for human review.*</sub>"
   }) {
     comment { id }
   }
@@ -153,6 +160,7 @@ mutation {
 **Do not resolve unless you can explain WHY it's a false positive with evidence.**
 
 **The reply MUST include:**
+
 - A clear, evidence-based explanation of why it's a false positive
 - Reference to the specific defensive code, type system, or validation that makes it safe
 - The automated disclaimer so reviewers know it was triaged by Ralph Bugbot
@@ -180,6 +188,7 @@ Run the `wait-for-bugbot.sh` script in this skill's directory.
 Run the `check-ci-status.sh` script in this skill's directory.
 
 **Evaluate the result:**
+
 - **Exit code 0 (SUCCESS):** All checks passing → Continue to Step 8
 - **Exit code 2 (PENDING):** Checks still running → Wait 30s and re-run `check-ci-status.sh`
 - **Exit code 1 (FAILURE):** Failing checks found → Fix them (see below)
@@ -191,6 +200,7 @@ When checks fail, follow this process for each failing check:
 **1. Get failure details:**
 
 Run the `get-check-logs.sh` script:
+
 ```bash
 # Get all failed logs
 ./get-check-logs.sh
@@ -204,13 +214,13 @@ The script extracts run IDs from check URLs and uses `gh run view --log-failed` 
 
 **2. Identify the issue type and fix:**
 
-| Check Type | Common Issues | Fix Approach |
-|------------|---------------|--------------|
-| **Lint** | ESLint, TSLint, Pylint errors | Run linter locally, fix reported errors |
-| **Format** | Prettier, Black, gofmt | Run formatter: `npm run format` or equivalent |
-| **Type Check** | TypeScript, mypy errors | Fix type errors in reported files |
-| **Tests** | Unit/integration test failures | Read test output, fix failing assertions |
-| **Build** | Compilation errors | Fix syntax/import errors |
+| Check Type     | Common Issues                  | Fix Approach                                  |
+| -------------- | ------------------------------ | --------------------------------------------- |
+| **Lint**       | ESLint, TSLint, Pylint errors  | Run linter locally, fix reported errors       |
+| **Format**     | Prettier, Black, gofmt         | Run formatter: `npm run format` or equivalent |
+| **Type Check** | TypeScript, mypy errors        | Fix type errors in reported files             |
+| **Tests**      | Unit/integration test failures | Read test output, fix failing assertions      |
+| **Build**      | Compilation errors             | Fix syntax/import errors                      |
 
 **3. Common fix commands (run locally first):**
 
@@ -234,12 +244,14 @@ go test ./...            # Run tests
 ```
 
 **4. After fixing:**
+
 - Stage changes: `git add -A`
 - Commit: `git commit -m "fix: address CI failures"`
 - Push: `git push`
 - Re-run `check-ci-status.sh` to verify
 
 **5. If you cannot fix a CI failure:**
+
 - Note it in the progress report
 - Let the human know what's failing and why you couldn't fix it
 - Continue with other fixable issues
@@ -259,6 +271,7 @@ CI status: [PASSING/FAILING with details]
 ### Step 9: Loop Behavior
 
 After pushing and waiting for checks:
+
 - The ralph-loop will re-run this skill
 - Next iteration will re-fetch comments (bugbot has finished re-analyzing)
 - Task is complete when:
@@ -282,6 +295,7 @@ After pushing and waiting for checks:
 ## Usage
 
 Invoke this skill when:
+
 - You need to address bugbot feedback on a PR
 - You need to fix CI failures (lint, format, tests)
 - Used with `/ralph-wiggum:ralph-loop` for automated iteration
