@@ -29,6 +29,22 @@
   ;; Ctrl while alt is held - activates ctrl-alt layer
   lctl-alt-ctrl (multi lctl (layer-while-held ctrl-alt-ext))
 
+  ;; Shift while ctrl-alt is held - activates ctrl-alt-shift layer
+  lsft-ctrl-alt-sft (multi lsft (layer-while-held ctrl-alt-shift-ext))
+
+  ;; Ctrl+Shift path: shift while ctrl held, then alt completes the trio
+  lsft-ctrl-sft (multi lsft (layer-while-held ctrl-shift-ext))
+  lalt-ctrl-sft-alt (multi lalt (layer-while-held ctrl-alt-shift-ext))
+
+  ;; Alt+Shift path: shift while alt held, then ctrl completes the trio
+  lsft-alt-sft (multi lsft (layer-while-held alt-shift-ext))
+  lctl-alt-sft-ctrl (multi lctl (layer-while-held ctrl-alt-shift-ext))
+
+  ;; Shift-first path: shift held first, then ctrl or alt
+  lsft-ext (multi lsft (layer-while-held shift-ext))
+  lctl-sft-ctrl (multi lctl (layer-while-held ctrl-shift-ext))
+  lalt-sft-alt (multi lalt (layer-while-held alt-shift-ext))
+
   ;; Swapped versions for alt-cmd-swapped layer
   lctl-ext-swapped (multi lctl (layer-while-held ctrl-ext-swapped))
   caps-ext-swapped (multi caps (layer-while-held ctrl-ext-swapped))
@@ -62,7 +78,7 @@
   f1   f2   f3   f4   f5  f6    f7   f8   f9   f10   f11   f12
   q    w    e    r    t    y    u    i    o    p
   a    s    d    f    g    h    j    k    l    ;
-  z    x    c    v    b    n    m    ,    .    /
+  lsft z    x    c    v    b    n    m    ,    .    /
   spc  bspc bksl lctl caps lalt lmet
 )
 
@@ -70,7 +86,7 @@
   brdn  brup  @default-mode @bspc-swapped-mode @alt-cmd-swapped-mode    _    prev pp   next mute  vold  volu
   q     w     e    r    t    y    u    i    o    p
   a     s     d    f    g    h    j    k    l    ;
-  z     x     c    v    b    n    m    ,    .    /
+  @lsft-ext  z     x     c    v    b    n    m    ,    .    /
   spc   bspc  bksl @lctl-ext @caps-ext @lalt-ext _
 )
 
@@ -79,7 +95,7 @@
   brdn  brup  @default-mode @bspc-swapped-mode @alt-cmd-swapped-mode    _    prev pp   next mute  vold  volu
   q     w     e    r    t    y    u    i    o    p
   a     s     d    f    g    h    j    k    l    ;
-  z     x     c    v    b    n    m    ,    .    /
+  @lsft-ext  z     x     c    v    b    n    m    ,    .    /
   spc   bksl  bspc @lctl-ext @caps-ext @lalt-ext _
 )
 
@@ -87,7 +103,7 @@
   brdn  brup  @default-mode @bspc-swapped-mode @alt-cmd-swapped-mode    _    prev pp   next mute  vold  volu
   q     w     e    r    t    y    u    i    o    p
   a     s     d    f    g    h    j    k    l    ;
-  z     x     c    v    b    n    m    ,    .    /
+  @lsft-ext  z     x     c    v    b    n    m    ,    .    /
   spc   bspc  bksl @lctl-ext-swapped @caps-ext-swapped lmet @lalt-ext-swapped
 )
 
@@ -95,7 +111,7 @@
   f1       f2        f3       f4       f5       f6     f7     f8       f9      f10   f11   f12
   _        lbrc      S-lbrc   S-9      S-grv    S-6    S-0    S-rbrc   rbrc    grv
   min      S-8       eql      S-min    S-5      S-3    _      _        _       _
-  S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
+  _        S-eql    S-bksl    S-2      _        S-5      _      bksl   S-7      _       S-1
   esc       _         _       _        _        _      _
 )
 
@@ -103,7 +119,7 @@
   f1   f2   f3   f4   f5  f6    f7   f8   f9   f10   f11   f12
   _    _    _    _    _    down    right   _    _    _
   _    _    _    _    _    left    _       _    _    _
-  _    _    _    _    _    up      _       _    _    _
+  _    _    _    _    _    _    up      _       _    _    _
   esc  _    _    _    _    _    _
 )
 
@@ -111,7 +127,7 @@
   f1   f2   f3   f4   f5   f6   f7  f8  f9   f10   f11   f12
   _    _    _    _    _    _    7   8   9    _
   _    _    _    _    _    _    4   5   6    _
-  _    _    _    _    _    _    1   2   3    _
+  _    _    _    _    _    _    _    1   2   3    _
   0    _    _    _    _    _    _
 )
 
@@ -119,7 +135,7 @@
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _
+  @lsft-ctrl-sft    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    @lalt-ctrl-alt    _
 )
 
@@ -127,7 +143,7 @@
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _
+  @lsft-ctrl-sft    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    @lalt-ctrl-alt
 )
 
@@ -135,7 +151,7 @@
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    A-bspc    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _
+  @lsft-ctrl-alt-sft    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _
 )
 
@@ -143,7 +159,7 @@
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _
+  @lsft-alt-sft    _    _    _    _    _    _    _    _    _    _
   _    _    _    @lctl-alt-ctrl @lctl-alt-ctrl    _    _
 )
 
@@ -151,6 +167,38 @@
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _
+  @lsft-alt-sft    _    _    _    _    _    _    _    _    _    _
   _    _    _    @lctl-alt-ctrl @lctl-alt-ctrl    _    _
+)
+
+(deflayer shift-ext
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    @lctl-sft-ctrl @lctl-sft-ctrl    @lalt-sft-alt    _
+)
+
+(deflayer ctrl-shift-ext
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    @lalt-ctrl-sft-alt    _
+)
+
+(deflayer alt-shift-ext
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    @lctl-alt-sft-ctrl @lctl-alt-sft-ctrl    _    _
+)
+
+(deflayer ctrl-alt-shift-ext
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    h    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _
 )
