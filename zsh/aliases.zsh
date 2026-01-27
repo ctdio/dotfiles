@@ -58,10 +58,13 @@ alias ys='yarn start'
 alias yt='yarn test'
 
 # AI tools
-alias ai="aider --read=~/dotfiles/prompts/system.md"
-alias ai-r1="ai --architect --model=fireworks_ai/accounts/fireworks/models/deepseek-r1 --editor-model=claude-3-5-sonnet-20241022"
-alias ai-o3="ai --architect --model=o3-mini --editor-model=claude-3-5-sonnet-20241022"
-alias cc='claude --add-dir ~/.ai --dangerously-skip-permissions'
+function cc() {
+  if command -v claude-chill &>/dev/null; then
+    claude-chill -- claude --add-dir ~/.ai --dangerously-skip-permissions "$@"
+  else
+    claude --add-dir ~/.ai --dangerously-skip-permissions "$@"
+  fi
+}
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
