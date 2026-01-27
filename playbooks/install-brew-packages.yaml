@@ -36,6 +36,7 @@
       - wget
       - xz
       - yarn
+      - yq
       - zlib
       - zsh
     casks:

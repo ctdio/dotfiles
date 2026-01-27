@@ -57,6 +57,7 @@
       - terraform
       - aws-cli-v2
       - direnv
+      - yq
 
     # Ubuntu-specific packages
     ubuntu_packages:
@@ -149,6 +150,15 @@
     - name: Install Starship prompt on Ubuntu (via script)
       shell: |
         curl -sS https://starship.rs/install.sh | sh -s -- -y
+      when: ansible_distribution == "Ubuntu"
+      ignore_errors: yes
+
+    - name: Install yq on Ubuntu (via binary)
+      shell: |
+        curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+        chmod +x /usr/local/bin/yq
+      args:
+        creates: /usr/local/bin/yq
       when: ansible_distribution == "Ubuntu"
       ignore_errors: yes
 
