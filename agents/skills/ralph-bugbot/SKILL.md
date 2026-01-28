@@ -171,11 +171,11 @@ mutation {
 
 1. Stage all changes: `git add -A`
 2. Commit with message describing fixes: `git commit -m "fix: address bugbot feedback"`
-3. Submit via Graphite: `gt submit`
+3. Submit via Graphite: `gt submit --update-only`
 
 **You MUST run git add, commit, and gt submit. Do not just show the commands.**
 
-**IMPORTANT:** Never use `git push`, `git rebase`, or `git pull`. Always use `gt submit` for pushing changes.
+**IMPORTANT:** Never use `git push`, `git rebase`, or `git pull`. Always use `gt submit --update-only` for pushing changes.
 
 ### Step 6: Wait for Bugbot Check
 
@@ -249,7 +249,7 @@ go test ./...            # Run tests
 
 - Stage changes: `git add -A`
 - Commit: `git commit -m "fix: address CI failures"`
-- Submit via Graphite: `gt submit`
+- Submit via Graphite: `gt submit --update-only`
 - Re-run `check-ci-status.sh` to verify
 
 **5. If you cannot fix a CI failure:**
@@ -289,11 +289,11 @@ After pushing and waiting for checks:
 5. **Never blindly fix OR resolve** - Both bugs and false positives need verification
 6. **Minimal changes** - Fix the bug, don't refactor
 7. **When uncertain, skip** - Flag for human review instead of guessing
-8. **Always commit and submit** - After fixes or resolving false positives, use `gt submit`
+8. **Always commit and submit** - After fixes or resolving false positives, use `gt submit --update-only`
 9. **One iteration = one pass** - Don't try to loop internally; let ralph-loop handle iteration
 10. **Fix CI failures** - After addressing bugbot, check and fix lint/format/test failures
 11. **Run locally first** - For CI failures, run the failing check locally before pushing fixes
-12. **Never rebase, push, or pull** - Only use `git add`, `git commit`, and `gt submit`. Graphite handles branch management.
+12. **Never rebase, push, or pull** - Only use `git add`, `git commit`, and `gt submit --update-only`. Graphite handles branch management.
 
 ## Usage
 
