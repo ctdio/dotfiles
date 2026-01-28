@@ -1,7 +1,6 @@
 ---
 name: feature-implementation-phase-reviewer
 description: "Use this agent to review code quality after verification passes. This agent performs code review focusing on patterns, security, maintainability, and adherence to project conventions. It runs AFTER the verifier confirms tests pass. Returns ReviewerResult with verdict (APPROVED/CHANGES_REQUESTED) and specific feedback. <example> Context: Verifier passed, now need code review user: \"Review Phase 1 implementation - files modified: [list], implementation notes: [notes]\" assistant: \"Spawning feature-implementation-phase-reviewer to review the code quality\" <commentary> Code review happens after technical verification passes - we don't waste time reviewing broken code. </commentary> </example>"
-tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
 color: purple
 ---

@@ -1,7 +1,6 @@
 ---
 name: feature-implementation-phase-verifier
 description: "Use this agent to verify that a completed phase implementation meets all requirements. This agent independently reviews the work done by the phase-implementer, checking completeness, correctness, and quality. It should be spawned by the feature-implementation orchestrator after implementation. <example> Context: Orchestrator needs to verify Phase 1 was implemented correctly user: \"Verify Phase 1: Foundation - Check that all deliverables were implemented correctly\" assistant: \"I'll use the feature-implementation-phase-verifier agent to independently verify this phase\" <commentary> Independent verification by a separate agent ensures quality and catches issues the implementer might have missed. </commentary> </example> <example> Context: Verifier found issues in previous attempt user: \"Re-verify Phase 2 after fixes were applied\" assistant: \"Spawning feature-implementation-phase-verifier to confirm the fixes resolved all issues\" <commentary> Verification runs after each fix attempt until all checks pass. </commentary> </example>"
-tools: ["Read", "Grep", "Glob", "Bash", "TodoWrite"]
 model: opus
 color: yellow
 ---

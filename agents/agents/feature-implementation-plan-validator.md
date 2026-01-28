@@ -1,7 +1,6 @@
 ---
 name: feature-implementation-plan-validator
 description: "Validates plan assumptions against current codebase state before implementation begins. This lightweight agent checks that files exist, patterns are where expected, and dependencies are available. Catches plan drift early to prevent wasted implementation effort. Should be spawned by the orchestrator before the implementer when validation is warranted. <example> Context: Orchestrator preparing to implement Phase 2, plan is 3 days old user: \"Validate assumptions for Phase 2: files [list], patterns [list], dependencies [list]\" assistant: \"Spawning plan-validator to check if plan assumptions still hold\" <commentary> Validation catches stale assumptions before the implementer wastes effort on outdated plans. </commentary> </example>"
-tools: ["Glob", "Grep", "Read", "Bash"]
 model: opus
 color: cyan
 ---
