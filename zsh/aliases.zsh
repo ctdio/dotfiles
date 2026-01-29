@@ -1,3 +1,6 @@
+# PATH additions
+export PATH="/Users/charlieduong/.bun/bin:$PATH"
+
 # Navigation aliases
 alias cdp='cd ~/projects/private'
 alias cdo='cd ~/projects/open-source'
@@ -65,6 +68,7 @@ function cc() {
     claude --add-dir ~/.ai --dangerously-skip-permissions "$@"
   fi
 }
+alias cc-no-chill='claude --add-dir ~/.ai --dangerously-skip-permissions'
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
