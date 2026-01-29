@@ -614,16 +614,16 @@ Quick reference for agents gathering context.
 
 ### Modified Files
 
-#### `path/to/existing-file.ts:45-67`
+#### `path/to/existing-file.ts`
 **Current Role**: [What this file currently does]
 
 **Changes Needed**: [Specific changes]
 
 **Impact**: [What else is affected by these changes]
 
-**Sections to Modify**:
-- Lines 45-67: [What to change]
-- Lines 123-145: [What to change]
+**Functions to Modify**:
+- `functionName()` - [What to change]
+- `ClassName.methodName()` - [What to change]
 
 ---
 
@@ -647,10 +647,10 @@ Quick reference for agents gathering context.
 
 Quick lookup of where important concepts are defined:
 
-- **Type Definitions**: `lib/types/feature.ts:23-45`
-- **Core Logic**: `lib/services/feature-service.ts:89-234`
-- **API Routes**: `app/api/v1/feature/route.ts:12-67`
-- **Database Queries**: `lib/repositories/feature-repo.ts:45-123`
+- **Type Definitions**: `lib/types/feature.ts` - `FeatureInput`, `FeatureOutput`
+- **Core Logic**: `lib/services/feature-service.ts` - `processFeature()`, `validateInput()`
+- **API Routes**: `app/api/v1/feature/route.ts` - `GET`, `POST` handlers
+- **Database Queries**: `lib/repositories/feature-repo.ts` - `findById()`, `create()`
 - **Tests**: `test/integration/feature.test.ts`
 ```
 
@@ -803,9 +803,23 @@ Invoke this skill when:
 - Future agents will need detailed context to continue work
 - Feature has complex edge cases or architectural decisions
 
-### Clarifying Requirements (CRITICAL)
+### Clarifying Requirements (CRITICAL - DO THIS FIRST)
 
-Before writing ANY plan documents, you MUST thoroughly clarify requirements with the user. Vague requirements lead to wasted implementation time. Ask questions aggressively.
+**MANDATORY: Before writing ANY plan documents, you MUST thoroughly clarify requirements with the user.**
+
+Vague requirements lead to wasted implementation time. A plan built on assumptions is a plan that will fail. **Your job is to be annoyingly thorough in questioning.**
+
+**USE THE AskUserQuestion TOOL (IF AVAILABLE):**
+- If you have access to the AskUserQuestion tool, use it for every round of clarifying questions
+- Structure questions as multiple-choice where possible to reduce friction
+- Ask follow-up questions until you have SPECIFIC, CONCRETE answers
+- Never accept vague answers like "the normal way" or "whatever makes sense"
+
+**Questioning Mindset:**
+- Pretend you're a consultant being paid $500/hour - you need COMPLETE understanding before starting
+- Every assumption you make is a potential bug in the plan
+- Users often don't know what they need until asked the right questions
+- It's better to ask 20 questions upfront than discover 20 problems during implementation
 
 **Question Categories to Explore:**
 
@@ -843,37 +857,34 @@ Before writing ANY plan documents, you MUST thoroughly clarify requirements with
    - What metrics define success?
    - What's the testing strategy?
 
-**Questioning Process:**
+**Questioning Process (MINIMUM 3 ROUNDS):**
 
-1. **Initial Questions**: Ask 5-10 clarifying questions based on the request
-2. **Follow-up Drill-Down**: For each answer, ask follow-up questions if unclear
-3. **Confirmation**: Summarize understanding and confirm with user
-4. **Document Unknowns**: If user doesn't know, document as open question in plan
+1. **Round 1 - Initial Questions** (USE AskUserQuestion TOOL):
+   - Ask 5-10 broad clarifying questions covering scope, users, and constraints
+   - Use multiple-choice options where possible to surface hidden requirements
+   - ALWAYS include "Other" option for flexibility
 
-**Example Dialogue:**
+2. **Round 2 - Drill-Down Questions** (USE AskUserQuestion TOOL):
+   - For EVERY answer from Round 1, ask at least one follow-up question
+   - Challenge vague answers: "You said 'fast' - what specific response time?"
+   - Probe edge cases: "What happens if X fails? What about concurrent access?"
 
-```
-User: "Add user notifications to the app"
+3. **Round 3 - Verification Questions** (USE AskUserQuestion TOOL):
+   - Present your understanding and ask "Is this correct?"
+   - Identify any remaining ambiguities and resolve them
+   - Ask about priorities: "If we can only ship 2 of these 4 features, which 2?"
 
-You: Before I create a plan, I need to clarify several things:
+4. **Document Everything**:
+   - Keep a record of all Q&A in the plan
+   - Document unknowns explicitly - don't paper over gaps
+   - If user doesn't know, that's valuable information - document it as an open question
 
-1. **What types of notifications?** Email, in-app, push, or all of the above?
-2. **What triggers notifications?** Specific events? User actions? System alerts?
-3. **User control:** Can users configure which notifications they receive?
-4. **Delivery guarantees:** Must every notification be delivered, or is best-effort OK?
-5. **Real-time requirements:** Do in-app notifications need to appear instantly?
-6. **Volume expectations:** How many notifications per user per day? Total system volume?
-7. **Existing infrastructure:** Do we have email/push services already integrated?
+**NEVER proceed to planning if:**
+- You have unresolved ambiguities about core requirements
+- User gave vague answers that you haven't drilled into
+- You're making assumptions about user intent without confirmation
 
-[User answers...]
-
-You: Based on that:
-- Clarifying on #3: For configuration, do users set preferences per notification type, or just on/off globally?
-- Follow-up on #5: When you say "instantly", is <1 second acceptable or do you need <100ms?
-- For #6: "Hundreds" - is that 100-300 or 500-900? This affects database design.
-
-[Continue until requirements are clear]
-```
+If AskUserQuestion tool is not available, achieve the same through direct questioning in your responses.
 
 **Red Flags That Indicate More Questions Needed:**
 - "It should just work like X" (what specifically about X?)
@@ -962,12 +973,17 @@ Use numbered prefixes for clear ordering:
 
 ## File Reference Format
 
-Always use this format when referencing code:
-- `path/to/file.ts:123` - Single line
-- `path/to/file.ts:123-145` - Range of lines
-- `path/to/file.ts` - Entire file
+Reference code by function/class names, not line numbers (lines shift as code changes):
 
-This allows quick navigation with editor commands.
+**Good references:**
+- `path/to/file.ts` - `functionName()` - What to change
+- `path/to/service.ts` - `ClassName.methodName()` - Specific method
+- `path/to/types.ts` - `InterfaceName` - Type definition
+
+**Avoid:**
+- ~~`path/to/file.ts:123-145`~~ - Line numbers become stale quickly
+
+This keeps references valid as the codebase evolves.
 
 ## Best Practices
 
@@ -977,7 +993,7 @@ This allows quick navigation with editor commands.
 
 3. **Update as You Go**: Plans are living documents. Update when reality diverges.
 
-4. **Link to Code**: Use file:line references everywhere. Makes context gathering fast.
+4. **Link to Code**: Reference specific functions/classes by name. Makes context gathering fast and stays valid as code changes.
 
 5. **Capture Gotchas**: Document anything that took >30 min to debug.
 
@@ -1029,17 +1045,22 @@ This skill **supplements** the simple planning guidance in your base instruction
 
 When using this skill, you should:
 
-1. **Clarify Requirements Thoroughly**
-   - Ask 5-10 initial clarifying questions
-   - Follow up on any vague or ambiguous answers
-   - Continue questioning until requirements are specific
-   - Document all questions and answers for the plan
+1. **Clarify Requirements Thoroughly (USE AskUserQuestion TOOL IF AVAILABLE)**
+   - Use AskUserQuestion tool (if available) with 3-4 initial questions
+   - Structure questions as multiple-choice to surface hidden requirements
+   - After receiving answers, ask follow-up questions for anything vague
+   - **Minimum 2-3 rounds of questions** before proceeding to planning
+   - Continue until you have SPECIFIC, CONCRETE requirements
+   - Challenge vague answers - don't accept "normal", "fast", "simple"
+   - Document all questions and answers for inclusion in the plan
 
 2. **Confirm Understanding**
    - Summarize the feature requirements back to the user
+   - Use AskUserQuestion (if available) to verify: "Is this understanding correct?"
    - List all functional requirements you understand
    - List all constraints and non-functional requirements
    - Get explicit confirmation before proceeding
+   - **DO NOT START PLANNING until user confirms understanding is correct**
 
 3. **Propose Structure**
    - Suggest feature name for directory
@@ -1068,7 +1089,7 @@ A good feature plan should:
 - ✅ Have acceptance criteria for every functional requirement
 - ✅ Enable agent to start Phase 1 with full context
 - ✅ Document all major architectural decisions
-- ✅ Include specific file references with line numbers
+- ✅ Include specific file and function/class references
 - ✅ Define clear success criteria per phase
 - ✅ Consider backward compatibility and rollback
 - ✅ Capture edge cases and gotchas
