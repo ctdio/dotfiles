@@ -1,5 +1,5 @@
 [pager]
-  diff = skim
+  diff = skim diff
 
 [user]
   name = Charlie Duong
