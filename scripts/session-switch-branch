@@ -36,12 +36,15 @@ get_branch() {
 # Store sessions in array first to avoid subshell issues
 sessions=()
 paths=()
-# Use session_path (stable) with pane_current_path fallback
+# Use pane_current_path for slot sessions (flexible), session_path for others (project-tied)
 while read -r session spath ppath; do
   [ "$session" = "$current_session" ] && continue
   sessions+=("$session")
-  # Prefer session_path (set at creation), fall back to pane_current_path
-  if [ -n "$spath" ] && [ -d "$spath" ]; then
+  # Slot sessions are flexible - use pane's current path
+  # Other sessions are project-tied - use session_path
+  if [[ "$session" == slot-* ]]; then
+    paths+=("$ppath")
+  elif [ -n "$spath" ] && [ -d "$spath" ]; then
     paths+=("$spath")
   else
     paths+=("$ppath")
