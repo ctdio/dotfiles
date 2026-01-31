@@ -90,6 +90,13 @@ check_connection() {
             exit 1
         fi
     fi
+
+    # Show connection info
+    if [[ "$MODE" == "docker" ]]; then
+        log_info "Using container: $CONTAINER"
+    else
+        log_info "Using direct: $POSTGRES_HOST:$POSTGRES_PORT"
+    fi
 }
 
 run_psql() {
