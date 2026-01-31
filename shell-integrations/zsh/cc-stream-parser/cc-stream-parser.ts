@@ -273,53 +273,52 @@ function shouldAddCategorySpacing(toolName: string): boolean {
   return true;
 }
 
-function formatEdit(input: { file_path: string; old_string: string; new_string: string }): string {
-  const oldLines = input.old_string.split('\n');
-  const newLines = input.new_string.split('\n');
+async function formatEdit(input: { file_path: string; old_string: string; new_string: string }, width?: number): Promise<string> {
+  const { file_path, old_string, new_string } = input;
 
-  // Calculate stats
-  const added = newLines.filter((l, i) => !oldLines.includes(l) || oldLines[i] !== l).length;
-  const removed = oldLines.filter((l, i) => !newLines.includes(l) || newLines[i] !== l).length;
+  // Create temp files for diff
+  const timestamp = Date.now();
+  const oldFile = `/tmp/cc-old-${timestamp}`;
+  const newFile = `/tmp/cc-new-${timestamp}`;
 
-  const stats = [];
-  if (added > 0) stats.push(`${c.green}+${added}${c.reset}`);
-  if (removed > 0) stats.push(`${c.red}-${removed}${c.reset}`);
+  await Bun.write(oldFile, old_string);
+  await Bun.write(newFile, new_string);
 
-  const lines: string[] = [];
-  lines.push(`\n${c.cyan}${input.file_path}${c.reset}  ${stats.join(' ')}`);
-  lines.push(`${c.dim}${box.v}       ${box.updown} ${oldLines.length} ${box.arrow} ${newLines.length}${c.reset}`);
+  try {
+    // Generate unified diff with proper labels
+    const diffProc = Bun.spawn(
+      ['diff', '-u', '--label', `a/${file_path}`, '--label', `b/${file_path}`, oldFile, newFile],
+      { stdout: 'pipe', stderr: 'pipe' }
+    );
 
-  // Create unified diff view
-  let oldIdx = 0;
-  let newIdx = 0;
+    const diffOutput = await new Response(diffProc.stdout).text();
+    await diffProc.exited;
 
-  while (oldIdx < oldLines.length || newIdx < newLines.length) {
-    const oldLine = oldLines[oldIdx];
-    const newLine = newLines[newIdx];
+    // If no changes, return minimal output
+    if (!diffOutput.trim()) {
+      return `\n${c.cyan}${file_path}${c.reset}  ${c.dim}(no changes)${c.reset}\n`;
+    }
 
-    if (oldLine === newLine) {
-      // Unchanged line - show as context
-      const lineNum = String(newIdx + 1).padStart(3);
-      lines.push(`${c.dim}${box.v}${c.reset} ${c.dim}${lineNum}${c.reset}  ${oldLine}`);
-      oldIdx++;
-      newIdx++;
-    } else {
-      // Show removed lines
-      if (oldIdx < oldLines.length && (newIdx >= newLines.length || oldLine !== newLines[newIdx])) {
-        const lineNum = String(oldIdx + 1).padStart(3);
-        lines.push(`${c.dim}${box.v}${c.reset} ${c.bgDiffRemove}${c.red}${lineNum}-${c.reset} ${c.bgDiffRemove}${oldLine}${c.reset}`);
-        oldIdx++;
-      }
-      // Show added lines
-      if (newIdx < newLines.length && (oldIdx >= oldLines.length || newLine !== oldLines[oldIdx - 1])) {
-        const lineNum = String(newIdx + 1).padStart(3);
-        lines.push(`${c.dim}${box.v}${c.reset} ${c.bgDiffAdd}${c.green}${lineNum}+${c.reset} ${c.bgDiffAdd}${newLine}${c.reset}`);
-        newIdx++;
-      }
+    // Pipe to skim print for syntax highlighting
+    const effectiveWidth = width ?? getTermWidth();
+    const skimProc = Bun.spawn(['skim', 'print', '-w', String(effectiveWidth)], {
+      stdin: new Response(diffOutput).body,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const skimOutput = await new Response(skimProc.stdout).text();
+    await skimProc.exited;
+
+    return '\n' + skimOutput;
+  } finally {
+    // Clean up temp files
+    try {
+      await Bun.$`rm -f ${oldFile} ${newFile}`.quiet();
+    } catch {
+      // Ignore cleanup errors
     }
   }
-
-  return lines.join('\n') + '\n';
 }
 
 function formatWrite(input: { file_path: string; content: string }): string {
@@ -546,7 +545,7 @@ function formatCodexReasoning(text: string): string {
   return `\n${c.dim}${text}${c.reset}\n`;
 }
 
-function formatToolOutput(toolName: string, input: unknown): string {
+async function formatToolOutput(toolName: string, input: unknown, width?: number): Promise<string> {
   try {
     const parsed = typeof input === 'string' ? JSON.parse(input) : input;
 
@@ -560,15 +559,18 @@ function formatToolOutput(toolName: string, input: unknown): string {
       case 'TaskList':
         return formatTaskList();
       case 'Edit':
-        return formatEdit(parsed);
+        return await formatEdit(parsed, width);
       case 'MultiEdit':
         // MultiEdit has an array of edits
         if (parsed.edits && Array.isArray(parsed.edits)) {
-          return parsed.edits.map((edit: { file_path: string; old_string: string; new_string: string }) =>
-            formatEdit(edit)
-          ).join('');
+          const results = await Promise.all(
+            parsed.edits.map((edit: { file_path: string; old_string: string; new_string: string }) =>
+              formatEdit(edit, width)
+            )
+          );
+          return results.join('');
         }
-        return formatEdit(parsed);
+        return await formatEdit(parsed, width);
       case 'Write':
         return formatWrite(parsed);
       case 'Task':
@@ -786,14 +788,16 @@ for await (const chunk of Bun.stdin.stream()) {
               process.stdout.write(subagentIndent + '\n');
             }
             // Indent the output, strip leading newline since header provides separation
-            const output = formatToolOutput(currentToolName, currentToolInput).replace(/^\n/, '');
+            // Reduce width by 2 for subagent indent ("│ ")
+            const subagentWidth = getTermWidth() - 2;
+            const output = (await formatToolOutput(currentToolName, currentToolInput, subagentWidth)).replace(/^\n/, '');
             process.stdout.write(output.split('\n').map(l => l ? subagentIndent + l : l).join('\n'));
           } else {
             // Add spacing between categories for main agent
             if (needsCategorySpacing) {
               process.stdout.write('\n');
             }
-            process.stdout.write(formatToolOutput(currentToolName, currentToolInput));
+            process.stdout.write(await formatToolOutput(currentToolName, currentToolInput));
           }
           currentToolUseId = '';
           lastToolName = currentToolName;
@@ -904,7 +908,9 @@ for await (const chunk of Bun.stdin.stream()) {
             state.toolCount++;
           }
           // Show tool call indented, strip leading newline
-          const output = formatToolOutput(tool.name, tool.input).replace(/^\n/, '');
+          // Reduce width by 2 for subagent indent ("│ ")
+          const subagentWidth = getTermWidth() - 2;
+          const output = (await formatToolOutput(tool.name, tool.input, subagentWidth)).replace(/^\n/, '');
           process.stdout.write(output.split('\n').map(l => l ? subagentIndent + l : l).join('\n'));
         }
       }
