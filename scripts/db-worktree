@@ -1,0 +1,255 @@
+#!/bin/bash
+
+# Database management for git worktrees
+# Clone, create, and manage isolated databases per worktree
+#
+# Usage:
+#   db-worktree clone <source> <target>   - Clone database (schema + data)
+#   db-worktree create <name>             - Create empty database
+#   db-worktree drop <name>               - Drop a database
+#   db-worktree list                      - List all databases
+#   db-worktree snapshot <name> [file]    - Snapshot a database
+#   db-worktree restore <name> <file>     - Restore database from snapshot
+#
+# Examples:
+#   db-worktree clone platform platform_wt1
+#   db-worktree clone vector vector_wt1
+#   db-worktree create platform_feature_x
+#   db-worktree snapshot platform before-migration
+#   db-worktree restore platform before-migration
+#
+# Configuration:
+#   Set these environment variables or edit the defaults below:
+#   - DB_WORKTREE_CONTAINER: Docker container name (default: platform-db)
+#   - DB_WORKTREE_USER: Postgres user (default: postgres)
+#   - DB_WORKTREE_SNAPSHOT_DIR: Where to store snapshots (default: ~/.db-snapshots)
+
+set -e
+
+#──────────────────────────────────────────────────────────────────────────────
+# Configuration (override via environment variables)
+#──────────────────────────────────────────────────────────────────────────────
+CONTAINER="${DB_WORKTREE_CONTAINER:-platform-db}"
+POSTGRES_USER="${DB_WORKTREE_USER:-postgres}"
+SNAPSHOT_DIR="${DB_WORKTREE_SNAPSHOT_DIR:-$HOME/.db-snapshots}"
+
+#──────────────────────────────────────────────────────────────────────────────
+# Colors and logging
+#──────────────────────────────────────────────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+DIM='\033[2m'
+NC='\033[0m'
+
+log_info() { echo -e "${DIM}$1${NC}"; }
+log_success() { echo -e "${GREEN}✓${NC} $1"; }
+log_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
+log_error() { echo -e "${RED}✗${NC} $1" >&2; }
+
+#──────────────────────────────────────────────────────────────────────────────
+# Helpers
+#──────────────────────────────────────────────────────────────────────────────
+check_container() {
+    if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+        log_error "Container '$CONTAINER' is not running"
+        log_info "Start it with: docker-compose up -d"
+        exit 1
+    fi
+}
+
+db_exists() {
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -lqt | cut -d \| -f 1 | grep -qw "$1"
+}
+
+require_arg() {
+    if [[ -z "$2" ]]; then
+        log_error "Missing argument: $1"
+        echo "Usage: db-worktree $3"
+        exit 1
+    fi
+}
+
+#──────────────────────────────────────────────────────────────────────────────
+# Commands
+#──────────────────────────────────────────────────────────────────────────────
+cmd_clone() {
+    local source="$1"
+    local target="$2"
+
+    require_arg "source" "$source" "clone <source> <target>"
+    require_arg "target" "$target" "clone <source> <target>"
+
+    check_container
+
+    if [[ "$source" == "$target" ]]; then
+        log_error "Source and target cannot be the same"
+        exit 1
+    fi
+
+    if ! db_exists "$source"; then
+        log_error "Source database '$source' does not exist"
+        exit 1
+    fi
+
+    # Create target if it doesn't exist
+    if ! db_exists "$target"; then
+        log_info "Creating database '$target'..."
+        docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$target\";" >/dev/null
+    fi
+
+    log_info "Cloning '$source' -> '$target'..."
+    docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" "$source" | \
+        docker exec -i "$CONTAINER" psql -U "$POSTGRES_USER" -d "$target" -q >/dev/null 2>&1
+
+    log_success "Cloned '$source' -> '$target'"
+}
+
+cmd_create() {
+    local name="$1"
+    require_arg "name" "$name" "create <name>"
+    check_container
+
+    if db_exists "$name"; then
+        log_warning "Database '$name' already exists"
+        return 0
+    fi
+
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$name\";" >/dev/null
+    log_success "Created database '$name'"
+}
+
+cmd_drop() {
+    local name="$1"
+    require_arg "name" "$name" "drop <name>"
+    check_container
+
+    if ! db_exists "$name"; then
+        log_warning "Database '$name' does not exist"
+        return 0
+    fi
+
+    # Safety check for common main databases
+    if [[ "$name" == "platform" || "$name" == "vector" || "$name" == "postgres" ]]; then
+        echo -n "Drop main database '$name'? [y/N] "
+        read -r confirm
+        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+            log_info "Cancelled"
+            return 0
+        fi
+    fi
+
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "DROP DATABASE \"$name\";" >/dev/null
+    log_success "Dropped database '$name'"
+}
+
+cmd_list() {
+    check_container
+    echo -e "${DIM}Databases in ${CONTAINER}:${NC}"
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "\l" | grep -v "template\|postgres" | head -20
+}
+
+cmd_snapshot() {
+    local name="$1"
+    local file="${2:-$(date +%Y%m%d-%H%M%S)}"
+
+    require_arg "name" "$name" "snapshot <name> [file]"
+    check_container
+
+    if ! db_exists "$name"; then
+        log_error "Database '$name' does not exist"
+        exit 1
+    fi
+
+    mkdir -p "$SNAPSHOT_DIR"
+    local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
+
+    log_info "Creating snapshot of '$name'..."
+    docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" -Fc "$name" > "$filepath"
+    log_success "Snapshot saved: $filepath"
+}
+
+cmd_restore() {
+    local name="$1"
+    local file="$2"
+
+    require_arg "name" "$name" "restore <name> <file>"
+    require_arg "file" "$file" "restore <name> <file>"
+    check_container
+
+    # Find the snapshot file
+    local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
+    if [[ ! -f "$filepath" ]]; then
+        # Try without the name prefix
+        filepath="$SNAPSHOT_DIR/${file}.dump"
+    fi
+    if [[ ! -f "$filepath" ]]; then
+        # Try as absolute path
+        filepath="$file"
+    fi
+    if [[ ! -f "$filepath" ]]; then
+        log_error "Snapshot not found: $file"
+        log_info "Available snapshots:"
+        ls -1 "$SNAPSHOT_DIR"/*.dump 2>/dev/null | xargs -I {} basename {} || echo "  (none)"
+        exit 1
+    fi
+
+    log_info "Restoring '$name' from $(basename "$filepath")..."
+
+    # Recreate database
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "DROP DATABASE IF EXISTS \"$name\";" >/dev/null
+    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$name\";" >/dev/null
+    docker exec -i "$CONTAINER" pg_restore -U "$POSTGRES_USER" -d "$name" < "$filepath" 2>/dev/null || true
+
+    log_success "Restored '$name' from $(basename "$filepath")"
+}
+
+cmd_help() {
+    cat <<'EOF'
+Database management for git worktrees
+
+Usage: db-worktree <command> [args]
+
+Commands:
+  clone <source> <target>   Clone database (schema + data)
+  create <name>             Create empty database
+  drop <name>               Drop a database
+  list                      List all databases
+  snapshot <name> [file]    Snapshot a database (default: timestamped)
+  restore <name> <file>     Restore database from snapshot
+
+Examples:
+  db-worktree clone platform platform_wt1
+  db-worktree clone vector vector_wt1
+  db-worktree create platform_experiment
+  db-worktree drop platform_wt1
+  db-worktree snapshot platform before-migration
+  db-worktree restore platform before-migration
+
+Environment variables:
+  DB_WORKTREE_CONTAINER    Docker container (default: platform-db)
+  DB_WORKTREE_USER         Postgres user (default: postgres)
+  DB_WORKTREE_SNAPSHOT_DIR Snapshot directory (default: ~/.db-snapshots)
+
+For vector database, use the vector container:
+  DB_WORKTREE_CONTAINER=platform-vector-db db-worktree clone vector vector_wt1
+EOF
+}
+
+#──────────────────────────────────────────────────────────────────────────────
+# Main
+#──────────────────────────────────────────────────────────────────────────────
+case "${1:-help}" in
+    clone)    cmd_clone "$2" "$3" ;;
+    create)   cmd_create "$2" ;;
+    drop)     cmd_drop "$2" ;;
+    list)     cmd_list ;;
+    snapshot) cmd_snapshot "$2" "$3" ;;
+    restore)  cmd_restore "$2" "$3" ;;
+    help|--help|-h) cmd_help ;;
+    *)
+        log_error "Unknown command: $1"
+        cmd_help
+        exit 1
+        ;;
+esac
