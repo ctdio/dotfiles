@@ -3,17 +3,16 @@
 # Database management for git worktrees
 # Clone, create, and manage isolated databases per worktree
 #
+# Supports two connection modes:
+#   docker  - Run commands inside container via docker exec (use -c)
+#   direct  - Connect via psql from host (use -p/-H with -m direct)
+#
 # Usage: db-worktree [options] <command> [args]
 #
-# Options: -p PORT, -H HOST, -U USER, -c CONTAINER, -m MODE
-#
-# Commands: clone, create, drop, list, snapshot, restore
-#
 # Examples:
-#   db-worktree list
-#   db-worktree -p 5433 list
-#   db-worktree -c platform-db clone platform platform_wt1
-#   db-worktree snapshot platform before-migration
+#   db-worktree -c platform-db list                  # main postgres container
+#   db-worktree -c platform-vector-db list           # vector db container
+#   db-worktree -c platform-db clone mydb mydb_wt1   # clone for worktree
 
 set -e
 
@@ -36,23 +35,33 @@ log_error() { echo -e "${RED}✗${NC} $1" >&2; }
 #──────────────────────────────────────────────────────────────────────────────
 CONTAINER="${DB_WORKTREE_CONTAINER:-platform-db}"
 POSTGRES_USER="${DB_WORKTREE_USER:-postgres}"
+POSTGRES_PASSWORD="${PGPASSWORD:-${DB_WORKTREE_PASSWORD:-postgres}}"
 SNAPSHOT_DIR="${DB_WORKTREE_SNAPSHOT_DIR:-$HOME/.db-snapshots}"
 MODE="${DB_WORKTREE_MODE:-auto}"
 POSTGRES_HOST="${DB_WORKTREE_HOST:-localhost}"
 POSTGRES_PORT="${DB_WORKTREE_PORT:-5432}"
 
-# Parse CLI flags
+export PGPASSWORD="$POSTGRES_PASSWORD"
+
+# Parse CLI flags and collect positional args
+POSITIONAL=()
+EXPLICIT_CONTAINER=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -p|--port)      POSTGRES_PORT="$2"; shift 2 ;;
         -H|--host)      POSTGRES_HOST="$2"; shift 2 ;;
         -U|--user)      POSTGRES_USER="$2"; shift 2 ;;
-        -c|--container) CONTAINER="$2"; MODE="docker"; shift 2 ;;
+        -c|--container) CONTAINER="$2"; EXPLICIT_CONTAINER=1; shift 2 ;;
         -m|--mode)      MODE="$2"; shift 2 ;;
+        -h|--help)      POSITIONAL+=("help"); shift ;;
         -*)             log_error "Unknown option: $1"; exit 1 ;;
-        *)              break ;;
+        *)              POSITIONAL+=("$1"); shift ;;
     esac
 done
+set -- "${POSITIONAL[@]}"
+
+# Container flag forces docker mode
+[[ -n "$EXPLICIT_CONTAINER" ]] && MODE="docker"
 
 #──────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -60,7 +69,7 @@ done
 check_connection() {
     if [[ "$MODE" == "auto" ]]; then
         # Try direct first, fall back to docker
-        if psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -c "SELECT 1" >/dev/null 2>&1; then
+        if psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d postgres -c "SELECT 1" >/dev/null 2>&1; then
             MODE="direct"
         elif docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
             MODE="docker"
@@ -72,11 +81,11 @@ check_connection() {
     elif [[ "$MODE" == "docker" ]]; then
         if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
             log_error "Container '$CONTAINER' is not running"
-            log_info "Start it with: docker-compose up -d"
+            log_info "Find running containers: docker ps --format '{{.Names}}'"
             exit 1
         fi
     else
-        if ! psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -c "SELECT 1" >/dev/null 2>&1; then
+        if ! psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d postgres -c "SELECT 1" >/dev/null 2>&1; then
             log_error "Cannot connect to PostgreSQL at $POSTGRES_HOST:$POSTGRES_PORT"
             exit 1
         fi
@@ -271,10 +280,11 @@ Database management for git worktrees
 Usage: db-worktree [options] <command> [args]
 
 Options:
-  -p, --port PORT        Postgres port (default: 5432)
-  -H, --host HOST        Postgres host (default: localhost)
+  -p, --port PORT        Postgres port for direct mode (default: 5432)
+  -H, --host HOST        Postgres host for direct mode (default: localhost)
   -U, --user USER        Postgres user (default: postgres)
-  -c, --container NAME   Use Docker container (implies --mode docker)
+  -c, --container NAME   Use Docker container (forces docker mode)
+                         Find names with: docker ps --format '{{.Names}}'
   -m, --mode MODE        Connection mode: auto, direct, docker (default: auto)
 
 Commands:
@@ -286,12 +296,13 @@ Commands:
   restore <name> <file>     Restore database from snapshot
 
 Examples:
-  db-worktree list
-  db-worktree -p 5433 list
-  db-worktree -c platform-db clone platform platform_wt1
-  db-worktree clone vector vector_wt1
-  db-worktree snapshot platform before-migration
-  db-worktree restore platform before-migration
+  db-worktree list                                     # auto-detect connection
+  db-worktree -c platform-db list                      # use main db container
+  db-worktree -c platform-vector-db list               # use vector db container
+  db-worktree -p 5433 -m direct list                   # direct connection to port
+  db-worktree clone platform platform_wt1              # clone database
+  db-worktree snapshot platform before-migration       # create snapshot
+  db-worktree restore platform before-migration        # restore from snapshot
 EOF
 }
 
