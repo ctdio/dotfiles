@@ -264,6 +264,8 @@ echo -e "agent:      ${AGENT}"
 echo -e "iterations: ${MAX_ITERATIONS}"
 echo -e "promise:    ${COMPLETION_PROMISE}"
 echo ""
+echo -e "prompt:     ${PROMPT}"
+echo ""
 
 # Start total timer
 TOTAL_START_TIME=$(date +%s)

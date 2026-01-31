@@ -74,3 +74,15 @@ alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
 alias rbb='ralph "Use ralph bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
 
+function ralph-plan() {
+  local plan="$1"
+  if [[ -z "$plan" ]]; then
+    echo "Usage: ralph-plan <plan-name>"
+    return 1
+  fi
+  # Convert to uppercase and replace special chars with spaces
+  local completion_promise=$(echo "$plan" | tr '[:lower:]' '[:upper:]' | sed 's/[^A-Z0-9]/ /g' | tr -s ' ' | xargs)
+  completion_promise="${completion_promise} IMPLEMENTED"
+  ralph "Load the feature implementation skill. Implement the $plan plan. Follow the spec closely. Completely implement each and every phase." -m 25 -c "$completion_promise"
+}
+
