@@ -3,35 +3,19 @@
 # Database management for git worktrees
 # Clone, create, and manage isolated databases per worktree
 #
-# Usage:
-#   db-worktree clone <source> <target>   - Clone database (schema + data)
-#   db-worktree create <name>             - Create empty database
-#   db-worktree drop <name>               - Drop a database
-#   db-worktree list                      - List all databases
-#   db-worktree snapshot <name> [file]    - Snapshot a database
-#   db-worktree restore <name> <file>     - Restore database from snapshot
+# Usage: db-worktree [options] <command> [args]
+#
+# Options: -p PORT, -H HOST, -U USER, -c CONTAINER, -m MODE
+#
+# Commands: clone, create, drop, list, snapshot, restore
 #
 # Examples:
-#   db-worktree clone platform platform_wt1
-#   db-worktree clone vector vector_wt1
-#   db-worktree create platform_feature_x
+#   db-worktree list
+#   db-worktree -p 5433 list
+#   db-worktree -c platform-db clone platform platform_wt1
 #   db-worktree snapshot platform before-migration
-#   db-worktree restore platform before-migration
-#
-# Configuration:
-#   Set these environment variables or edit the defaults below:
-#   - DB_WORKTREE_CONTAINER: Docker container name (default: platform-db)
-#   - DB_WORKTREE_USER: Postgres user (default: postgres)
-#   - DB_WORKTREE_SNAPSHOT_DIR: Where to store snapshots (default: ~/.db-snapshots)
 
 set -e
-
-#──────────────────────────────────────────────────────────────────────────────
-# Configuration (override via environment variables)
-#──────────────────────────────────────────────────────────────────────────────
-CONTAINER="${DB_WORKTREE_CONTAINER:-platform-db}"
-POSTGRES_USER="${DB_WORKTREE_USER:-postgres}"
-SNAPSHOT_DIR="${DB_WORKTREE_SNAPSHOT_DIR:-$HOME/.db-snapshots}"
 
 #──────────────────────────────────────────────────────────────────────────────
 # Colors and logging
@@ -48,18 +32,91 @@ log_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
 log_error() { echo -e "${RED}✗${NC} $1" >&2; }
 
 #──────────────────────────────────────────────────────────────────────────────
+# Configuration (defaults, then env vars, then CLI args)
+#──────────────────────────────────────────────────────────────────────────────
+CONTAINER="${DB_WORKTREE_CONTAINER:-platform-db}"
+POSTGRES_USER="${DB_WORKTREE_USER:-postgres}"
+SNAPSHOT_DIR="${DB_WORKTREE_SNAPSHOT_DIR:-$HOME/.db-snapshots}"
+MODE="${DB_WORKTREE_MODE:-auto}"
+POSTGRES_HOST="${DB_WORKTREE_HOST:-localhost}"
+POSTGRES_PORT="${DB_WORKTREE_PORT:-5432}"
+
+# Parse CLI flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -p|--port)      POSTGRES_PORT="$2"; shift 2 ;;
+        -H|--host)      POSTGRES_HOST="$2"; shift 2 ;;
+        -U|--user)      POSTGRES_USER="$2"; shift 2 ;;
+        -c|--container) CONTAINER="$2"; MODE="docker"; shift 2 ;;
+        -m|--mode)      MODE="$2"; shift 2 ;;
+        -*)             log_error "Unknown option: $1"; exit 1 ;;
+        *)              break ;;
+    esac
+done
+
+#──────────────────────────────────────────────────────────────────────────────
 # Helpers
 #──────────────────────────────────────────────────────────────────────────────
-check_container() {
-    if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
-        log_error "Container '$CONTAINER' is not running"
-        log_info "Start it with: docker-compose up -d"
-        exit 1
+check_connection() {
+    if [[ "$MODE" == "auto" ]]; then
+        # Try direct first, fall back to docker
+        if psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -c "SELECT 1" >/dev/null 2>&1; then
+            MODE="direct"
+        elif docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+            MODE="docker"
+        else
+            log_error "Cannot connect to PostgreSQL"
+            log_info "Tried: $POSTGRES_HOST:$POSTGRES_PORT (direct) and container '$CONTAINER' (docker)"
+            exit 1
+        fi
+    elif [[ "$MODE" == "docker" ]]; then
+        if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+            log_error "Container '$CONTAINER' is not running"
+            log_info "Start it with: docker-compose up -d"
+            exit 1
+        fi
+    else
+        if ! psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -c "SELECT 1" >/dev/null 2>&1; then
+            log_error "Cannot connect to PostgreSQL at $POSTGRES_HOST:$POSTGRES_PORT"
+            exit 1
+        fi
+    fi
+}
+
+run_psql() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec "$CONTAINER" psql -U "$POSTGRES_USER" "$@"
+    else
+        psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_psql_stdin() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec -i "$CONTAINER" psql -U "$POSTGRES_USER" "$@"
+    else
+        psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_pg_dump() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" "$@"
+    else
+        pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_pg_restore() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec -i "$CONTAINER" pg_restore -U "$POSTGRES_USER" "$@"
+    else
+        pg_restore -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
     fi
 }
 
 db_exists() {
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -lqt | cut -d \| -f 1 | grep -qw "$1"
+    run_psql -lqt | cut -d \| -f 1 | grep -qw "$1"
 }
 
 require_arg() {
@@ -80,7 +137,7 @@ cmd_clone() {
     require_arg "source" "$source" "clone <source> <target>"
     require_arg "target" "$target" "clone <source> <target>"
 
-    check_container
+    check_connection
 
     if [[ "$source" == "$target" ]]; then
         log_error "Source and target cannot be the same"
@@ -95,12 +152,11 @@ cmd_clone() {
     # Create target if it doesn't exist
     if ! db_exists "$target"; then
         log_info "Creating database '$target'..."
-        docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$target\";" >/dev/null
+        run_psql -c "CREATE DATABASE \"$target\";" >/dev/null
     fi
 
     log_info "Cloning '$source' -> '$target'..."
-    docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" "$source" | \
-        docker exec -i "$CONTAINER" psql -U "$POSTGRES_USER" -d "$target" -q >/dev/null 2>&1
+    run_pg_dump "$source" | run_psql_stdin -d "$target" -q >/dev/null 2>&1
 
     log_success "Cloned '$source' -> '$target'"
 }
@@ -108,21 +164,21 @@ cmd_clone() {
 cmd_create() {
     local name="$1"
     require_arg "name" "$name" "create <name>"
-    check_container
+    check_connection
 
     if db_exists "$name"; then
         log_warning "Database '$name' already exists"
         return 0
     fi
 
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$name\";" >/dev/null
+    run_psql -c "CREATE DATABASE \"$name\";" >/dev/null
     log_success "Created database '$name'"
 }
 
 cmd_drop() {
     local name="$1"
     require_arg "name" "$name" "drop <name>"
-    check_container
+    check_connection
 
     if ! db_exists "$name"; then
         log_warning "Database '$name' does not exist"
@@ -139,14 +195,18 @@ cmd_drop() {
         fi
     fi
 
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "DROP DATABASE \"$name\";" >/dev/null
+    run_psql -c "DROP DATABASE \"$name\";" >/dev/null
     log_success "Dropped database '$name'"
 }
 
 cmd_list() {
-    check_container
-    echo -e "${DIM}Databases in ${CONTAINER}:${NC}"
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "\l" | grep -v "template\|postgres" | head -20
+    check_connection
+    if [[ "$MODE" == "docker" ]]; then
+        echo -e "${DIM}Databases in ${CONTAINER}:${NC}"
+    else
+        echo -e "${DIM}Databases at ${POSTGRES_HOST}:${POSTGRES_PORT}:${NC}"
+    fi
+    run_psql -c "\l" | grep -v "template\|postgres" | head -20
 }
 
 cmd_snapshot() {
@@ -154,7 +214,7 @@ cmd_snapshot() {
     local file="${2:-$(date +%Y%m%d-%H%M%S)}"
 
     require_arg "name" "$name" "snapshot <name> [file]"
-    check_container
+    check_connection
 
     if ! db_exists "$name"; then
         log_error "Database '$name' does not exist"
@@ -165,7 +225,7 @@ cmd_snapshot() {
     local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
 
     log_info "Creating snapshot of '$name'..."
-    docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" -Fc "$name" > "$filepath"
+    run_pg_dump -Fc "$name" > "$filepath"
     log_success "Snapshot saved: $filepath"
 }
 
@@ -175,7 +235,7 @@ cmd_restore() {
 
     require_arg "name" "$name" "restore <name> <file>"
     require_arg "file" "$file" "restore <name> <file>"
-    check_container
+    check_connection
 
     # Find the snapshot file
     local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
@@ -197,9 +257,9 @@ cmd_restore() {
     log_info "Restoring '$name' from $(basename "$filepath")..."
 
     # Recreate database
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "DROP DATABASE IF EXISTS \"$name\";" >/dev/null
-    docker exec "$CONTAINER" psql -U "$POSTGRES_USER" -c "CREATE DATABASE \"$name\";" >/dev/null
-    docker exec -i "$CONTAINER" pg_restore -U "$POSTGRES_USER" -d "$name" < "$filepath" 2>/dev/null || true
+    run_psql -c "DROP DATABASE IF EXISTS \"$name\";" >/dev/null
+    run_psql -c "CREATE DATABASE \"$name\";" >/dev/null
+    run_pg_restore -d "$name" < "$filepath" 2>/dev/null || true
 
     log_success "Restored '$name' from $(basename "$filepath")"
 }
@@ -208,7 +268,14 @@ cmd_help() {
     cat <<'EOF'
 Database management for git worktrees
 
-Usage: db-worktree <command> [args]
+Usage: db-worktree [options] <command> [args]
+
+Options:
+  -p, --port PORT        Postgres port (default: 5432)
+  -H, --host HOST        Postgres host (default: localhost)
+  -U, --user USER        Postgres user (default: postgres)
+  -c, --container NAME   Use Docker container (implies --mode docker)
+  -m, --mode MODE        Connection mode: auto, direct, docker (default: auto)
 
 Commands:
   clone <source> <target>   Clone database (schema + data)
@@ -219,20 +286,12 @@ Commands:
   restore <name> <file>     Restore database from snapshot
 
 Examples:
-  db-worktree clone platform platform_wt1
+  db-worktree list
+  db-worktree -p 5433 list
+  db-worktree -c platform-db clone platform platform_wt1
   db-worktree clone vector vector_wt1
-  db-worktree create platform_experiment
-  db-worktree drop platform_wt1
   db-worktree snapshot platform before-migration
   db-worktree restore platform before-migration
-
-Environment variables:
-  DB_WORKTREE_CONTAINER    Docker container (default: platform-db)
-  DB_WORKTREE_USER         Postgres user (default: postgres)
-  DB_WORKTREE_SNAPSHOT_DIR Snapshot directory (default: ~/.db-snapshots)
-
-For vector database, use the vector container:
-  DB_WORKTREE_CONTAINER=platform-vector-db db-worktree clone vector vector_wt1
 EOF
 }
 
