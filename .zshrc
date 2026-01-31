@@ -38,3 +38,4 @@ source ${DOTFILES_DIR}/zsh/functions.zsh
 
 # 10x shell integration
 # source /Users/charlieduong/.10x/shell-integration.sh
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"

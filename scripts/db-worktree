@@ -128,6 +128,24 @@ db_exists() {
     run_psql -lqt | cut -d \| -f 1 | grep -qw "$1"
 }
 
+# Get database summary (tables, rows, size)
+db_summary() {
+    local db="$1"
+    local sql="SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'), (SELECT COALESCE(sum(n_live_tup), 0) FROM pg_stat_user_tables), pg_size_pretty(pg_database_size(current_database()))"
+    run_psql -d "$db" -t -A -F'|' -c "$sql"
+}
+
+print_db_summary() {
+    local db="$1"
+    local stats
+    stats=$(db_summary "$db")
+    local tables rows size
+    tables=$(echo "$stats" | cut -d'|' -f1)
+    rows=$(echo "$stats" | cut -d'|' -f2)
+    size=$(echo "$stats" | cut -d'|' -f3)
+    echo -e "  ${DIM}${tables} tables, ${rows} rows, ${size}${NC}"
+}
+
 require_arg() {
     if [[ -z "$2" ]]; then
         log_error "Missing argument: $1"
@@ -168,6 +186,7 @@ cmd_clone() {
     run_pg_dump "$source" | run_psql_stdin -d "$target" -q >/dev/null 2>&1
 
     log_success "Cloned '$source' -> '$target'"
+    print_db_summary "$target"
 }
 
 cmd_create() {
@@ -203,6 +222,9 @@ cmd_drop() {
             return 0
         fi
     fi
+
+    # Terminate existing connections
+    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
 
     run_psql -c "DROP DATABASE \"$name\";" >/dev/null
     log_success "Dropped database '$name'"
@@ -271,6 +293,7 @@ cmd_restore() {
     run_pg_restore -d "$name" < "$filepath" 2>/dev/null || true
 
     log_success "Restored '$name' from $(basename "$filepath")"
+    print_db_summary "$name"
 }
 
 cmd_help() {
