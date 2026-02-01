@@ -197,7 +197,7 @@ resolve_agent_cmd() {
 
   case "$AGENT" in
     claude)
-      echo "claude --add-dir ~/.ai --dangerously-skip-permissions --output-format stream-json --include-partial-messages"
+      echo "claude --add-dir ~/.ai --dangerously-skip-permissions -p --verbose --output-format stream-json --include-partial-messages"
       ;;
     codex)
       echo "codex exec --json"
