@@ -144,7 +144,7 @@ PLATFORM_APP_ENV_FILES=($(find "$SOURCE_DIR/apps/platform" -maxdepth 1 -name ".e
 CLAUDE_SETTINGS_FILE=""
 [[ -f "$SOURCE_DIR/.claude/settings.local.json" ]] && CLAUDE_SETTINGS_FILE="$SOURCE_DIR/.claude/settings.local.json"
 
-TOTAL_SOURCE_FILES=$((${#ROOT_ENV_FILES[@]} + ${#PLATFORM_APP_ENV_FILES[@]} + ${CLAUDE_SETTINGS_FILE:+1}))
+TOTAL_SOURCE_FILES=$(( ${#ROOT_ENV_FILES[@]} + ${#PLATFORM_APP_ENV_FILES[@]} + ( ${#CLAUDE_SETTINGS_FILE} > 0 ? 1 : 0 ) ))
 
 if [[ $TOTAL_SOURCE_FILES -eq 0 ]]; then
     log_warning "No files found to sync"
