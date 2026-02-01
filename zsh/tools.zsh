@@ -1,6 +1,9 @@
 # Tool initializations - ultra-fast static setup
 # No evals, no subshells, just direct environment setup
 
+# fzf from git (if present, use it over system fzf)
+[[ -d ~/.fzf/bin ]] && export PATH="$HOME/.fzf/bin:$PATH"
+
 # Homebrew - inline the env vars (no eval)
 export HOMEBREW_PREFIX="/opt/homebrew"
 export HOMEBREW_CELLAR="/opt/homebrew/Cellar"

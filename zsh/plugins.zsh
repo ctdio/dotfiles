@@ -73,7 +73,16 @@ _fzf_loaded=0
 _load_fzf() {
   (( _fzf_loaded )) && return
   _fzf_loaded=1
-  [[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
+
+  if [[ -f ~/.fzf.zsh ]]; then
+    # macOS / Homebrew / manual install
+    source ~/.fzf.zsh
+  else
+    # Debian/Ubuntu package locations
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+  fi
+
   [[ -f ~/.fzf-git.sh/fzf-git.sh ]] && source ~/.fzf-git.sh/fzf-git.sh
 }
 

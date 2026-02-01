@@ -18,7 +18,7 @@ export PATH=${PATH}:${ANDROID_HOME}/tools
 export PATH=${PATH}:${ANDROID_HOME}/tools/bin
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
-export PATH=${PATH}:${HOME}/.fzf/bin
+export PATH=${HOME}/.fzf/bin:${PATH}
 export PATH=${PATH}:${HOME}/.turso
 
 
