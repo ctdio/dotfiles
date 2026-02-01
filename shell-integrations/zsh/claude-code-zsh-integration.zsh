@@ -274,7 +274,7 @@ CRITICAL INSTRUCTIONS:
 
       # Show streaming output and capture to temp file
       print "\nGenerating command...\n"
-      ${CLAUDE_AGENT_CMD} ${=CLAUDE_AGENT_BASE_ARGS} ${=CLAUDE_AGENT_CMD_ARGS} --output-format stream-json --include-partial-messages ${(qq)augmented_prompt} 2>/dev/null | ${CLAUDE_AGENT_STREAM_PARSER} | tee "$temp_output"
+      ${CLAUDE_AGENT_CMD} ${=CLAUDE_AGENT_BASE_ARGS} ${=CLAUDE_AGENT_CMD_ARGS} --verbose --output-format stream-json --include-partial-messages ${(qq)augmented_prompt} 2>/dev/null | ${CLAUDE_AGENT_STREAM_PARSER} | tee "$temp_output"
 
       # Use the last non-empty line as the command
       # Filter out lines that are just whitespace or ANSI escape codes
@@ -328,7 +328,7 @@ ${agent_command}"
       # Build the full command line
       local full_cmd_line
       if [[ $use_stream_parser -eq 1 ]]; then
-        full_cmd_line="${full_cmd} --output-format stream-json --include-partial-messages ${(qq)agent_command} | ${CLAUDE_AGENT_STREAM_PARSER}"
+        full_cmd_line="${full_cmd} --verbose --output-format stream-json --include-partial-messages ${(qq)agent_command} | ${CLAUDE_AGENT_STREAM_PARSER}"
       else
         full_cmd_line="${full_cmd} ${(qq)agent_command}"
       fi
