@@ -1,0 +1,40 @@
+---
+description: PostgreSQL / psql defaults for local development
+alwaysApply: true
+---
+
+## PostgreSQL / psql Defaults
+
+**Connection template:**
+```bash
+PGPASSWORD=postgres psql -h localhost -U postgres -d <database> -c "<query>"
+```
+
+**Fixed defaults (don't prompt for these):**
+- Host: `localhost`
+- User: `postgres`
+- Password: `postgres`
+
+**Cache:** `~/.ai/cache/<project-name>/postgres.json`
+```json
+{"database": "my_db", "discovered_at": "2024-01-15"}
+```
+
+**Database discovery (check cache first, then in order):**
+1. Check cache file for this project (use directory/worktree name as project key)
+2. Check `docker-compose.yml` or `docker-compose.yaml` for `POSTGRES_DB` env var
+3. Check `.env` or `.env.local` for `DATABASE_URL` or `POSTGRES_DB`
+4. Try matching current directory/project/worktree name to a database (run `\l` to list, look for matches like `my-project` → `my_project`, `myproject`, etc.)
+5. If discovery fails, run `\l` to list databases and ask the user which one
+
+**Behavior:**
+- Check cache first - if valid, use it without prompting
+- After successful discovery, write to cache for next session
+- Never prompt the user for connection details - discover or use defaults
+
+**Useful flags:**
+- `-x` expanded output (one column per line) - good for wide tables
+- `-t` tuples only (no headers/footers) - good for scripting
+- `-A` unaligned output - good for piping to other tools
+
+**Skill:** Use `/local-postgres` for interactive exploration (list tables, describe schema, sample data).
