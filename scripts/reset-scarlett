@@ -1,0 +1,28 @@
+#!/bin/bash
+# Reset Focusrite Scarlett Solo USB when audio stops working
+
+VENDOR_ID="1235"
+PRODUCT_ID="8211"
+
+# Find the device path by vendor/product ID
+for dev in /sys/bus/usb/devices/*/; do
+    if [[ -f "$dev/idVendor" && -f "$dev/idProduct" ]]; then
+        vid=$(cat "$dev/idVendor" 2>/dev/null)
+        pid=$(cat "$dev/idProduct" 2>/dev/null)
+        if [[ "$vid" == "$VENDOR_ID" && "$pid" == "$PRODUCT_ID" ]]; then
+            USB_DEVICE=$(basename "$dev")
+            break
+        fi
+    fi
+done
+
+if [[ -z "$USB_DEVICE" ]]; then
+    echo "Scarlett Solo not found"
+    exit 1
+fi
+
+echo "Resetting Scarlett Solo USB at $USB_DEVICE..."
+echo "$USB_DEVICE" | sudo tee /sys/bus/usb/drivers/usb/unbind > /dev/null
+sleep 2
+echo "$USB_DEVICE" | sudo tee /sys/bus/usb/drivers/usb/bind > /dev/null
+echo "Done"
