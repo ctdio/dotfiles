@@ -1,35 +1,32 @@
 ---
 name: agent-triage-logs
 description: |
-  Automated log triage using Datadog CLI. Scans for errors, tracks patterns over time,
-  and alerts on suspicious activity. Run periodically via cron or on-demand.
-  Trigger phrases: "triage logs", "check for errors", "scan datadog", "error report".
+  Automated log triage using Datadog and Sentry CLIs. Scans for errors, identifies NEW issues
+  worth investigating, and alerts on suspicious activity. Run periodically via cron or on-demand.
+  Trigger phrases: "triage logs", "check for errors", "scan datadog", "error report", "new issues".
 ---
 
 # Agent Triage Logs
 
-Automated error scanning and reporting using Datadog CLI.
+Automated error scanning and reporting using Datadog CLI and Sentry CLI.
 
 ## Quick Start
 
 ```bash
-# Run a triage scan now
-npx @ctdio/datadog-cli errors --from 1h
-npx @ctdio/datadog-cli spans errors --from 1h
+# Datadog: error summary
+npx @ctdio/datadog-cli errors --from 6h
+
+# Sentry: list unresolved issues (most recent first)
+sentry-cli issues list -o opine -p platform --status unresolved
 ```
 
 ## Workflow
 
-### 1. Scan for Errors
-
-Run these commands to get the current error landscape:
+### 1. Scan Datadog for Log Errors
 
 ```bash
 # Log errors summary
 npx @ctdio/datadog-cli errors --from 6h
-
-# APM/span errors
-npx @ctdio/datadog-cli spans errors --from 6h
 
 # Compare to previous period (is this new?)
 npx @ctdio/datadog-cli logs compare --query "status:error" --period 6h
@@ -38,25 +35,43 @@ npx @ctdio/datadog-cli logs compare --query "status:error" --period 6h
 npx @ctdio/datadog-cli logs patterns --query "status:error" --from 6h --limit 500
 ```
 
-### 2. Assess Severity
+### 2. Scan Sentry for New Issues
 
-Flag as **ALERT** if any of these are true:
-- Error count increased >50% vs previous period
-- New error pattern not seen in previous reports
-- Any 5xx errors on critical services (api, auth, payments)
-- Error rate >10 errors/minute sustained
+```bash
+# List unresolved issues
+sentry-cli issues list -o opine -p platform --status unresolved
+```
 
-Flag as **WARNING** if:
-- Error count increased 20-50%
-- Recurring pattern from previous reports still present
-- Degraded response times (>2s p95)
+**Focus on issues that are:**
+- **Recently first seen** (within last 24-48h) — these are NEW bugs
+- **High frequency** in a short time — something broke
+- **Affecting critical paths** (api, auth, payments, core features)
 
-Flag as **OK** if:
-- Error count stable or decreased
-- No new patterns
-- All services healthy
+**Ignore/deprioritize:**
+- Old recurring issues (first seen weeks/months ago)
+- Expected integration errors (token refresh, rate limits, disconnected users)
+- Third-party API issues outside our control
 
-### 3. Write Report
+### 3. Identify Issues Worth Investigating
+
+Flag as **🚨 INVESTIGATE** if:
+- New issue (first seen < 48h ago) with high event count
+- Error in critical service (api, auth, core features)
+- User-facing 5xx errors
+- Database errors (Prisma) that aren't transient
+- New error pattern not seen before
+
+Flag as **⚠️ MONITOR** if:
+- Known issue with increasing frequency
+- Rate limit errors trending up
+- Integration issues affecting multiple customers
+
+Flag as **✅ KNOWN/OK** if:
+- Expected integration noise (token refresh for churned customers)
+- Rate limits from external APIs (Zoom, Salesforce)
+- Old recurring issues that are being tracked
+
+### 4. Write Report
 
 Reports go to: `~/.triage-reports/`
 
@@ -67,95 +82,75 @@ Reports go to: `~/.triage-reports/`
 ```markdown
 # Triage Report - {timestamp}
 
-## Status: {ALERT|WARNING|OK}
+## Overall Status: {🚨 ALERT | ⚠️ WARNING | ✅ OK}
 
-## Summary
+## 🆕 New Issues Worth Investigating
+Issues first seen in last 48h that need attention:
+
+| Issue | Title | First Seen | Events | Priority |
+|-------|-------|------------|--------|----------|
+| PLATFORM-XXX | {title} | {date} | {count} | 🚨/⚠️ |
+
+### Details
+For each new issue worth investigating:
+- **What:** {error description}
+- **Where:** {service/endpoint}
+- **Impact:** {user-facing? data loss? degraded experience?}
+- **Suggested action:** {investigate, fix, monitor}
+
+## 📊 Datadog Summary
 - Total errors (6h): {count}
 - Change vs previous: {+/-}%
-- Services affected: {list}
+- Top services affected: {list}
 
-## Top Error Patterns
-1. {pattern} - {count} occurrences
-2. {pattern} - {count} occurrences
-...
-
-## Service Breakdown
-| Service | Errors | Status |
-|---------|--------|--------|
-| {name}  | {count}| {ok/warn/error} |
-
-## New Issues (not in previous report)
-- {description}
-
-## Recurring Issues
-- {description} (first seen: {date})
+## 🔇 Known Issues (no action needed)
+- {count} recurring integration errors (token refresh, rate limits)
+- {count} expected third-party API errors
 
 ## Recommendations
-- {action item}
-
-## Raw Data
-<details>
-<summary>Full error output</summary>
-
-{paste raw CLI output here}
-
-</details>
+1. {action item for new issues}
+2. {any patterns to watch}
 ```
 
-### 4. Alert if Needed
+### 5. Alert if Needed
 
-If status is **ALERT**:
-- The agent should immediately notify via the messaging system
-- Include: status, top 3 issues, recommended actions
+**Immediately notify Charlie if:**
+- New critical bug in core service
+- Spike in user-facing errors
+- Database issues that could affect data integrity
 
-If status is **WARNING**:
-- Note in report, no immediate notification needed
-
-### 5. Track Over Time
-
-Before writing a new report, read the previous report to:
-- Identify recurring vs new issues
-- Track if error counts are trending up/down
-- Note any patterns that resolved
-
-## Directory Structure
-
-```
-~/.triage-reports/
-├── 2026-02-01-0600.md
-├── 2026-02-01-1200.md
-├── 2026-02-01-1800.md
-├── ...
-└── summary.json  # Optional: machine-readable summary for trending
-```
-
-## Environment Requirements
-
-Ensure these are set:
-```bash
-export DD_API_KEY="..."
-export DD_APP_KEY="..."
-```
-
-## Example Cron Task Prompt
-
-When triggered by cron, the agent should:
-
-1. Read this skill file
-2. Run the Datadog CLI commands
-3. Compare to previous report (if exists)
-4. Write new report to ~/.triage-reports/
-5. If ALERT status, send notification to Charlie
-6. Commit the report to dotfiles (optional)
+**Don't alert for:**
+- Expected integration noise
+- Old recurring issues
+- Rate limits from external APIs
 
 ## Services to Monitor
 
-Primary (always check):
-- api
-- auth
-- web
+**Critical (always flag new issues):**
+- opine-platform-app (main API)
+- opine-platform-inngest (background jobs)
 
-Secondary (check if errors found):
-- workers
-- scheduler
-- webhooks
+**Known Noise Sources (usually ignorable):**
+- Salesforce token refresh (churned customers)
+- Zoom rate limits
+- Missing credentials for disconnected integrations
+
+## Environment Requirements
+
+```bash
+# Datadog
+export DD_API_KEY="..."
+export DD_APP_KEY="..."
+
+# Sentry (configured via sentry-cli login or SENTRY_AUTH_TOKEN)
+```
+
+## Example Triage Questions
+
+When reviewing issues, ask:
+1. **Is this new?** Check "first seen" date
+2. **Is it user-facing?** Does it cause 5xx or broken features?
+3. **Is it actionable?** Can we fix it, or is it external?
+4. **Is it trending?** Getting worse or stable?
+
+Focus your report on **actionable new issues**, not noise.
