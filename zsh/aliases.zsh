@@ -74,10 +74,10 @@ alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
 alias rbb='ralph "Use ralph bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
 
-function ralph-plan() {
+function ralph-implement-plan() {
   local plan="$1"
   if [[ -z "$plan" ]]; then
-    echo "Usage: ralph-plan <plan-name>"
+    echo "Usage: ralph-implement-plan <plan-name>"
     return 1
   fi
   # Convert to uppercase and replace special chars with spaces
