@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# Prepare current worktree workspace for development
+# Automates: reset databases, npm install, nx prepare
+
+set -eo pipefail
+
+# Colors
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+DIM=$'\033[2m'
+BOLD=$'\033[1m'
+NC=$'\033[0m'
+
+log_info() { echo -e "${DIM}$1${NC}"; }
+log_success() { echo -e "${GREEN}✓${NC} $1"; }
+log_error() { echo -e "${RED}✗${NC} $1" >&2; }
+log_step() { echo -e "\n${BOLD}$1${NC}"; }
+
+usage() {
+    cat <<'EOF'
+Prepare current worktree workspace for development
+
+Usage: workspace-prep [options]
+
+Options:
+  --skip-db        Skip database reset
+  --skip-install   Skip npm install
+  --skip-prepare   Skip nx prepare
+  -h, --help       Show this help
+
+Examples:
+  workspace-prep                # full preparation
+  workspace-prep --skip-install # skip npm install
+  workspace-prep --skip-db      # skip database reset
+EOF
+}
+
+# Detect worktree letter from current directory
+detect_worktree_letter() {
+    local dir="$1"
+    local name=$(basename "$dir")
+
+    if [[ "$name" =~ ^platform-wt([a-z])$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return 0
+    fi
+
+    return 1
+}
+
+# Parse arguments
+SKIP_INSTALL=false
+SKIP_DB=false
+SKIP_PREPARE=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --skip-install) SKIP_INSTALL=true; shift ;;
+        --skip-db)      SKIP_DB=true; shift ;;
+        --skip-prepare) SKIP_PREPARE=true; shift ;;
+        -h|--help)      usage; exit 0 ;;
+        -*)             log_error "Unknown option: $1"; usage; exit 1 ;;
+        *)              log_error "Unexpected argument: $1"; exit 1 ;;
+    esac
+done
+
+# Detect worktree from current directory
+WORKTREE_LETTER=$(detect_worktree_letter "$PWD") || {
+    log_error "Not in a platform worktree directory"
+    log_info "Expected directory pattern: platform-wt[a-z]"
+    exit 1
+}
+
+PLATFORM_DB="platform_wt$WORKTREE_LETTER"
+VECTOR_DB="vector_wt$WORKTREE_LETTER"
+
+echo -e "${BOLD}Preparing workspace: platform-wt$WORKTREE_LETTER${NC}"
+echo -e "${DIM}Databases: $PLATFORM_DB, $VECTOR_DB${NC}"
+echo ""
+
+# Step 1: Reset databases
+if ! $SKIP_DB; then
+    log_step "1. Resetting databases..."
+
+    log_info "Dropping $PLATFORM_DB..."
+    db-branch -c platform-db drop "$PLATFORM_DB" 2>/dev/null || true
+
+    log_info "Dropping $VECTOR_DB..."
+    db-branch -c platform-vector-db drop "$VECTOR_DB" 2>/dev/null || true
+
+    log_info "Cloning platform -> $PLATFORM_DB..."
+    db-branch -c platform-db clone platform "$PLATFORM_DB"
+
+    log_info "Cloning vector -> $VECTOR_DB..."
+    db-branch -c platform-vector-db clone vector "$VECTOR_DB"
+else
+    log_step "1. Skipping database reset"
+fi
+
+# Step 2: Install dependencies
+if ! $SKIP_INSTALL; then
+    log_step "2. Installing dependencies..."
+    npm install
+    log_success "Dependencies installed"
+else
+    log_step "2. Skipping npm install"
+fi
+
+# Step 3: Prepare platform
+if ! $SKIP_PREPARE; then
+    log_step "3. Running nx prepare..."
+    npx nx run platform:prepare
+    log_success "Platform prepared"
+else
+    log_step "3. Skipping nx prepare"
+fi
+
+echo ""
+log_success "Workspace ready"
