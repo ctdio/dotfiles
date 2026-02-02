@@ -72,7 +72,7 @@ alias cc-no-chill='claude --add-dir ~/.ai --dangerously-skip-permissions'
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
-alias rbb='ralph "Use ralph bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
+alias rbb='ralph "Use ctdio-ralph-bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
 
 function ralph-implement-plan() {
   local plan="$1"

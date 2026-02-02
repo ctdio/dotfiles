@@ -1,5 +1,5 @@
 ---
-name: ralph-bugbot
+name: ctdio-ralph-bugbot
 description: Loop-aware skill for iteratively addressing bugbot feedback and CI failures on PRs. Fetches unresolved bugbot comments, triages them, fixes valid bugs, resolves false positives, checks CI status, fixes lint/format/test failures, and commits changes. Designed to be used with ralph-loop.
 color: orange
 ---
@@ -192,7 +192,7 @@ Run the `check-ci-status.sh` script in this skill's directory.
 **Evaluate the result:**
 
 - **Exit code 0 (SUCCESS):** All checks passing → Continue to Step 8
-- **Exit code 2 (PENDING):** Checks still running → Wait 30s and re-run `check-ci-status.sh`
+- **Exit code 2 (PENDING):** Checks still running → **YOU MUST WAIT.** Wait 30s and re-run `check-ci-status.sh`. Keep looping until you get exit code 0 or 1. **NEVER conclude the task is complete while checks are pending.** Do not assume pending checks are "stale" or ignorable.
 - **Exit code 1 (FAILURE):** Failing checks found → Fix them (see below)
 
 #### Fixing CI Failures
@@ -278,7 +278,8 @@ After pushing and waiting for checks:
 - Next iteration will re-fetch comments (bugbot has finished re-analyzing)
 - Task is complete when:
   - Step 2 finds zero unresolved bugbot comments, AND
-  - Step 7 shows all CI checks passing
+  - Step 7 shows all CI checks passing (exit code 0)
+- **Task is NOT complete if any checks are pending (exit code 2).** You must wait for all checks to reach a terminal state (SUCCESS, FAILURE, etc.) before concluding.
 
 ## Rules
 
@@ -294,6 +295,7 @@ After pushing and waiting for checks:
 10. **Fix CI failures** - After addressing bugbot, check and fix lint/format/test failures
 11. **Run locally first** - For CI failures, run the failing check locally before pushing fixes
 12. **Never rebase, push, or pull** - Only use `git add`, `git commit`, and `gt submit --update-only`. Graphite handles branch management.
+13. **Never conclude with pending checks** - If any CI check is pending/running, you MUST wait for it to complete. Do not assume pending checks are stale or ignorable. Keep polling until all checks reach a terminal state.
 
 ## Usage
 
