@@ -205,10 +205,10 @@ function sync_agents_transformed() {
       # Transform frontmatter using yq:
       # 1. Remove 'color' field (Claude-specific)
       # 2. Remove 'model' field (Claude-specific, e.g. "opus")
-      # 3. Convert tools array to record format {Tool: true, ...}
+      # 3. Convert tools array to record format {Tool: true, ...}, or strip if null/missing
       # 4. Add mode: subagent (OpenCode-specific)
       yq --front-matter=process \
-        'del(.color) | del(.model) | .tools = (.tools | to_entries | map({"key": .value, "value": true}) | from_entries) | .mode = "subagent"' \
+        'del(.color) | del(.model) | .tools |= (. // {} | to_entries | map({"key": .value, "value": true}) | from_entries | select(length > 0) // null) | del(.tools | select(. == null)) | .mode = "subagent"' \
         "$agent_file" > "$target"
 
       echo "    Transformed: ${agent_name}"
