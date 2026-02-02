@@ -7,14 +7,14 @@
 #   docker  - Run commands inside container via docker exec (use -c)
 #   direct  - Connect via psql from host (use -p/-H with -m direct)
 #
-# Usage: db-worktree [options] <command> [args]
+# Usage: db-branch [options] <command> [args]
 #
 # Examples:
-#   db-worktree -c platform-db list                  # main postgres container
-#   db-worktree -c platform-vector-db list           # vector db container
-#   db-worktree -c platform-db clone mydb mydb_wt1   # clone for worktree
+#   db-branch -c platform-db list                  # main postgres container
+#   db-branch -c platform-vector-db list           # vector db container
+#   db-branch -c platform-db clone mydb mydb_wt1   # clone for worktree
 
-set -e
+set -eo pipefail
 
 #──────────────────────────────────────────────────────────────────────────────
 # Colors and logging
@@ -132,7 +132,12 @@ run_pg_restore() {
 }
 
 db_exists() {
-    run_psql -lqt | cut -d \| -f 1 | grep -qw "$1"
+    run_psql -lqt | cut -d \| -f 1 | grep -qFw "$1"
+}
+
+# Escape single quotes for SQL string literals (replace ' with '')
+sql_escape() {
+    echo "${1//\'/\'\'}"
 }
 
 # Get database summary (tables, rows, size)
@@ -156,7 +161,7 @@ print_db_summary() {
 require_arg() {
     if [[ -z "$2" ]]; then
         log_error "Missing argument: $1"
-        echo "Usage: db-worktree $3"
+        echo "Usage: db-branch $3"
         exit 1
     fi
 }
@@ -183,11 +188,24 @@ cmd_clone() {
         exit 1
     fi
 
-    # Create target if it doesn't exist
-    if ! db_exists "$target"; then
-        log_info "Creating database '$target'..."
-        run_psql -c "CREATE DATABASE \"$target\";" >/dev/null
+    # Drop and recreate target database to ensure clean state
+    if db_exists "$target"; then
+        # Safety check for common main databases
+        if [[ "$target" == "platform" || "$target" == "vector" || "$target" == "postgres" ]]; then
+            echo -n "Clone will overwrite main database '$target'. Continue? [y/N] "
+            read -r confirm
+            if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+                log_info "Cancelled"
+                return 0
+            fi
+        fi
+        local escaped_target
+        escaped_target=$(sql_escape "$target")
+        run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_target' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+        run_psql -c "DROP DATABASE \"$target\";" >/dev/null
     fi
+
+    run_psql -c "CREATE DATABASE \"$target\";" >/dev/null
 
     log_info "Cloning '$source' -> '$target'..."
     run_pg_dump "$source" | run_psql_stdin -d "$target" -q >/dev/null 2>&1
@@ -231,7 +249,9 @@ cmd_drop() {
     fi
 
     # Terminate existing connections
-    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+    local escaped_name
+    escaped_name=$(sql_escape "$name")
+    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
 
     run_psql -c "DROP DATABASE \"$name\";" >/dev/null
     log_success "Dropped database '$name'"
@@ -244,7 +264,7 @@ cmd_list() {
     else
         echo -e "${DIM}Databases at ${POSTGRES_HOST}:${POSTGRES_PORT}:${NC}"
     fi
-    run_psql -c "\l" | grep -v "template\|postgres" | head -20
+    run_psql -c "\l" | grep -Ev "^\s*(template[0-9]|postgres)\s*\|" | head -20
 }
 
 cmd_snapshot() {
@@ -294,10 +314,38 @@ cmd_restore() {
 
     log_info "Restoring '$name' from $(basename "$filepath")..."
 
+    # Safety check for common main databases
+    if [[ "$name" == "platform" || "$name" == "vector" || "$name" == "postgres" ]]; then
+        echo -n "Restore will overwrite main database '$name'. Continue? [y/N] "
+        read -r confirm
+        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+            log_info "Cancelled"
+            return 0
+        fi
+    fi
+
+    # Terminate existing connections before dropping
+    local escaped_name
+    escaped_name=$(sql_escape "$name")
+    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+
     # Recreate database
     run_psql -c "DROP DATABASE IF EXISTS \"$name\";" >/dev/null
     run_psql -c "CREATE DATABASE \"$name\";" >/dev/null
-    run_pg_restore -d "$name" < "$filepath" 2>/dev/null || true
+
+    # Restore and check for errors (pg_restore returns warnings as non-zero, so we capture output)
+    local restore_output
+    if ! restore_output=$(run_pg_restore -d "$name" < "$filepath" 2>&1); then
+        # Check if it's a real error or just warnings (pg_restore exits non-zero on warnings)
+        # Exclude "role does not exist" which is a common and harmless warning
+        local fatal_errors
+        fatal_errors=$(echo "$restore_output" | grep -E "(FATAL|ERROR:.*could not|ERROR:.*invalid)" | grep -v "role.*does not exist" || true)
+        if [[ -n "$fatal_errors" ]]; then
+            log_error "Restore failed: $(echo "$fatal_errors" | head -1)"
+            exit 1
+        fi
+        # Warnings are expected (e.g., "role does not exist"), continue
+    fi
 
     log_success "Restored '$name' from $(basename "$filepath")"
     print_db_summary "$name"
@@ -307,7 +355,7 @@ cmd_help() {
     cat <<'EOF'
 Database management for git worktrees
 
-Usage: db-worktree [options] <command> [args]
+Usage: db-branch [options] <command> [args]
 
 Options:
   -p, --port PORT        Postgres port for direct mode (default: 5432)
@@ -326,13 +374,13 @@ Commands:
   restore <name> <file>     Restore database from snapshot
 
 Examples:
-  db-worktree list                                     # auto-detect connection
-  db-worktree -c platform-db list                      # use main db container
-  db-worktree -c platform-vector-db list               # use vector db container
-  db-worktree -p 5433 -m direct list                   # direct connection to port
-  db-worktree clone platform platform_wt1              # clone database
-  db-worktree snapshot platform before-migration       # create snapshot
-  db-worktree restore platform before-migration        # restore from snapshot
+  db-branch list                                     # auto-detect connection
+  db-branch -c platform-db list                      # use main db container
+  db-branch -c platform-vector-db list               # use vector db container
+  db-branch -p 5433 -m direct list                   # direct connection to port
+  db-branch clone platform platform_wt1              # clone database
+  db-branch snapshot platform before-migration       # create snapshot
+  db-branch restore platform before-migration        # restore from snapshot
 EOF
 }
 
