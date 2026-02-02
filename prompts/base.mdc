@@ -211,8 +211,9 @@ Worktree directories follow these naming patterns:
 If your current directory matches these patterns, you're likely in a worktree with an isolated database.
 
 **Database Cloning (for worktrees):**
-- Use `db-worktree clone <source> <target>` to clone databases for isolated testing
-- Use `db-worktree list` to see available databases
+- Use `db-branch clone <source> <target>` to clone databases for isolated testing
+- Use `db-branch -c platform-vector-db clone <source> <target>` for vector database
+- Use `db-branch list` to see available databases
 - Worktree databases are isolated and safe to modify
 
 **Still FORBIDDEN everywhere:**

@@ -29,8 +29,8 @@ Select a worktree **without uncommitted changes** (no `*` marker). Common clean 
 Drop existing databases for the selected worktree (replace `wta` with your chosen letter):
 
 ```bash
-db-worktree drop platform_wta
-db-worktree drop -p 5434 vector_wta
+db-branch drop platform_wta
+db-branch -c platform-vector-db drop vector_wta
 ```
 
 ### 3. Clone Fresh Databases
@@ -38,8 +38,8 @@ db-worktree drop -p 5434 vector_wta
 Create fresh database instances from the main project:
 
 ```bash
-db-worktree clone platform platform_wta
-db-worktree clone -p 5434 vector vector_wta
+db-branch clone platform platform_wta
+db-branch -c platform-vector-db clone vector vector_wta
 ```
 
 ### 4. Install Dependencies
@@ -69,12 +69,12 @@ wt-status
 cd ~/projects/private/opine/platform-wtb
 
 # Drop old databases
-db-worktree drop platform_wtb
-db-worktree drop -p 5434 vector_wtb
+db-branch drop platform_wtb
+db-branch -c platform-vector-db drop vector_wtb
 
 # Clone fresh databases
-db-worktree clone platform platform_wtb
-db-worktree clone -p 5434 vector vector_wtb
+db-branch clone platform platform_wtb
+db-branch -c platform-vector-db clone vector vector_wtb
 
 # Install and prepare
 npm install
@@ -93,5 +93,5 @@ exec pty:true workdir:~/projects/private/opine/platform-wtb background:true comm
 
 - **Worktree naming**: Follows pattern `platform-wt[letter]` (wta, wtb, wtc, etc.)
 - **Database naming**: Matches worktree letter (platform_wtb, vector_wtb)
-- **Vector database**: Uses port 5434 (flag: `-p 5434`)
-- **Platform database**: Uses default port (no flag needed)
+- **Vector database**: Uses container `platform-vector-db` (flag: `-c platform-vector-db`)
+- **Platform database**: Uses default container `platform-db` (no flag needed)

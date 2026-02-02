@@ -79,7 +79,7 @@ Mocked tests often:
 
 ### Prefer Real Database Tests
 
-Since worktrees have isolated cloned databases via `db-worktree`:
+Since worktrees have isolated cloned databases via `db-branch`:
 1. **Write integration tests that hit the real database**
 2. Use `prisma db push` to apply schema changes to your worktree DB
 3. Run tests against actual database operations
