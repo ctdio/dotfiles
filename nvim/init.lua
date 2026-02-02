@@ -36,8 +36,7 @@ vim.opt.rtp:prepend(lazypath)
 -- use project-local prettier
 vim.g.neoformat_try_node_exe = 1
 vim.g.neoformat_enabled_sql = {}
--- copy selected text to clipboard
-vim.g.vim_pbcopy_local_cmd = "pbcopy"
+-- clipboard config moved to plugins/util.lua (vim-pbcopy)
 vim.g.camelsnek_alternative_camel_commands = 1
 vim.g.db_ui_use_nvim_notify = 1
 vim.g.jupytext_fmt = "py"

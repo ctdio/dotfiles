@@ -267,10 +267,4 @@ return {
     "goerz/jupytext.vim",
     ft = { "python", "ipynb" },
   },
-
-  -- Clipboard
-  {
-    "ahw/vim-pbcopy",
-    event = "VeryLazy",
-  },
 }
