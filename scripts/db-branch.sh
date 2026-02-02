@@ -1,0 +1,415 @@
+#!/bin/bash
+
+# Database management for git worktrees
+# Clone, create, and manage isolated databases per worktree
+#
+# Supports two connection modes:
+#   docker  - Run commands inside container via docker exec (use -c)
+#   direct  - Connect via psql from host (use -p/-H with -m direct)
+#
+# Usage: db-branch [options] <command> [args]
+#
+# Examples:
+#   db-branch -c platform-db list                  # main postgres container
+#   db-branch -c platform-vector-db list           # vector db container
+#   db-branch -c platform-db clone mydb mydb_wt1   # clone for worktree
+
+set -eo pipefail
+
+#──────────────────────────────────────────────────────────────────────────────
+# Colors and logging
+#──────────────────────────────────────────────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+DIM='\033[2m'
+NC='\033[0m'
+
+log_info() { echo -e "${DIM}$1${NC}"; }
+log_success() { echo -e "${GREEN}✓${NC} $1"; }
+log_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
+log_error() { echo -e "${RED}✗${NC} $1" >&2; }
+
+#──────────────────────────────────────────────────────────────────────────────
+# Configuration (defaults, then env vars, then CLI args)
+#──────────────────────────────────────────────────────────────────────────────
+CONTAINER="${DB_WORKTREE_CONTAINER:-platform-db}"
+POSTGRES_USER="${DB_WORKTREE_USER:-postgres}"
+POSTGRES_PASSWORD="${PGPASSWORD:-${DB_WORKTREE_PASSWORD:-postgres}}"
+SNAPSHOT_DIR="${DB_WORKTREE_SNAPSHOT_DIR:-$HOME/.db-snapshots}"
+MODE="${DB_WORKTREE_MODE:-auto}"
+POSTGRES_HOST="${DB_WORKTREE_HOST:-localhost}"
+POSTGRES_PORT="${DB_WORKTREE_PORT:-5432}"
+
+export PGPASSWORD="$POSTGRES_PASSWORD"
+
+# Parse CLI flags and collect positional args
+POSITIONAL=()
+EXPLICIT_CONTAINER=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -p|--port)      POSTGRES_PORT="$2"; shift 2 ;;
+        -H|--host)      POSTGRES_HOST="$2"; shift 2 ;;
+        -U|--user)      POSTGRES_USER="$2"; shift 2 ;;
+        -c|--container) CONTAINER="$2"; EXPLICIT_CONTAINER=1; shift 2 ;;
+        -m|--mode)      MODE="$2"; shift 2 ;;
+        -h|--help)      POSITIONAL+=("help"); shift ;;
+        -*)             log_error "Unknown option: $1"; exit 1 ;;
+        *)              POSITIONAL+=("$1"); shift ;;
+    esac
+done
+set -- "${POSITIONAL[@]}"
+
+# Container flag forces docker mode
+[[ -n "$EXPLICIT_CONTAINER" ]] && MODE="docker"
+
+#──────────────────────────────────────────────────────────────────────────────
+# Helpers
+#──────────────────────────────────────────────────────────────────────────────
+check_connection() {
+    if [[ "$MODE" == "auto" ]]; then
+        # Try direct first, fall back to docker
+        if psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+            MODE="direct"
+        elif docker ps --format '{{.Names}}' | grep -qFx "$CONTAINER"; then
+            MODE="docker"
+        else
+            log_error "Cannot connect to PostgreSQL"
+            log_info "Tried: $POSTGRES_HOST:$POSTGRES_PORT (direct) and container '$CONTAINER' (docker)"
+            exit 1
+        fi
+    elif [[ "$MODE" == "docker" ]]; then
+        if ! docker ps --format '{{.Names}}' | grep -qFx "$CONTAINER"; then
+            log_error "Container '$CONTAINER' is not running"
+            log_info "Find running containers: docker ps --format '{{.Names}}'"
+            exit 1
+        fi
+    else
+        if ! psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+            log_error "Cannot connect to PostgreSQL at $POSTGRES_HOST:$POSTGRES_PORT"
+            exit 1
+        fi
+    fi
+
+    # Show connection info
+    if [[ "$MODE" == "docker" ]]; then
+        log_info "Using container: $CONTAINER"
+    else
+        log_info "Using direct: $POSTGRES_HOST:$POSTGRES_PORT"
+    fi
+}
+
+run_psql() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec "$CONTAINER" psql -U "$POSTGRES_USER" "$@"
+    else
+        psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_psql_stdin() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec -i "$CONTAINER" psql -U "$POSTGRES_USER" "$@"
+    else
+        psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_pg_dump() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec "$CONTAINER" pg_dump -U "$POSTGRES_USER" "$@"
+    else
+        pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+run_pg_restore() {
+    if [[ "$MODE" == "docker" ]]; then
+        docker exec -i "$CONTAINER" pg_restore -U "$POSTGRES_USER" "$@"
+    else
+        pg_restore -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" "$@"
+    fi
+}
+
+db_exists() {
+    run_psql -lqt | cut -d \| -f 1 | grep -qFw "$1"
+}
+
+# Escape single quotes for SQL string literals (replace ' with '')
+sql_escape() {
+    echo "${1//\'/\'\'}"
+}
+
+# Escape double quotes for SQL identifiers (replace " with "")
+sql_escape_identifier() {
+    echo "${1//\"/\"\"}"
+}
+
+# Get database summary (tables, rows, size)
+db_summary() {
+    local db="$1"
+    local sql="SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'), (SELECT COALESCE(sum(n_live_tup), 0) FROM pg_stat_user_tables), pg_size_pretty(pg_database_size(current_database()))"
+    run_psql -d "$db" -t -A -F'|' -c "$sql"
+}
+
+print_db_summary() {
+    local db="$1"
+    local stats
+    stats=$(db_summary "$db")
+    local tables rows size
+    tables=$(echo "$stats" | cut -d'|' -f1)
+    rows=$(echo "$stats" | cut -d'|' -f2)
+    size=$(echo "$stats" | cut -d'|' -f3)
+    echo -e "  ${DIM}${tables} tables, ${rows} rows, ${size}${NC}"
+}
+
+require_arg() {
+    if [[ -z "$2" ]]; then
+        log_error "Missing argument: $1"
+        echo "Usage: db-branch $3"
+        exit 1
+    fi
+}
+
+#──────────────────────────────────────────────────────────────────────────────
+# Commands
+#──────────────────────────────────────────────────────────────────────────────
+cmd_clone() {
+    local source="$1"
+    local target="$2"
+
+    require_arg "source" "$source" "clone <source> <target>"
+    require_arg "target" "$target" "clone <source> <target>"
+
+    check_connection
+
+    if [[ "$source" == "$target" ]]; then
+        log_error "Source and target cannot be the same"
+        exit 1
+    fi
+
+    if ! db_exists "$source"; then
+        log_error "Source database '$source' does not exist"
+        exit 1
+    fi
+
+    # Drop and recreate target database to ensure clean state
+    if db_exists "$target"; then
+        # Safety check for common main databases
+        if [[ "$target" == "platform" || "$target" == "vector" || "$target" == "postgres" ]]; then
+            echo -n "Clone will overwrite main database '$target'. Continue? [y/N] "
+            read -r confirm
+            if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+                log_info "Cancelled"
+                return 0
+            fi
+        fi
+        local escaped_target escaped_target_id
+        escaped_target=$(sql_escape "$target")
+        escaped_target_id=$(sql_escape_identifier "$target")
+        run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_target' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+        run_psql -c "DROP DATABASE \"$escaped_target_id\";" >/dev/null
+    fi
+
+    local escaped_target_id
+    escaped_target_id=$(sql_escape_identifier "$target")
+    run_psql -c "CREATE DATABASE \"$escaped_target_id\";" >/dev/null
+
+    log_info "Cloning '$source' -> '$target'..."
+    run_pg_dump "$source" | run_psql_stdin -d "$target" -q >/dev/null 2>&1
+
+    log_success "Cloned '$source' -> '$target'"
+    print_db_summary "$target"
+}
+
+cmd_create() {
+    local name="$1"
+    require_arg "name" "$name" "create <name>"
+    check_connection
+
+    if db_exists "$name"; then
+        log_warning "Database '$name' already exists"
+        return 0
+    fi
+
+    local escaped_name_id
+    escaped_name_id=$(sql_escape_identifier "$name")
+    run_psql -c "CREATE DATABASE \"$escaped_name_id\";" >/dev/null
+    log_success "Created database '$name'"
+}
+
+cmd_drop() {
+    local name="$1"
+    require_arg "name" "$name" "drop <name>"
+    check_connection
+
+    if ! db_exists "$name"; then
+        log_warning "Database '$name' does not exist"
+        return 0
+    fi
+
+    # Safety check for common main databases
+    if [[ "$name" == "platform" || "$name" == "vector" || "$name" == "postgres" ]]; then
+        echo -n "Drop main database '$name'? [y/N] "
+        read -r confirm
+        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+            log_info "Cancelled"
+            return 0
+        fi
+    fi
+
+    # Terminate existing connections
+    local escaped_name escaped_name_id
+    escaped_name=$(sql_escape "$name")
+    escaped_name_id=$(sql_escape_identifier "$name")
+    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+
+    run_psql -c "DROP DATABASE \"$escaped_name_id\";" >/dev/null
+    log_success "Dropped database '$name'"
+}
+
+cmd_list() {
+    check_connection
+    if [[ "$MODE" == "docker" ]]; then
+        echo -e "${DIM}Databases in ${CONTAINER}:${NC}"
+    else
+        echo -e "${DIM}Databases at ${POSTGRES_HOST}:${POSTGRES_PORT}:${NC}"
+    fi
+    run_psql -c "\l" | grep -Ev "^\s*(template[0-9]|postgres)\s*\|" | head -20
+}
+
+cmd_snapshot() {
+    local name="$1"
+    local file="${2:-$(date +%Y%m%d-%H%M%S)}"
+
+    require_arg "name" "$name" "snapshot <name> [file]"
+    check_connection
+
+    if ! db_exists "$name"; then
+        log_error "Database '$name' does not exist"
+        exit 1
+    fi
+
+    mkdir -p "$SNAPSHOT_DIR"
+    local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
+
+    log_info "Creating snapshot of '$name'..."
+    run_pg_dump -Fc "$name" > "$filepath"
+    log_success "Snapshot saved: $filepath"
+}
+
+cmd_restore() {
+    local name="$1"
+    local file="$2"
+
+    require_arg "name" "$name" "restore <name> <file>"
+    require_arg "file" "$file" "restore <name> <file>"
+    check_connection
+
+    # Find the snapshot file
+    local filepath="$SNAPSHOT_DIR/${name}_${file}.dump"
+    if [[ ! -f "$filepath" ]]; then
+        # Try without the name prefix
+        filepath="$SNAPSHOT_DIR/${file}.dump"
+    fi
+    if [[ ! -f "$filepath" ]]; then
+        # Try as absolute path
+        filepath="$file"
+    fi
+    if [[ ! -f "$filepath" ]]; then
+        log_error "Snapshot not found: $file"
+        log_info "Available snapshots:"
+        ls -1 "$SNAPSHOT_DIR"/*.dump 2>/dev/null | xargs -I {} basename {} || echo "  (none)"
+        exit 1
+    fi
+
+    log_info "Restoring '$name' from $(basename "$filepath")..."
+
+    # Safety check for common main databases
+    if [[ "$name" == "platform" || "$name" == "vector" || "$name" == "postgres" ]]; then
+        echo -n "Restore will overwrite main database '$name'. Continue? [y/N] "
+        read -r confirm
+        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+            log_info "Cancelled"
+            return 0
+        fi
+    fi
+
+    # Terminate existing connections before dropping
+    local escaped_name escaped_name_id
+    escaped_name=$(sql_escape "$name")
+    escaped_name_id=$(sql_escape_identifier "$name")
+    run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
+
+    # Recreate database
+    run_psql -c "DROP DATABASE IF EXISTS \"$escaped_name_id\";" >/dev/null
+    run_psql -c "CREATE DATABASE \"$escaped_name_id\";" >/dev/null
+
+    # Restore and check for errors (pg_restore returns warnings as non-zero, so we capture output)
+    local restore_output
+    if ! restore_output=$(run_pg_restore -d "$name" < "$filepath" 2>&1); then
+        # Check if it's a real error or just warnings (pg_restore exits non-zero on warnings)
+        # Filter out expected warnings like "role does not exist" which is common and harmless
+        local fatal_errors
+        fatal_errors=$(echo "$restore_output" | grep -E "^(FATAL|ERROR):" | grep -vE "role.*does not exist" || true)
+        if [[ -n "$fatal_errors" ]]; then
+            log_error "Restore failed: $(echo "$fatal_errors" | head -1)"
+            exit 1
+        fi
+        # Warnings are expected (e.g., "role does not exist"), continue
+    fi
+
+    log_success "Restored '$name' from $(basename "$filepath")"
+    print_db_summary "$name"
+}
+
+cmd_help() {
+    cat <<'EOF'
+Database management for git worktrees
+
+Usage: db-branch [options] <command> [args]
+
+Options:
+  -p, --port PORT        Postgres port for direct mode (default: 5432)
+  -H, --host HOST        Postgres host for direct mode (default: localhost)
+  -U, --user USER        Postgres user (default: postgres)
+  -c, --container NAME   Use Docker container (forces docker mode)
+                         Find names with: docker ps --format '{{.Names}}'
+  -m, --mode MODE        Connection mode: auto, direct, docker (default: auto)
+
+Commands:
+  clone <source> <target>   Clone database (schema + data)
+  create <name>             Create empty database
+  drop <name>               Drop a database
+  list                      List all databases
+  snapshot <name> [file]    Snapshot a database (default: timestamped)
+  restore <name> <file>     Restore database from snapshot
+
+Examples:
+  db-branch list                                     # auto-detect connection
+  db-branch -c platform-db list                      # use main db container
+  db-branch -c platform-vector-db list               # use vector db container
+  db-branch -p 5433 -m direct list                   # direct connection to port
+  db-branch clone platform platform_wt1              # clone database
+  db-branch snapshot platform before-migration       # create snapshot
+  db-branch restore platform before-migration        # restore from snapshot
+EOF
+}
+
+#──────────────────────────────────────────────────────────────────────────────
+# Main
+#──────────────────────────────────────────────────────────────────────────────
+case "${1:-help}" in
+    clone)    cmd_clone "$2" "$3" ;;
+    create)   cmd_create "$2" ;;
+    drop)     cmd_drop "$2" ;;
+    list)     cmd_list ;;
+    snapshot) cmd_snapshot "$2" "$3" ;;
+    restore)  cmd_restore "$2" "$3" ;;
+    help|--help|-h) cmd_help ;;
+    *)
+        log_error "Unknown command: $1"
+        cmd_help
+        exit 1
+        ;;
+esac
