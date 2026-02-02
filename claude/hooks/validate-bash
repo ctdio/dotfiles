@@ -11,10 +11,6 @@ const DANGEROUS_PATTERNS = [
 
   // Prisma deployment/migration commands
   {
-    pattern: /\bprisma\s+db\s+push\b/i,
-    message: "Direct 'prisma db push' is blocked - creates migrations manually instead",
-  },
-  {
     pattern: /\bprisma\s+deploy\b/i,
     message: "'prisma deploy' is blocked for safety",
   },

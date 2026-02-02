@@ -57,6 +57,51 @@ From the plan's `testing-strategy.md`, identify:
 
 ---
 
+## Testing Philosophy: Integration Over Isolation
+
+### The Testing Pyramid is Upside Down for AI Agents
+
+Traditional TDD emphasizes unit tests. But for AI-assisted development with cloned databases, **integration tests provide much higher confidence:**
+
+| Test Type | Confidence | Use When |
+|-----------|------------|----------|
+| Integration tests (real DB) | ⭐⭐⭐⭐⭐ | Default - most features |
+| Integration tests (test DB) | ⭐⭐⭐⭐ | External API boundaries |
+| Unit tests (mocked) | ⭐⭐ | Pure functions, algorithms |
+
+### Why Mocked Unit Tests Fail Us
+
+Mocked tests often:
+- Test the mock, not the real behavior
+- Pass while real integration fails
+- Create false confidence
+- Miss schema mismatches, constraint violations, transaction bugs
+
+### Prefer Real Database Tests
+
+Since worktrees have isolated cloned databases via `db-worktree`:
+1. **Write integration tests that hit the real database**
+2. Use `prisma db push` to apply schema changes to your worktree DB
+3. Run tests against actual database operations
+4. Mock only external services (APIs, email, etc.)
+
+### When to Write Unit Tests
+
+Unit tests with mocks ARE appropriate for:
+- Pure utility functions (formatters, validators, transformers)
+- Complex algorithms with many edge cases
+- Code that truly has no I/O dependencies
+
+### Anti-Pattern: Mock Everything
+
+❌ **Don't**: Create elaborate mocks of Prisma, database, and services
+✅ **Do**: Write tests that exercise the real code path with a real DB
+
+❌ **Don't**: 10 unit tests with mocked repositories
+✅ **Do**: 3 integration tests that create, query, and update real data
+
+---
+
 ## Implementation Process
 
 ### Step 1: Understand the Context
