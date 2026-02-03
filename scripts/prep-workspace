@@ -21,7 +21,7 @@ usage() {
     cat <<'EOF'
 Prepare current worktree workspace for development
 
-Usage: workspace-prep [options]
+Usage: prep-workspace [options]
 
 Options:
   --skip-db        Skip database reset
@@ -30,9 +30,9 @@ Options:
   -h, --help       Show this help
 
 Examples:
-  workspace-prep                # full preparation
-  workspace-prep --skip-install # skip npm install
-  workspace-prep --skip-db      # skip database reset
+  prep-workspace                # full preparation
+  prep-workspace --skip-install # skip npm install
+  prep-workspace --skip-db      # skip database reset
 EOF
 }
 
