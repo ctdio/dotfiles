@@ -221,6 +221,7 @@ echo "OpenCode (~/.opencode):"
 mkdir -p ~/.opencode/skills
 sync_skills_symlink ~/.opencode
 sync_agents_transformed ~/.opencode
+sync_commands ~/.opencode
 
 echo ""
 echo "Sync complete!"
