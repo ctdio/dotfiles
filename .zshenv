@@ -109,9 +109,16 @@ if [[ "$OSTYPE" == linux* ]]; then
   fi
 fi
 
-# SSH agent - use gnome-keyring (stores passphrases)
-if [[ -z "$SSH_AUTH_SOCK" && -n "$XDG_RUNTIME_DIR" ]]; then
-  export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
+# SSH agent configuration
+# Priority: 1) Already set (e.g., forwarded agent)
+#           2) gnome-keyring on local GNOME sessions
+#           3) systemd user ssh-agent (for remote/headless)
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+  if [[ -z "$SSH_CONNECTION" && -S "$XDG_RUNTIME_DIR/keyring/ssh" ]]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
+  elif [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+  fi
 fi
 
 # Load .env without spawning subprocesses
