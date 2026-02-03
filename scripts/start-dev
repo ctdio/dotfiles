@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Parse arguments
+NGROK_DOMAIN=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --domain)
+      NGROK_DOMAIN="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: start-dev [--domain <ngrok-domain>]"
+      exit 1
+      ;;
+  esac
+done
+
 # Detect worktree and calculate port
 CURRENT_DIR=$(pwd)
 DIR_NAME=$(basename "$CURRENT_DIR")
@@ -40,13 +56,21 @@ INNGEST_CONNECT_GATEWAY_PORT=$((8290 + SLOT))
 INNGEST_CONNECT_GATEWAY_GRPC_PORT=$((50050 + SLOT))
 INNGEST_CONNECT_EXECUTOR_GRPC_PORT=$((50060 + SLOT))
 
-echo "Starting opine-dev for $DIR_NAME (server: $PORT, inngest: $INNGEST_PORT)"
+if [[ -n "$NGROK_DOMAIN" ]]; then
+  echo "Starting opine-dev for $DIR_NAME with ngrok (domain: $NGROK_DOMAIN, inngest: $INNGEST_PORT)"
+else
+  echo "Starting opine-dev for $DIR_NAME (server: $PORT, inngest: $INNGEST_PORT)"
+fi
 
 # Kill all other panes, start fresh
 tmux kill-pane -a
 
 # Start server in current pane
-tmux send-keys "nx run platform:serve:turbo --exclude-task-dependencies" C-m
+if [[ -n "$NGROK_DOMAIN" ]]; then
+  tmux send-keys "nx run platform:serve:ngrok --exclude-task-dependencies --domain $NGROK_DOMAIN" C-m
+else
+  tmux send-keys "nx run platform:serve:turbo --exclude-task-dependencies" C-m
+fi
 
 # Create right pane (35%) for inngest
 tmux split-window -h -l 35% -c "$CURRENT_DIR"
