@@ -109,6 +109,11 @@ if [[ "$OSTYPE" == linux* ]]; then
   fi
 fi
 
+# SSH agent - use gnome-keyring (stores passphrases)
+if [[ -z "$SSH_AUTH_SOCK" && -n "$XDG_RUNTIME_DIR" ]]; then
+  export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
+fi
+
 # Load .env without spawning subprocesses
 if [[ -f "$HOME/.env" ]]; then
   while IFS='=' read -r key value; do
