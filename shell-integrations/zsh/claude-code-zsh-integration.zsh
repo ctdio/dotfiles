@@ -23,7 +23,7 @@
 #
 # Installation:
 # 1. Source this file in your shell configuration
-# 2. Install required binaries (cc-stream-parser) to your PATH
+# 2. Install required binaries (agent-stream-parser) to your PATH
 # 3. Configure keybindings (see below)
 #
 # Configuration:
@@ -36,7 +36,7 @@
 #   CLAUDE_AGENT_INTERACTIVE_ARGS - Args for interactive mode (default: "")
 #   CLAUDE_AGENT_DEFAULT_MODE - Default mode on Ctrl+A (default: "fast")
 #                                Options: "fast", "interactive", "cmd"
-#   CLAUDE_AGENT_STREAM_PARSER - Path to stream parser (default: "cc-stream-parser")
+#   CLAUDE_AGENT_STREAM_PARSER - Path to stream parser (default: "agent-stream-parser")
 #   CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT - Enable terminal context injection (default: "0")
 #                                           Set to "1" to enable
 #   CLAUDE_AGENT_TERMINAL_CONTEXT_LINES - Number of history lines to include (default: "50")
@@ -50,7 +50,7 @@
 #   export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
 #   export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 #   export CLAUDE_AGENT_DEFAULT_MODE="fast"
-#   export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser/cc-stream-parser"
+#   export CLAUDE_AGENT_STREAM_PARSER="$HOME/dotfiles/shell-integrations/zsh/agent-stream-parser/agent-stream-parser"
 #   export CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT="0"  # Set to "1" to enable
 #   export CLAUDE_AGENT_TERMINAL_CONTEXT_LINES="50"
 #   export CLAUDE_AGENT_ENABLE_HISTORY="0"  # Set to "1" to enable
@@ -76,7 +76,7 @@
 : ${CLAUDE_AGENT_CMD_ARGS:="--model haiku -p"}
 : ${CLAUDE_AGENT_INTERACTIVE_ARGS:=""}
 : ${CLAUDE_AGENT_DEFAULT_MODE:="fast"}
-: ${CLAUDE_AGENT_STREAM_PARSER:="cc-stream-parser"}
+: ${CLAUDE_AGENT_STREAM_PARSER:="agent-stream-parser"}
 : ${CLAUDE_AGENT_ENABLE_TERMINAL_CONTEXT:="0"}
 : ${CLAUDE_AGENT_TERMINAL_CONTEXT_LINES:="50"}
 : ${CLAUDE_AGENT_ENABLE_HISTORY:="0"}

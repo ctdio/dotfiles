@@ -20,7 +20,7 @@ export CLAUDE_AGENT_FAST_ARGS="--model haiku -p"
 export CLAUDE_AGENT_CMD_ARGS="--model haiku -p"
 export CLAUDE_AGENT_INTERACTIVE_ARGS=""
 export CLAUDE_AGENT_DEFAULT_MODE="fast"
-export CLAUDE_AGENT_STREAM_PARSER="/path/to/shell-integrations/zsh/cc-stream-parser/cc-stream-parser"
+export CLAUDE_AGENT_STREAM_PARSER="/path/to/shell-integrations/zsh/agent-stream-parser/agent-stream-parser"
 
 source /path/to/shell-integrations/zsh/claude-code-zsh-integration.zsh
 ```
@@ -57,6 +57,6 @@ disabled = false
 ## Files
 
 - `claude-code-zsh-integration.zsh`: Main integration
-- `cc-stream-parser/`: Stream parser directory
-  - `cc-stream-parser`: Wrapper script
-  - `cc-stream-parser.ts`: Parser implementation
+- `agent-stream-parser/`: Stream parser directory
+  - `agent-stream-parser`: Wrapper script
+  - `agent-stream-parser.ts`: Parser implementation
