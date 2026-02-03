@@ -75,14 +75,39 @@ alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
 alias rbb='ralph "Use ctdio-ralph-bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
 
 function ralph-implement-plan() {
-  local plan="$1"
+  local plan=""
+  local agent=""
+  local model=""
+  local -a ralph_opts=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -a|--agent)
+        agent="$2"
+        shift 2
+        ;;
+      -M|--model)
+        model="$2"
+        shift 2
+        ;;
+      *)
+        plan="$1"
+        shift
+        ;;
+    esac
+  done
+
   if [[ -z "$plan" ]]; then
-    echo "Usage: ralph-implement-plan <plan-name>"
+    echo "Usage: ralph-implement-plan <plan-name> [-a agent] [-M model]"
     return 1
   fi
+
+  [[ -n "$agent" ]] && ralph_opts+=(-a "$agent")
+  [[ -n "$model" ]] && ralph_opts+=(-M "$model")
+
   # Convert to uppercase and replace special chars with spaces
   local completion_promise=$(echo "$plan" | tr '[:lower:]' '[:upper:]' | sed 's/[^A-Z0-9]/ /g' | tr -s ' ' | xargs)
   completion_promise="${completion_promise} IMPLEMENTED"
-  ralph "Load the feature implementation skill. Implement the $plan plan. Follow the spec closely. Completely implement each and every phase." -m 25 -c "$completion_promise"
+  ralph "${ralph_opts[@]}" "Load the feature implementation skill. Implement the $plan plan. Follow the spec closely. Completely implement each and every phase." -m 25 -c "$completion_promise"
 }
 

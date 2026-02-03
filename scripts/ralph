@@ -81,6 +81,7 @@ COMPLETION_PROMISE="TASK_COMPLETE"
 PROMPT=""
 PROMPT_FILE=""
 AGENT="claude"
+MODEL=""
 AGENT_CMD_OVERRIDE="${RALPH_AGENT_CMD:-}"
 
 print_help() {
@@ -97,13 +98,15 @@ ${YELLOW}OPTIONS:${RESET}
   -f, --file <path>               Read prompt from file
   -m, --max-iterations <n>        Maximum iterations (default: 10)
   -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
-  -a, --agent <claude|codex>      Agent preset to use (default: claude)
+  -a, --agent <claude|codex|opencode>  Agent preset to use (default: claude)
+  -M, --model <model>             Model to use (opencode: provider/model, e.g. anthropic/claude-sonnet-4-20250514)
   -h, --help                      Show this help message
 
 ${YELLOW}EXAMPLES:${RESET}
   ralph "Build a todo API" --max-iterations 20 --completion-promise "DONE"
   ralph "Fix the auth bug" -m 10 -c "BUG FIXED"
   ralph -f ~/.ai/prompts/bugbot.md -m 10 -c "RESOLVED"
+  ralph -a opencode -M anthropic/claude-sonnet-4-20250514 "Address bugbot feedback"
 
 ${YELLOW}COMPLETION:${RESET}
   Claude must output <promise>YOUR_PHRASE</promise> to signal completion.
@@ -136,6 +139,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -a|--agent)
       AGENT="$2"
+      shift 2
+      ;;
+    -M|--model)
+      MODEL="$2"
       shift 2
       ;;
     *)
@@ -195,18 +202,28 @@ resolve_agent_cmd() {
     return
   fi
 
+  local cmd=""
+
   case "$AGENT" in
     claude)
-      echo "claude --add-dir ~/.ai --dangerously-skip-permissions -p --verbose --output-format stream-json --include-partial-messages"
+      cmd="claude --add-dir ~/.ai --dangerously-skip-permissions -p --verbose --output-format stream-json --include-partial-messages"
+      [[ -n "$MODEL" ]] && cmd="$cmd --model $MODEL"
       ;;
     codex)
-      echo "codex exec --json"
+      cmd="codex exec --json"
+      [[ -n "$MODEL" ]] && cmd="$cmd -m $MODEL"
+      ;;
+    opencode)
+      cmd="opencode run --format json"
+      [[ -n "$MODEL" ]] && cmd="$cmd -m $MODEL"
       ;;
     *)
       echo -e "${RED}Error: Unknown agent preset: $AGENT${RESET}"
       exit 1
       ;;
   esac
+
+  echo "$cmd"
 }
 
 AGENT_CMD=$(resolve_agent_cmd)
@@ -261,6 +278,7 @@ check_completion() {
 echo -e "${CYAN}ralph${RESET}"
 echo "-------------------------------------"
 echo -e "agent:      ${AGENT}"
+[[ -n "$MODEL" ]] && echo -e "model:      ${MODEL}"
 echo -e "iterations: ${MAX_ITERATIONS}"
 echo -e "promise:    ${COMPLETION_PROMISE}"
 echo ""
@@ -282,8 +300,9 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
 
   # Run agent with streaming JSON, pipe through parser when configured, capture output
   # Use || true to prevent script exit on ctrl-c (trap handles exit logic)
+  # Stream parser works with claude and opencode JSON output
   local -a agent_cmd_parts=(${=AGENT_CMD})
-  if [[ -n "$STREAM_PARSER" ]]; then
+  if [[ -n "$STREAM_PARSER" && ("$AGENT" == "claude" || "$AGENT" == "opencode") ]]; then
     "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output" || true
   else
     "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output" || true

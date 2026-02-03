@@ -126,9 +126,33 @@ function printAgentContextSwitch(parentId: string | null): void {
 // Indent for subagent content
 const subagentIndent = `${c.dim}│${c.reset} `;
 
+// Cache terminal width (detected once at startup)
+let cachedTermWidth: number | null = null;
+
 // Get terminal width for line wrapping
 function getTermWidth(): number {
-  return process.stdout.columns || 80;
+  if (cachedTermWidth !== null) return cachedTermWidth;
+
+  // Try stdout columns first (works when stdout is a TTY)
+  if (process.stdout.columns) {
+    cachedTermWidth = process.stdout.columns;
+    return cachedTermWidth;
+  }
+
+  // Fallback: use tput cols (works when piped, reads from /dev/tty)
+  try {
+    const result = Bun.spawnSync(['tput', 'cols']);
+    const cols = parseInt(result.stdout.toString().trim(), 10);
+    if (!isNaN(cols) && cols > 0) {
+      cachedTermWidth = cols;
+      return cachedTermWidth;
+    }
+  } catch {
+    // tput not available or failed
+  }
+
+  cachedTermWidth = 80;
+  return cachedTermWidth;
 }
 
 // Wrap text to fit within terminal width, accounting for prefix
@@ -621,6 +645,91 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+async function formatApplyPatch(patchText: string): Promise<string> {
+  // Convert OpenCode patch format to unified diff for skim rendering
+  // OpenCode format:
+  // *** Begin Patch
+  // *** Add File: /path/to/file
+  // +new content
+  // *** Update File: /path/to/file
+  // @@
+  // -old line
+  // +new line
+  // *** End Patch
+
+  const lines = patchText.split('\n');
+  const diffLines: string[] = [];
+  let currentFile = '';
+  let isAddFile = false;
+
+  for (const line of lines) {
+    if (line.startsWith('*** Begin Patch') || line.startsWith('*** End Patch')) {
+      continue;
+    }
+
+    if (line.startsWith('*** Add File: ')) {
+      currentFile = line.replace('*** Add File: ', '');
+      isAddFile = true;
+      diffLines.push(`--- /dev/null`);
+      diffLines.push(`+++ b/${currentFile}`);
+      diffLines.push('@@ -0,0 +1 @@');
+    } else if (line.startsWith('*** Update File: ')) {
+      currentFile = line.replace('*** Update File: ', '');
+      isAddFile = false;
+      diffLines.push(`--- a/${currentFile}`);
+      diffLines.push(`+++ b/${currentFile}`);
+    } else if (line.startsWith('*** Delete File: ')) {
+      currentFile = line.replace('*** Delete File: ', '');
+      diffLines.push(`--- a/${currentFile}`);
+      diffLines.push(`+++ /dev/null`);
+    } else if (line === '@@') {
+      diffLines.push('@@ -1 +1 @@');
+    } else if (line.startsWith('+') || line.startsWith('-') || line === ' ') {
+      diffLines.push(line);
+    } else if (line.trim() && !isAddFile) {
+      // Context line without prefix
+      diffLines.push(' ' + line);
+    } else if (line.trim() && isAddFile) {
+      // For add file, lines without + prefix are still additions
+      if (!line.startsWith('+')) {
+        diffLines.push('+' + line);
+      } else {
+        diffLines.push(line);
+      }
+    }
+  }
+
+  const diffOutput = diffLines.join('\n');
+
+  if (!diffOutput.trim()) {
+    return `\n${c.cyan}patch${c.reset} ${c.dim}(empty)${c.reset}\n`;
+  }
+
+  try {
+    // Pipe through skim for syntax highlighting
+    const effectiveWidth = getTermWidth();
+    const skimProc = Bun.spawn(['skim', 'print', '-w', String(effectiveWidth)], {
+      stdin: new Response(diffOutput).body,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const skimOutput = await new Response(skimProc.stdout).text();
+    await skimProc.exited;
+
+    return '\n' + skimOutput;
+  } catch {
+    // Fallback: show raw diff with colors
+    const coloredLines = diffLines.map(line => {
+      if (line.startsWith('+')) return `${c.green}${line}${c.reset}`;
+      if (line.startsWith('-')) return `${c.red}${line}${c.reset}`;
+      if (line.startsWith('@@')) return `${c.cyan}${line}${c.reset}`;
+      return line;
+    });
+    return '\n' + coloredLines.join('\n') + '\n';
+  }
+}
+
 // Patterns to skip in tool results (redundant confirmations)
 const skipResultPatterns = [
   /has been (updated|created|modified|written) successfully/i,
@@ -648,6 +757,91 @@ function formatToolResult(text: string): string {
   }
 
   return lines.map(l => `${c.dim}${box.v}${c.reset} ${l}`).join('\n') + '\n';
+}
+
+function handleOpenCodeEvent(json: Record<string, unknown>): boolean {
+  const type = json.type;
+  if (typeof type !== 'string') return false;
+
+  // OpenCode events: step_start, step_finish, text, tool_use
+  if (!['step_start', 'step_finish', 'text', 'tool_use'].includes(type)) {
+    return false;
+  }
+
+  const part = isRecord(json.part) ? json.part : null;
+  if (!part) return true;
+
+  if (type === 'text' && typeof part.text === 'string') {
+    process.stdout.write(part.text + '\n');
+    return true;
+  }
+
+  if (type === 'tool_use') {
+    const tool = typeof part.tool === 'string' ? part.tool : '';
+    const state = isRecord(part.state) ? part.state : null;
+    const input = isRecord(state?.input) ? state.input : {};
+    const output = typeof state?.output === 'string' ? state.output : '';
+    const metadata = isRecord(state?.metadata) ? state.metadata : {};
+    const exitCode = typeof metadata.exit === 'number' ? metadata.exit : null;
+
+    // Format based on tool type
+    if (tool === 'bash') {
+      const cmd = typeof input.command === 'string' ? input.command : '';
+      const desc = typeof input.description === 'string' ? input.description : '';
+      process.stdout.write(formatBash({ command: cmd, description: desc }));
+      if (output.trim()) {
+        process.stdout.write(formatCodexCommandOutput(output, exitCode));
+      }
+    } else if (tool === 'read') {
+      const filePath = typeof input.file_path === 'string' ? input.file_path : '';
+      process.stdout.write(formatRead({ file_path: filePath }));
+    } else if (tool === 'write') {
+      const filePath = typeof input.file_path === 'string' ? input.file_path : '';
+      const content = typeof input.content === 'string' ? input.content : '';
+      process.stdout.write(formatWrite({ file_path: filePath, content }));
+    } else if (tool === 'glob') {
+      const pattern = typeof input.pattern === 'string' ? input.pattern : '';
+      const path = typeof input.path === 'string' ? input.path : undefined;
+      process.stdout.write(formatGlob({ pattern, path }));
+    } else if (tool === 'grep') {
+      const pattern = typeof input.pattern === 'string' ? input.pattern : '';
+      const path = typeof input.path === 'string' ? input.path : undefined;
+      const glob = typeof input.glob === 'string' ? input.glob : undefined;
+      process.stdout.write(formatGrep({ pattern, path, glob }));
+    } else if (tool === 'edit') {
+      const filePath = typeof input.file_path === 'string' ? input.file_path : '';
+      const oldStr = typeof input.old_string === 'string' ? input.old_string : '';
+      const newStr = typeof input.new_string === 'string' ? input.new_string : '';
+      formatEdit({ file_path: filePath, old_string: oldStr, new_string: newStr }).then(out => {
+        process.stdout.write(out);
+      });
+    } else if (tool === 'apply_patch') {
+      const patchText = typeof input.patchText === 'string' ? input.patchText : '';
+      formatApplyPatch(patchText).then(out => {
+        process.stdout.write(out);
+      });
+    } else if (tool === 'todowrite') {
+      const todos = Array.isArray(input.todos) ? input.todos : [];
+      process.stdout.write(formatTodoWrite({ todos }));
+    } else {
+      // Generic tool
+      process.stdout.write(formatGenericTool(tool, input));
+      if (output.trim()) {
+        process.stdout.write(formatToolResult(output));
+      }
+    }
+    return true;
+  }
+
+  if (type === 'step_finish') {
+    const reason = typeof part.reason === 'string' ? part.reason : '';
+    if (reason === 'stop') {
+      process.stdout.write('\n');
+    }
+    return true;
+  }
+
+  return true;
 }
 
 function handleCodexEvent(json: Record<string, unknown>): boolean {
@@ -704,6 +898,10 @@ for await (const chunk of Bun.stdin.stream()) {
 
     try {
       const json = JSON.parse(line);
+
+      if (handleOpenCodeEvent(json)) {
+        continue;
+      }
 
       if (handleCodexEvent(json)) {
         continue;
