@@ -1,0 +1,2 @@
+#!/bin/sh
+exec bun "$HOME/dotfiles/shell-integrations/zsh/agent-stream-parser/agent-stream-parser.ts" "$@"

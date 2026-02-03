@@ -73,7 +73,7 @@ handle_interrupt() {
 trap handle_interrupt SIGINT
 
 # Stream parser location
-STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser/cc-stream-parser}}"
+STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfiles/shell-integrations/zsh/agent-stream-parser/agent-stream-parser}}"
 
 # Defaults
 MAX_ITERATIONS=10
@@ -99,7 +99,7 @@ ${YELLOW}OPTIONS:${RESET}
   -m, --max-iterations <n>        Maximum iterations (default: 10)
   -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
   -a, --agent <claude|codex|opencode>  Agent preset to use (default: claude)
-  -M, --model <model>             Model to use (opencode: provider/model, e.g. anthropic/claude-sonnet-4-20250514)
+  -M, --model <model>             Model to use (opencode default: openai/gpt-5.2-codex; format provider/model)
   -h, --help                      Show this help message
 
 ${YELLOW}EXAMPLES:${RESET}
@@ -188,6 +188,11 @@ if [[ -z "$PROMPT" ]]; then
   vared -p "> " promise_input
   COMPLETION_PROMISE="${promise_input:-TASK_COMPLETE}"
   echo ""
+fi
+
+# Default model for opencode
+if [[ "$AGENT" == "opencode" && -z "$MODEL" ]]; then
+  MODEL="openai/gpt-5.2-codex"
 fi
 
 # Validate

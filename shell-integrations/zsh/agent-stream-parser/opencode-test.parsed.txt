@@ -1,0 +1,20 @@
+
+[2m[task][0m
+[2m┃[0m {
+[2m┃[0m   "description": "List repo root files",
+[2m┃[0m   "prompt": "Use glob to list files in /home/ctdio/dotfiles repo root. Return just the filenames (no directories beyond root).",
+[2m┃[0m   "subagent_type": "explore"
+[2m┃[0m }
+[2m┃[0m opencode.json  
+[2m┃[0m .tmux.conf  
+[2m┃[0m .aerospace.toml  
+[2m┃[0m .zshenv  
+[2m┃[0m .zshrc  
+[2m┃[0m install.sh  
+[2m┃[0m kanata.kbd  
+[2m┃[0m .zshrc.zwc  
+[2m┃[0m .ghostty-config  
+[2m┃[0m .gitconfig  
+[2m┃ ... 15 more lines[0m
+Repo root contains 23 config/scripts and meta files (e.g., shells, editor, git, and startup configs like `.zshrc`, `.tmux.conf`, `README.md`, and `install.sh`).
+

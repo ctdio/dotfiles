@@ -1,2 +1,0 @@
-#!/bin/sh
-exec bun "$HOME/dotfiles/shell-integrations/zsh/cc-stream-parser/cc-stream-parser.ts" "$@"
