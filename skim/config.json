@@ -16,8 +16,8 @@
       "command": "codex-acp"
     },
     "OpenCode": {
-      "command": "opencode",
-      "args": ["acp"]
+      "protocol": "opencode",
+      "command": "opencode"
     }
   }
 }

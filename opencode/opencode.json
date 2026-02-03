@@ -9,6 +9,12 @@
     "leader": "ctrl+e",
     "editor_open": "ctrl+g"
   },
+  "command": {
+    "env": {
+      "template": "!`/home/ctdio/dotfiles/opencode/hooks/load-env-context`",
+      "description": "Load env context from .env files"
+    }
+  },
   "mcp": {
     "postgres": {
       "type": "local",
