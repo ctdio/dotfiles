@@ -9,7 +9,8 @@
 export PATH="$HOME/dotfiles/bin:$PATH"
 
 # History settings
-SAVEHIST=5000
+HISTSIZE=10000
+SAVEHIST=10000
 HISTFILE=~/.zsh_history
 setopt SHARE_HISTORY
 
