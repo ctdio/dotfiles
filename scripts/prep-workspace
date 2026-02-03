@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Prepare current worktree workspace for development
-# Automates: reset databases, npm install, nx prepare
+# Automates: reset databases, pnpm install, nx prepare
 
 set -eo pipefail
 
@@ -25,13 +25,13 @@ Usage: prep-workspace [options]
 
 Options:
   --skip-db        Skip database reset
-  --skip-install   Skip npm install
+  --skip-install   Skip pnpm install
   --skip-prepare   Skip nx prepare
   -h, --help       Show this help
 
 Examples:
   prep-workspace                # full preparation
-  prep-workspace --skip-install # skip npm install
+  prep-workspace --skip-install # skip pnpm install
   prep-workspace --skip-db      # skip database reset
 EOF
 }
@@ -101,10 +101,10 @@ fi
 # Step 2: Install dependencies
 if ! $SKIP_INSTALL; then
     log_step "2. Installing dependencies..."
-    npm install
+    pnpm install
     log_success "Dependencies installed"
 else
-    log_step "2. Skipping npm install"
+    log_step "2. Skipping pnpm install"
 fi
 
 # Step 3: Prepare platform
