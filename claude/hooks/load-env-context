@@ -1,0 +1,178 @@
+#!/usr/bin/env bun
+
+// SessionStart hook: Crawls up directories to find .env files with opt-in marker
+// and extracts specific variables to inject into Claude's context.
+//
+// Opt-in marker: A .env file must contain a comment line with:
+//   # claude-env-inject
+//
+// Variables extracted (if present):
+//   - POSTGRES_URL / DATABASE_URL
+//   - INNGEST_BASE_URL
+//   - (add more as needed)
+
+const MARKER = "# claude-env-inject";
+const MAX_DEPTH_UP = 5; // How many parent directories to crawl up
+
+const VARIABLES_TO_EXTRACT = [
+  "POSTGRES_URL",
+  "DATABASE_URL",
+  "INNGEST_BASE_URL",
+  "INNGEST_EVENT_KEY",
+  "INNGEST_SIGNING_KEY",
+];
+
+import { readFileSync, existsSync } from "fs";
+import { dirname, join, resolve } from "path";
+import { Glob } from "bun";
+
+async function main() {
+  let payload;
+
+  try {
+    const raw = await readFromStdin();
+    payload = JSON.parse(raw.trim());
+  } catch (err) {
+    // Silent fail - don't block session start
+    process.exit(0);
+  }
+
+  const cwd = payload?.cwd || process.cwd();
+  const envFiles = findEnvFiles(cwd);
+
+  if (envFiles.length === 0) {
+    process.exit(0);
+  }
+
+  const extractedVars: Record<string, { value: string; source: string }> = {};
+
+  // Process files from root toward cwd (so closer files override)
+  for (const envPath of envFiles.reverse()) {
+    const content = readFileSync(envPath, "utf-8");
+
+    // Check for opt-in marker
+    if (!content.includes(MARKER)) {
+      continue;
+    }
+
+    const vars = parseEnvFile(content);
+
+    for (const varName of VARIABLES_TO_EXTRACT) {
+      if (vars[varName]) {
+        extractedVars[varName] = {
+          value: vars[varName],
+          source: envPath,
+        };
+      }
+    }
+  }
+
+  if (Object.keys(extractedVars).length === 0) {
+    process.exit(0);
+  }
+
+  // Build context message
+  const lines = ["Environment variables loaded from .env files:"];
+  const sources = new Set<string>();
+
+  for (const [name, { value, source }] of Object.entries(extractedVars)) {
+    lines.push(`  ${name}=${value}`);
+    sources.add(source);
+  }
+
+  lines.push("");
+  lines.push(`Sources: ${[...sources].join(", ")}`);
+
+  // Output as system message for Claude
+  const output = {
+    systemMessage: lines.join("\n"),
+  };
+
+  console.log(JSON.stringify(output));
+  process.exit(0);
+}
+
+function findEnvFiles(startDir: string): string[] {
+  const envFiles: string[] = [];
+  const resolvedStart = resolve(startDir);
+  const root = "/";
+
+  // 1. Glob for .env files up to 2 levels deep
+  const glob = new Glob("**/.env");
+  for (const match of glob.scanSync({ cwd: resolvedStart, absolute: true, dot: true })) {
+    // Check depth - only allow up to 2 levels deep from cwd
+    const relative = match.slice(resolvedStart.length + 1);
+    const depth = relative.split("/").length - 1; // -1 for .env itself
+    if (depth <= 2) {
+      envFiles.push(match);
+    }
+  }
+
+  // 2. Crawl up to find .env files in parent directories (limited depth)
+  let currentDir = dirname(resolvedStart);
+  let depthUp = 0;
+  while (currentDir !== root && depthUp < MAX_DEPTH_UP) {
+    const envPath = join(currentDir, ".env");
+    if (existsSync(envPath)) {
+      envFiles.push(envPath);
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) break;
+    currentDir = parentDir;
+    depthUp++;
+  }
+
+  return envFiles;
+}
+
+function parseEnvFile(content: string): Record<string, string> {
+  const vars: Record<string, string> = {};
+
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+
+    // Skip comments and empty lines
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Match KEY=value or KEY="value" or KEY='value'
+    const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/i);
+    if (match) {
+      const [, key, rawValue] = match;
+      // Remove surrounding quotes if present
+      let value = rawValue;
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      vars[key] = value;
+    }
+  }
+
+  return vars;
+}
+
+async function readFromStdin(): Promise<string> {
+  try {
+    // @ts-ignore - Bun global may not be typed
+    if (typeof Bun !== "undefined" && Bun.stdin) {
+      // @ts-ignore - Bun specific API
+      return await new Response(Bun.stdin).text();
+    }
+  } catch {}
+
+  // Fallback to Node-style stdin
+  return await new Promise<string>((resolve) => {
+    let data = "";
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk) => {
+      data += chunk;
+    });
+    process.stdin.on("end", () => resolve(data));
+    process.stdin.resume();
+  });
+}
+
+await main();

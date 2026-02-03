@@ -3,6 +3,18 @@
   "includeCoAuthoredBy": false,
   "model": "opus",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/ctdio/dotfiles/claude/hooks/load-env-context",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
