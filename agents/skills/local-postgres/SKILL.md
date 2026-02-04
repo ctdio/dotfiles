@@ -10,34 +10,29 @@ Explore and query local PostgreSQL databases.
 
 ## Connection
 
-Check for environment variables in this order:
+Resolve connection details in this order:
 
-1. **DATABASE_URL** (Prisma standard) - Parse host, user, password, database, port from connection string
-2. **Individual vars**: `POSTGRES_HOST`/`PGHOST`, `POSTGRES_USER`/`PGUSER`, `POSTGRES_PASSWORD`/`PGPASSWORD`, `POSTGRES_DB`/`PGDATABASE`, `POSTGRES_PORT`/`PGPORT`
-3. **Defaults**: localhost, postgres user, postgres password, port 5432
+1. **POSTGRES_URL provided in chat** - The user may provide a `POSTGRES_URL` (or any postgres:// / postgresql:// connection string) directly in the conversation. If so, parse host, user, password, database, and port from it and use those values. This takes highest priority.
+2. **DATABASE_URL** (Prisma standard) - Parse host, user, password, database, port from connection string
+3. **Individual vars**: `POSTGRES_HOST`/`PGHOST`, `POSTGRES_USER`/`PGUSER`, `POSTGRES_PASSWORD`/`PGPASSWORD`, `POSTGRES_DB`/`PGDATABASE`, `POSTGRES_PORT`/`PGPORT`
+4. **Defaults**: localhost, postgres user, postgres password, port 5432
 
-### Parse DATABASE_URL
-```bash
-# Example: postgresql://user:pass@host:5432/dbname
-if [ -n "$DATABASE_URL" ]; then
-  # Extract components using bash parameter expansion or parse with:
-  PGHOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/?]+).*|\1|')
-  PGPORT=$(echo "$DATABASE_URL" | sed -E 's|.*:([0-9]+)/.*|\1|')
-  PGUSER=$(echo "$DATABASE_URL" | sed -E 's|.*://([^:]+):.*|\1|')
-  PGPASSWORD=$(echo "$DATABASE_URL" | sed -E 's|.*://[^:]+:([^@]+)@.*|\1|')
-  PGDATABASE=$(echo "$DATABASE_URL" | sed -E 's|.*/([^?]+).*|\1|')
-fi
-```
+### Parsing a connection URL
 
-### Build connection
-```bash
-# Priority: DATABASE_URL parsed > POSTGRES_* vars > PG* vars > defaults
-HOST="${PGHOST:-${POSTGRES_HOST:-localhost}}"
-PORT="${PGPORT:-${POSTGRES_PORT:-5432}}"
-USER="${PGUSER:-${POSTGRES_USER:-postgres}}"
-PASSWORD="${PGPASSWORD:-${POSTGRES_PASSWORD:-postgres}}"
-DATABASE="${PGDATABASE:-${POSTGRES_DB:-}}"
-```
+Given a URL like `postgresql://myuser:secret@db.example.com:5433/myapp`, extract:
+- **User**: `myuser`
+- **Password**: `secret`
+- **Host**: `db.example.com`
+- **Port**: `5433`
+- **Database**: `myapp`
+
+The format is: `postgresql://<user>:<password>@<host>:<port>/<database>`
+
+If no port is specified, default to `5432`. If no user/password, default to `postgres`/`postgres`.
+
+### Defaults
+
+When no URL or env vars are available, use: host=`localhost`, port=`5432`, user=`postgres`, password=`postgres`.
 
 **Cache:** `~/.ai/cache/<project-name>/postgres.json`
 - Check cache first before any discovery
