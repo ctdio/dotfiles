@@ -1,8 +1,7 @@
 #!/bin/bash
 
-tms  config --max-depths=2 -p \
+tms  config --max-depths=1 -p \
   ~/projects/private \
-  ~/projects/private/opine \
   ~/projects/private/scratch \
   ~/projects/open-source \
   ~/obsidian \
