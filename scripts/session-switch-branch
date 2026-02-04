@@ -1,14 +1,19 @@
 #!/bin/bash
 
-# Session switcher with branch information
-# Format: session_name [branch]
+# Session switcher with branch information and server port detection
+# Format: session_name [branch] :port1 :port2
 # Preview: active pane content
+#
+# Usage:
+#   session-switch-branch          Start fzf picker (ports load async)
+#   session-switch-branch --list [ports]  Output session list to stdout
 
 DIM=$'\033[2m'
 RESET=$'\033[0m'
 GREEN=$'\033[38;5;71m'
+CYAN=$'\033[36m'
 TMPDIR="${TMPDIR:-/tmp}"
-OUTFILE="$TMPDIR/session-switch-$$"
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
 current_session=$(tmux display-message -p '#S' 2>/dev/null)
 
@@ -34,70 +39,125 @@ get_branch() {
   fi
 }
 
-# Store sessions in array first to avoid subshell issues
-sessions=()
-paths=()
-is_current=()
-# Use pane_current_path for slot sessions (flexible), session_path for others (project-tied)
-while read -r session spath ppath; do
-  sessions+=("$session")
-  is_current+=("$([[ "$session" = "$current_session" ]] && echo "1" || echo "0")")
-  # Slot sessions are flexible - use pane's current path
-  # Other sessions are project-tied - use session_path
-  if [[ "$session" == slot-* ]]; then
-    paths+=("$ppath")
-  elif [ -n "$spath" ] && [ -d "$spath" ]; then
-    paths+=("$spath")
-  else
-    paths+=("$ppath")
-  fi
-done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
+# --list [ports]: output sorted session list to stdout
+if [[ "$1" == "--list" ]]; then
+  OUTFILE="$TMPDIR/session-list-$$"
 
-# Parallel branch lookups
-for i in "${!sessions[@]}"; do
-  session="${sessions[$i]}"
-  path="${paths[$i]}"
-  current="${is_current[$i]}"
-  {
-    branch=$(get_branch "$path")
-    if [ "$current" = "1" ]; then
-      # Current session in green
-      if [ -n "$branch" ]; then
-        printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}\n" "$session" "$branch"
-      else
-        printf "${GREEN}%s${RESET}\n" "$session"
-      fi
+  sessions=()
+  paths=()
+  is_current=()
+  while read -r session spath ppath; do
+    sessions+=("$session")
+    is_current+=("$([[ "$session" = "$current_session" ]] && echo "1" || echo "0")")
+    if [[ "$session" == slot-* ]]; then
+      paths+=("$ppath")
+    elif [ -n "$spath" ] && [ -d "$spath" ]; then
+      paths+=("$spath")
     else
-      # Other sessions in default color
-      if [ -n "$branch" ]; then
-        printf "%s ${DIM}[%s]${RESET}\n" "$session" "$branch"
-      else
-        printf "%s\n" "$session"
-      fi
+      paths+=("$ppath")
     fi
-  } >> "$OUTFILE" &
-done
-wait
+  done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
 
-session_list=$(< "$OUTFILE" sort)
-rm -f "$OUTFILE"
+  # Port detection (only when requested)
+  declare -A session_ports
+  if [[ "$2" == "ports" ]]; then
+    # Get listening port/pid pairs (cross-platform)
+    list_listeners() {
+      if command -v ss &>/dev/null; then
+        ss -tlnp 2>/dev/null | awk '/LISTEN/ && /pid=/ {
+          n = split($4, a, ":")
+          port = a[n] + 0
+          if (port >= 32768) next
+          match($0, /pid=[0-9]+/)
+          pid = substr($0, RSTART+4, RLENGTH-4)
+          print port, pid
+        }'
+      elif command -v lsof &>/dev/null; then
+        lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null | awk 'NR > 1 {
+          pid = $2 + 0
+          n = split($9, a, ":")
+          port = a[n] + 0
+          if (port >= 49152) next
+          print port, pid
+        }'
+      fi
+    }
 
-if [ -z "$session_list" ]; then
-  echo "No other sessions"
+    listeners=$(list_listeners)
+    if [ -n "$listeners" ]; then
+      declare -A pid_to_session
+      while read -r sess pid; do
+        pid_to_session[$pid]=$sess
+      done < <(tmux list-panes -a -F '#{session_name} #{pane_pid}')
+
+      declare -A ppid_map
+      while read -r pid ppid; do
+        ppid_map[$pid]=$ppid
+      done < <(ps -e -o pid=,ppid=)
+
+      while read -r port pid; do
+        current=$pid
+        while [ -n "$current" ] && [ "$current" != "1" ] && [ "$current" != "0" ]; do
+          if [ -n "${pid_to_session[$current]+x}" ]; then
+            sess="${pid_to_session[$current]}"
+            if [[ " ${session_ports[$sess]} " != *" $port "* ]]; then
+              session_ports[$sess]+="${session_ports[$sess]:+ }$port"
+            fi
+            break
+          fi
+          current="${ppid_map[$current]}"
+        done
+      done <<< "$listeners"
+    fi
+  fi
+
+  for i in "${!sessions[@]}"; do
+    session="${sessions[$i]}"
+    path="${paths[$i]}"
+    cur="${is_current[$i]}"
+    ports="${session_ports[$session]}"
+    {
+      branch=$(get_branch "$path")
+      port_display=""
+      if [ -n "$ports" ]; then
+        sorted_ports=$(echo "$ports" | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/ $//')
+        port_display=" ${CYAN}:${sorted_ports// / :}${RESET}"
+      fi
+      if [ "$cur" = "1" ]; then
+        if [ -n "$branch" ]; then
+          printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s\n" "$session" "$branch" "$port_display"
+        else
+          printf "${GREEN}%s${RESET}%s\n" "$session" "$port_display"
+        fi
+      else
+        if [ -n "$branch" ]; then
+          printf "%s ${DIM}[%s]${RESET}%s\n" "$session" "$branch" "$port_display"
+        else
+          printf "%s%s\n" "$session" "$port_display"
+        fi
+      fi
+    } >> "$OUTFILE" &
+  done
+  wait
+
+  sort < "$OUTFILE"
+  rm -f "$OUTFILE"
   exit 0
 fi
 
-selected=$(echo "$session_list" | fzf \
+# Main: show fzf immediately, async reload with ports
+selected=$("$SELF" --list | fzf \
   --ansi \
   --prompt="› " \
   --no-border \
+  --bind "start:reload($SELF --list ports)" \
   --preview='
-    session=$(echo {} | sed "s/ \[.*\]$//" | sed "s/\x1b\[[0-9;]*m//g")
+    session=$(echo {} | sed "s/\x1b\[[0-9;]*m//g; s/ .*//")
     tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
   ' \
   --preview-window=right:45%:noborder) || exit 0
 
 if [ -n "$selected" ]; then
-  session_name=$(echo "$selected" | sed 's/ \[.*\]$//' | sed 's/\x1b\[[0-9;]*m//g')
+  session_name=$(echo "$selected" | sed 's/\x1b\[[0-9;]*m//g; s/ .*//')
   tmux switch-client -t "$session_name"
 fi
