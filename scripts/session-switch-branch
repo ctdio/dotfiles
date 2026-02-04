@@ -6,6 +6,7 @@
 
 DIM=$'\033[2m'
 RESET=$'\033[0m'
+GREEN=$'\033[38;5;71m'
 TMPDIR="${TMPDIR:-/tmp}"
 OUTFILE="$TMPDIR/session-switch-$$"
 
@@ -36,10 +37,11 @@ get_branch() {
 # Store sessions in array first to avoid subshell issues
 sessions=()
 paths=()
+is_current=()
 # Use pane_current_path for slot sessions (flexible), session_path for others (project-tied)
 while read -r session spath ppath; do
-  [ "$session" = "$current_session" ] && continue
   sessions+=("$session")
+  is_current+=("$([[ "$session" = "$current_session" ]] && echo "1" || echo "0")")
   # Slot sessions are flexible - use pane's current path
   # Other sessions are project-tied - use session_path
   if [[ "$session" == slot-* ]]; then
@@ -55,12 +57,23 @@ done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_p
 for i in "${!sessions[@]}"; do
   session="${sessions[$i]}"
   path="${paths[$i]}"
+  current="${is_current[$i]}"
   {
     branch=$(get_branch "$path")
-    if [ -n "$branch" ]; then
-      printf "%s ${DIM}[%s]${RESET}\n" "$session" "$branch"
+    if [ "$current" = "1" ]; then
+      # Current session in green
+      if [ -n "$branch" ]; then
+        printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}\n" "$session" "$branch"
+      else
+        printf "${GREEN}%s${RESET}\n" "$session"
+      fi
     else
-      printf "%s\n" "$session"
+      # Other sessions in default color
+      if [ -n "$branch" ]; then
+        printf "%s ${DIM}[%s]${RESET}\n" "$session" "$branch"
+      else
+        printf "%s\n" "$session"
+      fi
     fi
   } >> "$OUTFILE" &
 done

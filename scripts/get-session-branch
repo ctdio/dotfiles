@@ -1,0 +1,27 @@
+#!/bin/bash
+# Get git branch for current tmux session's path
+# Used in tmux status bar to display session:branch
+
+# Get session path - use pane_current_path for slot sessions, session_path for others
+session_name=$(tmux display-message -p '#{session_name}')
+if [[ "$session_name" == slot-* ]]; then
+  dir=$(tmux display-message -p '#{pane_current_path}')
+else
+  dir=$(tmux display-message -p '#{session_path}')
+fi
+
+git_dir="$dir/.git"
+
+# Handle worktrees where .git is a file pointing to real git dir
+if [ -f "$git_dir" ]; then
+  git_dir="${dir}/$(< "$git_dir")"
+  git_dir="${git_dir#*gitdir: }"
+fi
+
+[ -f "$git_dir/HEAD" ] || exit 0
+
+read -r head < "$git_dir/HEAD"
+if [[ "$head" == ref:\ refs/heads/* ]]; then
+  branch="${head#ref: refs/heads/}"
+  echo ":$branch"
+fi
