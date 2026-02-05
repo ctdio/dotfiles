@@ -81,9 +81,12 @@ async function main() {
 
   lines.push("");
 
-  // Output as system message for Claude
+  // Output as session context for Claude
   const output = {
-    systemMessage: lines.join("\n"),
+    hookSpecificOutput: {
+      hookEventName: "SessionStart",
+      additionalContext: lines.join("\n"),
+    },
   };
 
   console.log(JSON.stringify(output));
