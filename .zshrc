@@ -17,6 +17,11 @@ setopt SHARE_HISTORY
 # Prevent accidental exit with Ctrl+D
 set -o ignoreeof
 
+# Set GPG_TTY for SSH agent passphrase prompts (gpg-agent)
+if [[ "$(uname)" == "Linux" ]]; then
+  export GPG_TTY=$(tty)
+fi
+
 DOTFILES_DIR=~/dotfiles
 
 # Load tools first (sets up fpath)
