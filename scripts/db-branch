@@ -71,7 +71,7 @@ check_connection() {
         # Try direct first, fall back to docker
         if psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d postgres -c "SELECT 1" >/dev/null 2>&1; then
             MODE="direct"
-        elif docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+        elif docker ps --format '{{.Names}}' | grep -qFx "$CONTAINER"; then
             MODE="docker"
         else
             log_error "Cannot connect to PostgreSQL"
@@ -79,7 +79,7 @@ check_connection() {
             exit 1
         fi
     elif [[ "$MODE" == "docker" ]]; then
-        if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+        if ! docker ps --format '{{.Names}}' | grep -qFx "$CONTAINER"; then
             log_error "Container '$CONTAINER' is not running"
             log_info "Find running containers: docker ps --format '{{.Names}}'"
             exit 1
@@ -138,6 +138,11 @@ db_exists() {
 # Escape single quotes for SQL string literals (replace ' with '')
 sql_escape() {
     echo "${1//\'/\'\'}"
+}
+
+# Escape double quotes for SQL identifiers (replace " with "")
+sql_escape_identifier() {
+    echo "${1//\"/\"\"}"
 }
 
 # Get database summary (tables, rows, size)
@@ -199,13 +204,16 @@ cmd_clone() {
                 return 0
             fi
         fi
-        local escaped_target
+        local escaped_target escaped_target_id
         escaped_target=$(sql_escape "$target")
+        escaped_target_id=$(sql_escape_identifier "$target")
         run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_target' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
-        run_psql -c "DROP DATABASE \"$target\";" >/dev/null
+        run_psql -c "DROP DATABASE \"$escaped_target_id\";" >/dev/null
     fi
 
-    run_psql -c "CREATE DATABASE \"$target\";" >/dev/null
+    local escaped_target_id
+    escaped_target_id=$(sql_escape_identifier "$target")
+    run_psql -c "CREATE DATABASE \"$escaped_target_id\";" >/dev/null
 
     log_info "Cloning '$source' -> '$target'..."
     run_pg_dump "$source" | run_psql_stdin -d "$target" -q >/dev/null 2>&1
@@ -224,7 +232,9 @@ cmd_create() {
         return 0
     fi
 
-    run_psql -c "CREATE DATABASE \"$name\";" >/dev/null
+    local escaped_name_id
+    escaped_name_id=$(sql_escape_identifier "$name")
+    run_psql -c "CREATE DATABASE \"$escaped_name_id\";" >/dev/null
     log_success "Created database '$name'"
 }
 
@@ -249,11 +259,12 @@ cmd_drop() {
     fi
 
     # Terminate existing connections
-    local escaped_name
+    local escaped_name escaped_name_id
     escaped_name=$(sql_escape "$name")
+    escaped_name_id=$(sql_escape_identifier "$name")
     run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
 
-    run_psql -c "DROP DATABASE \"$name\";" >/dev/null
+    run_psql -c "DROP DATABASE \"$escaped_name_id\";" >/dev/null
     log_success "Dropped database '$name'"
 }
 
@@ -325,21 +336,22 @@ cmd_restore() {
     fi
 
     # Terminate existing connections before dropping
-    local escaped_name
+    local escaped_name escaped_name_id
     escaped_name=$(sql_escape "$name")
+    escaped_name_id=$(sql_escape_identifier "$name")
     run_psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$escaped_name' AND pid <> pg_backend_pid();" >/dev/null 2>&1 || true
 
     # Recreate database
-    run_psql -c "DROP DATABASE IF EXISTS \"$name\";" >/dev/null
-    run_psql -c "CREATE DATABASE \"$name\";" >/dev/null
+    run_psql -c "DROP DATABASE IF EXISTS \"$escaped_name_id\";" >/dev/null
+    run_psql -c "CREATE DATABASE \"$escaped_name_id\";" >/dev/null
 
     # Restore and check for errors (pg_restore returns warnings as non-zero, so we capture output)
     local restore_output
     if ! restore_output=$(run_pg_restore -d "$name" < "$filepath" 2>&1); then
         # Check if it's a real error or just warnings (pg_restore exits non-zero on warnings)
-        # Exclude "role does not exist" which is a common and harmless warning
+        # Filter out expected warnings like "role does not exist" which is common and harmless
         local fatal_errors
-        fatal_errors=$(echo "$restore_output" | grep -E "(FATAL|ERROR:.*could not|ERROR:.*invalid)" | grep -v "role.*does not exist" || true)
+        fatal_errors=$(echo "$restore_output" | grep -E "^(FATAL|ERROR):" | grep -vE "role.*does not exist" || true)
         if [[ -n "$fatal_errors" ]]; then
             log_error "Restore failed: $(echo "$fatal_errors" | head -1)"
             exit 1
