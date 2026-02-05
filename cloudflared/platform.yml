@@ -1,0 +1,109 @@
+tunnel: 1db00eb3-d030-4073-834d-76bda9c16296
+credentials-file: /home/ctdio/.cloudflared/1db00eb3-d030-4073-834d-76bda9c16296.json
+
+ingress:
+  - hostname: wta.ctdio.dev
+    service: https://localhost:3001
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtb.ctdio.dev
+    service: https://localhost:3002
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtc.ctdio.dev
+    service: https://localhost:3003
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtd.ctdio.dev
+    service: https://localhost:3004
+    originRequest:
+      noTLSVerify: true
+  - hostname: wte.ctdio.dev
+    service: https://localhost:3005
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtf.ctdio.dev
+    service: https://localhost:3006
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtg.ctdio.dev
+    service: https://localhost:3007
+    originRequest:
+      noTLSVerify: true
+  - hostname: wth.ctdio.dev
+    service: https://localhost:3008
+    originRequest:
+      noTLSVerify: true
+  - hostname: wti.ctdio.dev
+    service: https://localhost:3009
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtj.ctdio.dev
+    service: https://localhost:3010
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtk.ctdio.dev
+    service: https://localhost:3011
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtl.ctdio.dev
+    service: https://localhost:3012
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtm.ctdio.dev
+    service: https://localhost:3013
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtn.ctdio.dev
+    service: https://localhost:3014
+    originRequest:
+      noTLSVerify: true
+  - hostname: wto.ctdio.dev
+    service: https://localhost:3015
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtp.ctdio.dev
+    service: https://localhost:3016
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtq.ctdio.dev
+    service: https://localhost:3017
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtr.ctdio.dev
+    service: https://localhost:3018
+    originRequest:
+      noTLSVerify: true
+  - hostname: wts.ctdio.dev
+    service: https://localhost:3019
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtt.ctdio.dev
+    service: https://localhost:3020
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtu.ctdio.dev
+    service: https://localhost:3021
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtv.ctdio.dev
+    service: https://localhost:3022
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtw.ctdio.dev
+    service: https://localhost:3023
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtx.ctdio.dev
+    service: https://localhost:3024
+    originRequest:
+      noTLSVerify: true
+  - hostname: wty.ctdio.dev
+    service: https://localhost:3025
+    originRequest:
+      noTLSVerify: true
+  - hostname: wtz.ctdio.dev
+    service: https://localhost:3026
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
