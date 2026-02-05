@@ -132,7 +132,7 @@ run_pg_restore() {
 }
 
 db_exists() {
-    run_psql -lqt | cut -d \| -f 1 | grep -qFw "$1"
+    run_psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$1'" | grep -q 1
 }
 
 # Escape single quotes for SQL string literals (replace ' with '')

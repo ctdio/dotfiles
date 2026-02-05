@@ -10,6 +10,8 @@ SESSION_DIRS=()
 for letter in {a..z}; do
   path="$HOME/projects/private/opine/platform-wt$letter"
   [[ -d "$path" ]] && SESSION_DIRS+=("$path")
+  path="$HOME/projects/open-source/skim-wt$letter"
+  [[ -d "$path" ]] && SESSION_DIRS+=("$path")
 done
 
 # Other projects

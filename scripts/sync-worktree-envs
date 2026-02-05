@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to sync .env files and Claude settings from main worktree to all other worktrees
-# Usage: sync-worktree-envs [-v|--verbose]
+# Usage: sync-worktree-envs [-v|--verbose] [--reset-dbs]
 #
 # Syncs:
 # - platform/.env* -> platform-wt*/.env*
@@ -31,9 +31,11 @@ set -e
 
 # Parse arguments
 VERBOSE=false
+RESET_DBS=false
 for arg in "$@"; do
     case $arg in
         -v|--verbose) VERBOSE=true ;;
+        --reset-dbs) RESET_DBS=true ;;
     esac
 done
 
@@ -110,6 +112,17 @@ update_database_for_worktree() {
     "${SED_INPLACE[@]}" "s|:5434/vector|:5434/vector_wt${worktree_suffix}|g" "$target_file" 2>/dev/null || true
     "${SED_INPLACE[@]}" 's/^POSTGRES_VECTOR_DATABASE="vector"$/POSTGRES_VECTOR_DATABASE="vector_wt'"${worktree_suffix}"'"/' "$target_file" 2>/dev/null || true
     "${SED_INPLACE[@]}" 's/^POSTGRES_VECTOR_DATABASE=vector$/POSTGRES_VECTOR_DATABASE=vector_wt'"${worktree_suffix}"'/' "$target_file" 2>/dev/null || true
+}
+
+# Reset databases for a worktree by cloning from source databases
+reset_worktree_databases() {
+    local suffix="$1"
+
+    echo -e "${DIM}Resetting databases for wt${suffix}...${NC}"
+
+    # Clone via docker exec to avoid client/server version mismatch
+    db-branch -c platform-db clone platform "platform_wt${suffix}"
+    db-branch -c platform-vector-db clone vector "vector_wt${suffix}"
 }
 
 # Sync a file with optional backup
@@ -214,6 +227,11 @@ for worktree in "${WORKTREES[@]}"; do
         else
             ((ERROR_COUNT++)) || true
         fi
+    fi
+
+    # Reset databases if requested
+    if [[ "$RESET_DBS" == "true" ]]; then
+        reset_worktree_databases "$SUFFIX"
     fi
 
     SYNC_COUNT=$((SYNC_COUNT + wt_files))

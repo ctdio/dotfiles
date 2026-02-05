@@ -1,5 +1,5 @@
-tunnel: 1db00eb3-d030-4073-834d-76bda9c16296
-credentials-file: /home/ctdio/.cloudflared/1db00eb3-d030-4073-834d-76bda9c16296.json
+tunnel: 9b6dcf52-1916-4fc6-9f6a-5336c25fe35a
+credentials-file: /home/ctdio/.cloudflared/9b6dcf52-1916-4fc6-9f6a-5336c25fe35a.json
 
 ingress:
   - hostname: wta.ctdio.dev

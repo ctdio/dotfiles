@@ -85,17 +85,4 @@ return {
     "dstein64/vim-startuptime",
     cmd = "StartupTime",
   },
-
-  -- Clipboard (OS-aware: pbcopy on macOS, xclip on Linux)
-  {
-    "ahw/vim-pbcopy",
-    event = "VeryLazy",
-    config = function()
-      if vim.fn.has("mac") == 1 then
-        vim.g.vim_pbcopy_local_cmd = "pbcopy"
-      else
-        vim.g.vim_pbcopy_local_cmd = "xclip -selection clipboard"
-      end
-    end,
-  },
 }

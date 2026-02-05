@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# Set up cloudflared tunnel from scratch on a new machine.
+# Creates the tunnel, generates credentials, writes config, and sets up DNS routes.
+
+set -eo pipefail
+
+TUNNEL_NAME="platform"
+DOMAIN="ctdio.dev"
+BASE_PORT=3001
+
+# Colors
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+DIM=$'\033[2m'
+BOLD=$'\033[1m'
+NC=$'\033[0m'
+
+log_info() { echo -e "${DIM}$1${NC}"; }
+log_success() { echo -e "${GREEN}✓${NC} $1"; }
+log_error() { echo -e "${RED}✗${NC} $1" >&2; }
+log_step() { echo -e "\n${BOLD}$1${NC}"; }
+
+usage() {
+    cat <<'EOF'
+Set up cloudflared tunnel and generate credentials
+
+Usage: cloudflared/setup [options]
+
+Options:
+  --skip-dns     Skip DNS route setup
+  -h, --help     Show this help
+
+This script will:
+  1. Log in to Cloudflare (opens browser)
+  2. Create the tunnel and generate credentials JSON
+  3. Write the tunnel config (platform.yml)
+  4. Set up DNS routes for wt{a-z}.ctdio.dev
+EOF
+}
+
+SKIP_DNS=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --skip-dns) SKIP_DNS=true; shift ;;
+        -h|--help)  usage; exit 0 ;;
+        -*)         log_error "Unknown option: $1"; usage; exit 1 ;;
+    esac
+done
+
+if ! command -v cloudflared &>/dev/null; then
+    log_error "cloudflared is not installed"
+    exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Step 1: Login
+log_step "1. Logging in to Cloudflare..."
+if [[ -f "$HOME/.cloudflared/cert.pem" ]]; then
+    log_success "Already logged in (cert.pem exists)"
+else
+    cloudflared tunnel login
+    log_success "Logged in"
+fi
+
+# Step 2: Create tunnel
+log_step "2. Creating tunnel '$TUNNEL_NAME'..."
+if cloudflared tunnel list | grep -q "$TUNNEL_NAME"; then
+    log_error "Tunnel '$TUNNEL_NAME' already exists. Delete it first with:"
+    log_info "  cloudflared tunnel delete $TUNNEL_NAME"
+    exit 1
+fi
+
+OUTPUT=$(cloudflared tunnel create "$TUNNEL_NAME" 2>&1)
+echo "$OUTPUT"
+
+TUNNEL_ID=$(echo "$OUTPUT" | grep -oP '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+
+if [[ -z "$TUNNEL_ID" ]]; then
+    log_error "Failed to parse tunnel ID from output"
+    exit 1
+fi
+
+log_success "Tunnel created: $TUNNEL_ID"
+
+CRED_FILE="$HOME/.cloudflared/$TUNNEL_ID.json"
+if [[ ! -f "$CRED_FILE" ]]; then
+    log_error "Credentials file not found at $CRED_FILE"
+    exit 1
+fi
+
+log_success "Credentials file: $CRED_FILE"
+
+# Step 3: Write config
+log_step "3. Writing tunnel config..."
+
+{
+    echo "tunnel: $TUNNEL_ID"
+    echo "credentials-file: $CRED_FILE"
+    echo ""
+    echo "ingress:"
+
+    PORT=$BASE_PORT
+    for LETTER in {a..z}; do
+        HOSTNAME="wt${LETTER}.${DOMAIN}"
+        cat <<EOF
+  - hostname: $HOSTNAME
+    service: https://localhost:$PORT
+    originRequest:
+      noTLSVerify: true
+EOF
+        ((PORT++))
+    done
+
+    echo "  - service: http_status:404"
+} > "$SCRIPT_DIR/platform.yml"
+
+log_success "Config written to cloudflared/platform.yml"
+
+# Step 4: DNS routes
+if ! $SKIP_DNS; then
+    log_step "4. Setting up DNS routes..."
+    for LETTER in {a..z}; do
+        HOSTNAME="wt${LETTER}.${DOMAIN}"
+        log_info "Routing $HOSTNAME..."
+        cloudflared tunnel route dns -f "$TUNNEL_NAME" "$HOSTNAME" 2>&1 || true
+    done
+    log_success "DNS routes configured"
+else
+    log_step "4. Skipping DNS route setup"
+fi
+
+echo ""
+log_success "Tunnel '$TUNNEL_NAME' is ready"
+log_info "Start it with: cloudflared tunnel --config $SCRIPT_DIR/platform.yml run"

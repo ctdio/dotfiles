@@ -36,7 +36,18 @@ vim.opt.rtp:prepend(lazypath)
 -- use project-local prettier
 vim.g.neoformat_try_node_exe = 1
 vim.g.neoformat_enabled_sql = {}
--- clipboard config moved to plugins/util.lua (vim-pbcopy)
+-- OSC 52 clipboard (works over SSH)
+vim.g.clipboard = {
+  name = "OSC 52",
+  copy = {
+    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+  },
+  paste = {
+    ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+    ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+  },
+}
 vim.g.camelsnek_alternative_camel_commands = 1
 vim.g.db_ui_use_nvim_notify = 1
 vim.g.jupytext_fmt = "py"
@@ -67,7 +78,7 @@ vim.opt.compatible = false
 vim.opt.hidden = true
 vim.opt.backup = false
 vim.opt.writebackup = false
-vim.opt.clipboard = "unnamed"
+vim.opt.clipboard = "unnamedplus"
 vim.opt.backspace = "indent,eol,start"
 vim.opt.splitbelow = true
 vim.opt.splitright = true
