@@ -41,6 +41,28 @@ get_branch() {
   fi
 }
 
+# --release <fzf-line>: switch a worktree session back to its home branch
+if [[ "$1" == "--release" ]]; then
+  shift
+  session=$(echo "$*" | sed 's/\x1b\[[0-9;]*m//g; s/ .*//')
+
+  # Must be a worktree session
+  [[ "$session" =~ -wt[a-z]$ ]] || exit 1
+
+  spath=$(tmux display-message -t "$session" -p '#{session_path}' 2>/dev/null)
+  [ -d "$spath" ] || exit 1
+
+  home_branch="${session##*-}"
+  git -C "$spath" checkout "$home_branch" --quiet 2>/dev/null || exit 1
+
+  # Remove from stale cache so the UI updates immediately
+  if [ -f "$STALE_CACHE" ]; then
+    grep -v "^${session}$" "$STALE_CACHE" > "${STALE_CACHE}.tmp" 2>/dev/null
+    mv "${STALE_CACHE}.tmp" "$STALE_CACHE" 2>/dev/null || rm -f "${STALE_CACHE}.tmp"
+  fi
+  exit 0
+fi
+
 # --refresh-stale: check worktree branches for merged PRs, write to cache
 if [[ "$1" == "--refresh-stale" ]]; then
   stale_dir=$(mktemp -d)
@@ -218,7 +240,7 @@ selected=$("$SELF" --list | fzf \
   --prompt="› " \
   --no-border \
   --bind "start:reload($SELF --list ports)" \
-  --bind "ctrl-r:reload($SELF --list ports)" \
+  --bind "ctrl-r:execute-silent($SELF --release {})+reload($SELF --list ports)" \
   --preview='
     session=$(echo {} | sed "s/\x1b\[[0-9;]*m//g; s/ .*//")
     tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
