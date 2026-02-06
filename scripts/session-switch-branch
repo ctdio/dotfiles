@@ -48,23 +48,20 @@ get_branch() {
 
 # --release <fzf-line>: switch a worktree session back to its home branch
 if [[ "$1" == "--release" ]]; then
-  shift
-  session=$(strip_ansi_first "$*")
+  [ -f "$STALE_CACHE" ] || exit 0
 
-  # Must be a worktree session
-  [[ "$session" =~ -wt[a-z]$ ]] || exit 1
+  while read -r session; do
+    [ -n "$session" ] || continue
+    [[ "$session" =~ -wt[a-z]$ ]] || continue
 
-  spath=$(tmux display-message -t "$session" -p '#{session_path}' 2>/dev/null)
-  [ -d "$spath" ] || exit 1
+    spath=$(tmux display-message -t "$session" -p '#{session_path}' 2>/dev/null)
+    [ -d "$spath" ] || continue
 
-  home_branch="${session##*-}"
-  git -C "$spath" checkout "$home_branch" --quiet 2>/dev/null || exit 1
+    home_branch="${session##*-}"
+    git -C "$spath" checkout "$home_branch" --quiet 2>/dev/null || continue
+  done < "$STALE_CACHE"
 
-  # Remove from stale cache so the UI updates immediately
-  if [ -f "$STALE_CACHE" ]; then
-    grep -v "^${session}$" "$STALE_CACHE" > "${STALE_CACHE}.tmp" 2>/dev/null
-    mv "${STALE_CACHE}.tmp" "$STALE_CACHE" 2>/dev/null || rm -f "${STALE_CACHE}.tmp"
-  fi
+  rm -f "$STALE_CACHE"
   exit 0
 fi
 
@@ -255,7 +252,7 @@ selected=$("$SELF" --list | fzf \
   --prompt="› " \
   --no-border \
   --bind "load:reload-sync($SELF --list ports)" \
-  --bind "ctrl-r:execute-silent($SELF --release {})+reload($SELF --list ports)" \
+  --bind "ctrl-r:reload($SELF --release 2>/dev/null; $SELF --list ports)" \
   --preview='
     session=$(echo {} | awk "{gsub(/\033\[[0-9;]*m/,\"\"); print \$1}")
     tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
