@@ -47,6 +47,7 @@ if [[ "$1" == "--list" ]]; then
   paths=()
   is_current=()
   while read -r session spath ppath; do
+    [[ "$session" == slot-* ]] && continue
     sessions+=("$session")
     is_current+=("$([[ "$session" = "$current_session" ]] && echo "1" || echo "0")")
     if [[ "$session" == slot-* ]]; then
@@ -125,22 +126,22 @@ if [[ "$1" == "--list" ]]; then
       fi
       if [ "$cur" = "1" ]; then
         if [ -n "$branch" ]; then
-          printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s\n" "$session" "$branch" "$port_display"
+          printf "%s\t${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s\n" "$session" "$session" "$branch" "$port_display"
         else
-          printf "${GREEN}%s${RESET}%s\n" "$session" "$port_display"
+          printf "%s\t${GREEN}%s${RESET}%s\n" "$session" "$session" "$port_display"
         fi
       else
         if [ -n "$branch" ]; then
-          printf "%s ${DIM}[%s]${RESET}%s\n" "$session" "$branch" "$port_display"
+          printf "%s\t%s ${DIM}[%s]${RESET}%s\n" "$session" "$session" "$branch" "$port_display"
         else
-          printf "%s%s\n" "$session" "$port_display"
+          printf "%s\t%s%s\n" "$session" "$session" "$port_display"
         fi
       fi
     } >> "$OUTFILE" &
   done
   wait
 
-  sort < "$OUTFILE"
+  sort < "$OUTFILE" | cut -f2-
   rm -f "$OUTFILE"
   exit 0
 fi
