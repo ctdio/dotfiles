@@ -1,5 +1,5 @@
 ---
-name: feature-planning
+name: ctdio-feature-planning
 description: Use this skill to create structured, comprehensive plans for complex features in ~/.ai/plans. This skill teaches how to use progressive disclosure, phase-based implementation strategies, and organized documentation that helps agents gather context quickly. Invoke manually for large features that need detailed planning and multi-PR implementation strategies.
 color: blue
 ---
@@ -21,7 +21,7 @@ This skill helps you create comprehensive, agent-friendly feature plans in `~/.a
 
 ## Directory Structure (CRITICAL - EXACT FORMAT REQUIRED)
 
-The feature-implementation orchestrator expects this **EXACT** structure. Creating files with different names or locations will waste tool calls during implementation.
+The ctdio-feature-implementation orchestrator expects this **EXACT** structure. Creating files with different names or locations will waste tool calls during implementation.
 
 ```
 ~/.ai/plans/{feature-name}/
@@ -47,11 +47,11 @@ The feature-implementation orchestrator expects this **EXACT** structure. Creati
 
 Each `phase-NN-{name}/` directory **MUST** contain exactly these three files:
 
-| File | Purpose | Read By Implementer |
-|------|---------|---------------------|
-| `files-to-modify.md` | Lists EXACTLY which files to create, modify, or reference | First - to understand scope |
-| `technical-details.md` | HOW to implement - code patterns, architecture | Second - for implementation |
-| `testing-strategy.md` | HOW to test - test cases, mocks, verification | Third - for testing |
+| File                   | Purpose                                                   | Read By Implementer         |
+| ---------------------- | --------------------------------------------------------- | --------------------------- |
+| `files-to-modify.md`   | Lists EXACTLY which files to create, modify, or reference | First - to understand scope |
+| `technical-details.md` | HOW to implement - code patterns, architecture            | Second - for implementation |
+| `testing-strategy.md`  | HOW to test - test cases, mocks, verification             | Third - for testing         |
 
 ### FILE NAMING RULES
 
@@ -101,14 +101,17 @@ Brief list of phases (details in implementation-guide.md):
 ## Success Criteria
 
 **Functional:**
+
 - [Criterion 1]
 - [Criterion 2]
 
 **Performance:**
+
 - [Metric 1]
 - [Metric 2]
 
 **Quality:**
+
 - [Criterion 1]
 - [Criterion 2]
 
@@ -138,6 +141,7 @@ These requirements define WHAT the feature must do. Each requirement is a verifi
 **Description**: [Clear, unambiguous description of what must be true]
 
 **Acceptance Criteria**:
+
 - [ ] [Specific, testable condition 1]
 - [ ] [Specific, testable condition 2]
 - [ ] [Specific, testable condition 3]
@@ -151,6 +155,7 @@ These requirements define WHAT the feature must do. Each requirement is a verifi
 **Description**: [Clear description]
 
 **Acceptance Criteria**:
+
 - [ ] [Condition 1]
 - [ ] [Condition 2]
 
@@ -173,6 +178,7 @@ These requirements define HOW the feature must behave (performance, security, et
 **Description**: [Performance expectations]
 
 **Acceptance Criteria**:
+
 - [ ] [Response time < X ms for Y operation]
 - [ ] [Memory usage < X MB under Y load]
 - [ ] [Throughput > X requests/second]
@@ -186,6 +192,7 @@ These requirements define HOW the feature must behave (performance, security, et
 **Description**: [Security requirements]
 
 **Acceptance Criteria**:
+
 - [ ] [Input validation for X]
 - [ ] [Authentication required for Y]
 - [ ] [Authorization checks for Z]
@@ -199,6 +206,7 @@ These requirements define HOW the feature must behave (performance, security, et
 **Description**: [How errors must be handled]
 
 **Acceptance Criteria**:
+
 - [ ] [Graceful degradation for X failure]
 - [ ] [Error messages for Y are user-friendly]
 - [ ] [All errors are logged with context]
@@ -212,6 +220,7 @@ These requirements define HOW the feature must behave (performance, security, et
 **Description**: [Compatibility requirements]
 
 **Acceptance Criteria**:
+
 - [ ] [Works with existing feature X]
 - [ ] [Backward compatible with API version Y]
 - [ ] [No breaking changes to Z]
@@ -258,34 +267,37 @@ Define what tests MUST be created. Implementation should write these tests FIRST
 
 Tests for individual functions/components in isolation.
 
-| Test | Description | Requirement |
-|------|-------------|-------------|
-| `test_[function]_[scenario]` | [What this test verifies] | FR-1 |
-| `test_[function]_[edge_case]` | [What this test verifies] | FR-1 |
-| `test_[component]_[behavior]` | [What this test verifies] | FR-2 |
+| Test                          | Description               | Requirement |
+| ----------------------------- | ------------------------- | ----------- |
+| `test_[function]_[scenario]`  | [What this test verifies] | FR-1        |
+| `test_[function]_[edge_case]` | [What this test verifies] | FR-1        |
+| `test_[component]_[behavior]` | [What this test verifies] | FR-2        |
 
 ### Integration Tests
 
 Tests for component interactions and API endpoints.
 
-| Test | Description | Requirement |
-|------|-------------|-------------|
-| `test_[flow]_[scenario]` | [What this test verifies] | FR-1, FR-2 |
-| `test_[api]_[endpoint]_[method]` | [What this test verifies] | FR-3 |
+| Test                             | Description               | Requirement |
+| -------------------------------- | ------------------------- | ----------- |
+| `test_[flow]_[scenario]`         | [What this test verifies] | FR-1, FR-2  |
+| `test_[api]_[endpoint]_[method]` | [What this test verifies] | FR-3        |
 
 ### Test Scenarios by Requirement
 
 #### FR-1: [Requirement Name]
+
 - [ ] Happy path: [description]
 - [ ] Edge case: [description]
 - [ ] Error case: [description]
 
 #### FR-2: [Requirement Name]
+
 - [ ] Happy path: [description]
 - [ ] Edge case: [description]
 - [ ] Error case: [description]
 
 ### Test Coverage Expectations
+
 - Unit test coverage: [target %] for new code
 - All acceptance criteria must have corresponding tests
 - All error paths must be tested
@@ -297,27 +309,32 @@ Tests for component interactions and API endpoints.
 Use this checklist before marking the feature complete:
 
 ### Functional Requirements
+
 - [ ] FR-1: [Name] - All criteria met
 - [ ] FR-2: [Name] - All criteria met
 - [ ] FR-3: [Name] - All criteria met
 
 ### Non-Functional Requirements
+
 - [ ] NFR-1: Performance - All criteria met
 - [ ] NFR-2: Security - All criteria met
 - [ ] NFR-3: Error Handling - All criteria met
 - [ ] NFR-4: Compatibility - All criteria met
 
 ### Constraints
+
 - [ ] C-1: [Name] - Constraint respected
 - [ ] C-2: [Name] - Constraint respected
 
 ### Final Verification
+
 - [ ] All automated tests pass
 - [ ] Manual testing completed per testing-strategy.md
 - [ ] No regressions in existing functionality
 - [ ] Documentation updated if required
 
 ### Phase Commits (REQUIRED)
+
 Each phase MUST have a commit created after verification passes. Commits gate advancement to the next phase.
 
 - [ ] Phase 1 commit created: `feat(<feature>): complete phase 1 - <name>`
@@ -331,11 +348,11 @@ Each phase MUST have a commit created after verification passes. Commits gate ad
 
 Map requirements to implementation:
 
-| Requirement | Phase | Files | Tests |
-|-------------|-------|-------|-------|
-| FR-1 | Phase 1 | `path/to/file.ts` | `test/file.test.ts` |
-| FR-2 | Phase 2 | `path/to/other.ts` | `test/other.test.ts` |
-| NFR-1 | Phase 3 | Multiple | `test/perf/` |
+| Requirement | Phase   | Files              | Tests                |
+| ----------- | ------- | ------------------ | -------------------- |
+| FR-1        | Phase 1 | `path/to/file.ts`  | `test/file.test.ts`  |
+| FR-2        | Phase 2 | `path/to/other.ts` | `test/other.test.ts` |
+| NFR-1       | Phase 3 | Multiple           | `test/perf/`         |
 
 ---
 
@@ -343,10 +360,10 @@ Map requirements to implementation:
 
 Track changes to requirements during planning phase. Once implementation begins, spec.md is frozen.
 
-| Date | Requirement | Change | Reason |
-|------|-------------|--------|--------|
-| [Date] | FR-1 | Added criterion X | [Why] |
-| [Date] | NFR-2 | Relaxed from X to Y | [Why] |
+| Date   | Requirement | Change              | Reason |
+| ------ | ----------- | ------------------- | ------ |
+| [Date] | FR-1        | Added criterion X   | [Why]  |
+| [Date] | NFR-2       | Relaxed from X to Y | [Why]  |
 
 ---
 
@@ -367,11 +384,13 @@ This document provides the strategic roadmap.
 ## Phase Breakdown
 
 ### Phase 1: Foundation
+
 **Goal**: [What this phase achieves]
 
 **Why First**: [Rationale for doing this phase first]
 
 **Deliverables**:
+
 - [Deliverable 1]
 - [Deliverable 2]
 
@@ -388,11 +407,13 @@ This document provides the strategic roadmap.
 ---
 
 ### Phase 2: Core Features
+
 **Goal**: [What this phase achieves]
 
 **Why After Phase 1**: [Rationale for ordering]
 
 **Deliverables**:
+
 - [Deliverable 1]
 - [Deliverable 2]
 
@@ -409,15 +430,18 @@ This document provides the strategic roadmap.
 ---
 
 ### Phase 3: Polish
+
 [Same structure as above, including Completion Gate]
 
 ## Migration & Rollout Strategy
 
 **Pre-Deployment**:
+
 1. [Step 1]
 2. [Step 2]
 
 **Deployment Order**:
+
 - Week 1: [What gets deployed]
 - Week 2: [What gets deployed]
 
@@ -425,6 +449,7 @@ This document provides the strategic roadmap.
 [How to rollback if issues occur]
 
 **Monitoring**:
+
 - [Metric 1 to monitor]
 - [Metric 2 to monitor]
 
@@ -443,7 +468,7 @@ This document provides the strategic roadmap.
 
 This is where implementation specifics live.
 
-```markdown
+````markdown
 # Phase [N]: [Phase Name] - Technical Details
 
 ## Objective
@@ -462,6 +487,7 @@ class ExistingService {
   // Show relevant existing patterns
 }
 ```
+````
 
 ### Limitations
 
@@ -491,11 +517,13 @@ ALTER TABLE ...
 #### File: `path/to/file.ts`
 
 **Current** (relevant excerpt):
+
 ```typescript
 // Show current implementation
 ```
 
 **Proposed**:
+
 ```typescript
 // Show proposed changes
 ```
@@ -513,6 +541,7 @@ ALTER TABLE ...
 **Purpose**: [Why this file]
 
 **Structure**:
+
 ```typescript
 // Outline of new file
 ```
@@ -520,6 +549,7 @@ ALTER TABLE ...
 ## Implementation Approach
 
 **Step-by-step**:
+
 1. [First thing to implement and why]
 2. [Second thing to implement and why]
 3. [Continue...]
@@ -531,9 +561,11 @@ ALTER TABLE ...
 [If applicable]
 
 **New Endpoints**:
+
 - `POST /api/v1/resource` - [Description]
 
 **Modified Endpoints**:
+
 - `GET /api/v1/resource/:id` - [What changed and why]
 
 **Breaking Changes**: [Any breaking changes and migration path]
@@ -555,17 +587,21 @@ ALTER TABLE ...
 ## Performance Considerations
 
 **Expected Impact**:
+
 - [Impact on query performance]
 - [Impact on memory]
 - [Impact on response times]
 
 **Optimizations**:
+
 - [Optimization 1]
 - [Optimization 2]
 
 **Monitoring Points**:
+
 - [What to monitor after deployment]
-```
+
+````
 
 ### 4. Phase Directory: files-to-modify.md Template
 
@@ -652,7 +688,7 @@ Quick lookup of where important concepts are defined:
 - **API Routes**: `app/api/v1/feature/route.ts` - `GET`, `POST` handlers
 - **Database Queries**: `lib/repositories/feature-repo.ts` - `findById()`, `create()`
 - **Tests**: `test/integration/feature.test.ts`
-```
+````
 
 ### 5. Phase Directory: testing-strategy.md Template
 
@@ -674,6 +710,7 @@ Quick lookup of where important concepts are defined:
 **File**: `test/unit/path-to-test.test.ts`
 
 **Scenarios**:
+
 1. **Happy Path**: [What's tested]
    - Input: [Example]
    - Expected: [Expected result]
@@ -695,11 +732,13 @@ Quick lookup of where important concepts are defined:
 **File**: `test/integration/path-to-test.test.ts`
 
 **Setup Required**:
+
 - [Database setup]
 - [Mock services]
 - [Test data]
 
 **Scenarios**:
+
 1. **Full Flow**: [Description]
    - Steps: [1, 2, 3...]
    - Assertions: [What to verify]
@@ -719,11 +758,13 @@ Quick lookup of where important concepts are defined:
 **User Story**: As a [user], I want to [action] so that [benefit]
 
 **Steps**:
+
 1. [User action]
 2. [System response]
 3. [User verification]
 
 **Assertions**:
+
 - [What user should see]
 - [What should be persisted]
 
@@ -736,6 +777,7 @@ Quick lookup of where important concepts are defined:
 **File**: `test/fixtures/feature-data.ts`
 
 **Data Sets**:
+
 - `validInput` - [Description]
 - `edgeCaseInput` - [Description]
 - `invalidInput` - [Description]
@@ -749,6 +791,7 @@ Quick lookup of where important concepts are defined:
 **Mock File**: `test/mocks/service-mock.ts`
 
 **Mocked Methods**:
+
 - `method1()` - [Returns what]
 - `method2()` - [Returns what]
 
@@ -765,6 +808,7 @@ Quick lookup of where important concepts are defined:
 **Scenario**: [What's being tested]
 
 **Acceptance Criteria**:
+
 - Response time: [< X ms]
 - Throughput: [X requests/sec]
 - Error rate: [< X%]
@@ -786,6 +830,7 @@ For each phase deployment:
 ## Regression Testing
 
 **Existing Features to Verify**:
+
 - [Feature 1] - [What to test]
 - [Feature 2] - [What to test]
 
@@ -797,6 +842,7 @@ For each phase deployment:
 ### When to Use This Skill
 
 Invoke this skill when:
+
 - Feature requires 3+ separate PRs to implement safely
 - Feature touches multiple systems or domains
 - Implementation strategy needs careful sequencing
@@ -810,12 +856,14 @@ Invoke this skill when:
 Vague requirements lead to wasted implementation time. A plan built on assumptions is a plan that will fail. **Your job is to be annoyingly thorough in questioning.**
 
 **USE THE AskUserQuestion TOOL (IF AVAILABLE):**
+
 - If you have access to the AskUserQuestion tool, use it for every round of clarifying questions
 - Structure questions as multiple-choice where possible to reduce friction
 - Ask follow-up questions until you have SPECIFIC, CONCRETE answers
 - Never accept vague answers like "the normal way" or "whatever makes sense"
 
 **Questioning Mindset:**
+
 - Pretend you're a consultant being paid $500/hour - you need COMPLETE understanding before starting
 - Every assumption you make is a potential bug in the plan
 - Users often don't know what they need until asked the right questions
@@ -880,6 +928,7 @@ Vague requirements lead to wasted implementation time. A plan built on assumptio
    - If user doesn't know, that's valuable information - document it as an open question
 
 **NEVER proceed to planning if:**
+
 - You have unresolved ambiguities about core requirements
 - User gave vague answers that you haven't drilled into
 - You're making assumptions about user intent without confirmation
@@ -887,6 +936,7 @@ Vague requirements lead to wasted implementation time. A plan built on assumptio
 If AskUserQuestion tool is not available, achieve the same through direct questioning in your responses.
 
 **Red Flags That Indicate More Questions Needed:**
+
 - "It should just work like X" (what specifically about X?)
 - "The normal way" (what's normal in this context?)
 - "Whatever makes sense" (clarify expectations)
@@ -904,6 +954,7 @@ Keep a record of questions asked and answers received. This becomes valuable con
    - Determine breaking points for phases
 
 2. **Create Directory Structure**
+
    ```bash
    cd ~/.ai/plans
    mkdir -p feature-name/{phase-01-foundation,phase-02-core,phase-03-polish,shared}
@@ -940,6 +991,7 @@ Keep a record of questions asked and answers received. This becomes valuable con
 ### Phase Naming Conventions
 
 Use numbered prefixes for clear ordering:
+
 - `phase-01-foundation` - Foundational changes, often database/API
 - `phase-02-core-features` - Main functionality
 - `phase-03-integration` - Connecting systems
@@ -949,25 +1001,30 @@ Use numbered prefixes for clear ordering:
 ### Progressive Disclosure in Practice
 
 **Level 1 - Quick Context** (2 minutes):
+
 - Read `overview.md` only
 - Understand problem, solution, and success criteria
 
 **Level 2 - Requirements** (5 minutes):
+
 - Read `spec.md` for MUST-have requirements
 - Understand acceptance criteria and constraints
 - Know what defines "done"
 
 **Level 3 - Implementation Strategy** (10 minutes):
+
 - Read `implementation-guide.md`
 - Understand phases, dependencies, rollout plan
 
 **Level 4 - Phase Implementation** (30+ minutes):
+
 - Dive into specific phase directory
 - Read technical-details.md, files-to-modify.md
 - Cross-reference spec.md to ensure requirements are met
 - Implement with full context
 
 **Level 5 - Deep Context** (as needed):
+
 - Review testing-strategy.md before writing tests
 - Check shared/ directory for cross-phase concerns
 
@@ -976,11 +1033,13 @@ Use numbered prefixes for clear ordering:
 Reference code by function/class names, not line numbers (lines shift as code changes):
 
 **Good references:**
+
 - `path/to/file.ts` - `functionName()` - What to change
 - `path/to/service.ts` - `ClassName.methodName()` - Specific method
 - `path/to/types.ts` - `InterfaceName` - Type definition
 
 **Avoid:**
+
 - ~~`path/to/file.ts:123-145`~~ - Line numbers become stale quickly
 
 This keeps references valid as the codebase evolves.
@@ -1027,6 +1086,7 @@ This keeps references valid as the codebase evolves.
 
 **Template examples:**
 This skill includes example templates in `examples/` showing well-structured documents based on a "Task Comments" feature:
+
 - `examples/overview-example.md` - How to write a concise, navigable overview
 - `examples/spec-example.md` - How to write testable requirements with acceptance criteria
 - `examples/implementation-guide-example.md` - How to structure phases with required tests and completion criteria
@@ -1038,6 +1098,7 @@ Review these examples before creating your first plan.
 ## Integration with Existing Workflow
 
 This skill **supplements** the simple planning guidance in your base instructions. Use:
+
 - **Base instructions** for straightforward features (1-2 PRs)
 - **This skill** for complex features needing detailed planning and phasing
 
@@ -1084,6 +1145,7 @@ When using this skill, you should:
 ## Success Criteria for Plans
 
 A good feature plan should:
+
 - ✅ Be navigable in under 2 minutes (via overview)
 - ✅ Have spec.md with ALL requirements clearly defined and verifiable
 - ✅ Have acceptance criteria for every functional requirement

@@ -1,6 +1,6 @@
 ---
-name: feature-implementation-state-manager
-description: "Use this agent to manage the implementation state file for feature plans. This agent handles two operations - (1) INITIALIZE - creates the implementation-state.md file from plan documents if it doesn't exist, and (2) UPDATE - updates the state file after verification with results, completed tasks, and phase transitions. This saves the orchestrator context by delegating all state file operations to a focused agent. <example> Context: Orchestrator starting a new feature implementation user: \"INITIALIZE state for turbopuffer-search feature\" assistant: \"I'll use the feature-implementation-state-manager to create the initial state file from the plan\" <commentary> The orchestrator delegates state creation to this agent, preserving its own context for coordination. </commentary> </example> <example> Context: Verification passed for Phase 1 user: \"UPDATE state: Phase 1 PASSED - commit abc123, files modified: [list], verification output: [output]\" assistant: \"Spawning feature-implementation-state-manager to update the state file with verification results\" <commentary> After verification, the orchestrator passes results to this agent to persist them. </commentary> </example>"
+name: ctdio-feature-implementation-state-manager
+description: 'Use this agent to manage the implementation state file for feature plans. This agent handles two operations - (1) INITIALIZE - creates the implementation-state.md file from plan documents if it doesn''t exist, and (2) UPDATE - updates the state file after verification with results, completed tasks, and phase transitions. This saves the orchestrator context by delegating all state file operations to a focused agent. <example> Context: Orchestrator starting a new feature implementation user: "INITIALIZE state for turbopuffer-search feature" assistant: "I''ll use the feature-implementation-state-manager to create the initial state file from the plan" <commentary> The orchestrator delegates state creation to this agent, preserving its own context for coordination. </commentary> </example> <example> Context: Verification passed for Phase 1 user: "UPDATE state: Phase 1 PASSED - commit abc123, files modified: [list], verification output: [output]" assistant: "Spawning feature-implementation-state-manager to update the state file with verification results" <commentary> After verification, the orchestrator passes results to this agent to persist them. </commentary> </example>'
 model: opus
 color: blue
 ---
@@ -189,7 +189,7 @@ UPDATE FAILED Complete:
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/agents/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/ctdio-feature-implementation/
 ```
 
 1. **State Management Guidance** (detailed how-to):
@@ -207,7 +207,9 @@ Skill directory: ~/dotfiles/agents/skills/feature-implementation/
 When the orchestrator says "INITIALIZE state for {feature}":
 
 **Your Process:**
+
 1. Read the plan files in this order:
+
    ```
    ~/.ai/plans/{feature}/overview.md           # Get feature name, description
    ~/.ai/plans/{feature}/spec.md               # Get ALL requirements (FR, NFR, Constraints)
@@ -215,9 +217,11 @@ When the orchestrator says "INITIALIZE state for {feature}":
    ```
 
 2. For each phase directory, read:
+
    ```
    ~/.ai/plans/{feature}/phase-NN-{name}/files-to-modify.md
    ```
+
    (Just to get the planned tasks list)
 
 3. Create `~/.ai/plans/{feature}/implementation-state.md` using this structure:
@@ -234,17 +238,20 @@ When the orchestrator says "INITIALIZE state for {feature}":
 ## Spec Requirements Status
 
 ### Functional Requirements
+
 - ⏳ FR-1: {Name from spec} - Pending
 - ⏳ FR-2: {Name from spec} - Pending
-{Copy ALL functional requirements from spec.md}
+  {Copy ALL functional requirements from spec.md}
 
 ### Non-Functional Requirements
+
 - ⏳ NFR-1: {Name from spec} - Pending
-{Copy ALL non-functional requirements from spec.md}
+  {Copy ALL non-functional requirements from spec.md}
 
 ### Constraints
+
 - ⏳ C-1: {Name from spec} - Pending
-{Copy ALL constraints from spec.md}
+  {Copy ALL constraints from spec.md}
 
 ---
 
@@ -255,18 +262,23 @@ When the orchestrator says "INITIALIZE state for {feature}":
 **Commit**: ⏳ Pending (create after verification passes)
 
 ### Spec Requirements to Address
+
 - {List requirements this phase will address, from plan}
 
 ### Tests Written (TDD)
+
 - ⏳ Tests not yet written
 
 ### Pre-Completion Verification
+
 - [ ] All deliverables implemented
 - [ ] Tests written and passing
 - [ ] Verification script runs with zero failures
 
 ### Planned Tasks
+
 {Extract from phase-01 files-to-modify.md}
+
 - [ ] {Task 1}
 - [ ] {Task 2}
 
@@ -278,9 +290,11 @@ When the orchestrator says "INITIALIZE state for {feature}":
 **Dependencies**: Phase 1 must be completed
 
 ### Spec Requirements to Address
+
 - {List requirements}
 
 ### Planned Tasks
+
 - [ ] {From plan}
 
 {Continue for ALL phases}
@@ -305,6 +319,7 @@ When the orchestrator says "INITIALIZE state for {feature}":
 ```
 
 **Output:**
+
 - Confirm the state file was created
 - List the phases found
 - List the spec requirements found
@@ -317,6 +332,7 @@ When the orchestrator says "UPDATE state: Phase N {PASSED|FAILED} - {details}":
 
 **For PASSED:**
 The orchestrator will provide:
+
 - Phase number and name
 - Commit hash
 - Files modified (list)
@@ -326,6 +342,7 @@ The orchestrator will provide:
 - Spec requirements satisfied
 
 **Your Process:**
+
 1. Read current `~/.ai/plans/{feature}/implementation-state.md`
 2. Update the current phase section:
    - Change Status to `completed`
@@ -343,12 +360,14 @@ The orchestrator will provide:
 
 **For FAILED:**
 The orchestrator will provide:
+
 - Phase number and name
 - Attempt number
 - Verification output (what failed)
 - Issues found (list)
 
 **Your Process:**
+
 1. Read current state file
 2. Update the current phase section:
    - Keep Status as `in_progress`
@@ -363,12 +382,14 @@ The orchestrator will provide:
 ## State File Patterns
 
 ### Status Indicators
+
 - ✅ Complete
 - 🔄 In progress
 - ⏳ Pending
 - ⛔ Blocked
 
 ### Completed Phase Template
+
 ```markdown
 ## Phase N: {Name}
 
@@ -379,15 +400,18 @@ The orchestrator will provide:
 **Attempts**: {N}
 
 ### Spec Requirements Addressed
+
 - FR-X, FR-Y, NFR-Z
 
 ### Tests Written (TDD)
 
 **Unit Tests** ({N} passing):
+
 - ✅ `test_name_1` - description
 - ✅ `test_name_2` - description
 
 **Integration Tests** ({N} passing):
+
 - ✅ `test_api_endpoint` - description
 
 ### Pre-Completion Verification
@@ -401,9 +425,11 @@ The orchestrator will provide:
 
 **Verification Output**:
 ```
+
 ✓ type-check: 0 errors
 ✓ lint: 0 warnings
 ✓ test: {N} passed, 0 failed
+
 ```
 
 ### Completed Tasks
@@ -422,6 +448,7 @@ The orchestrator will provide:
 ```
 
 ### Failed Phase Update Template
+
 ```markdown
 ## Phase N: {Name}
 
@@ -430,14 +457,18 @@ The orchestrator will provide:
 **Attempts**: {N}
 
 ### Issues (Current Attempt)
+
 1. {Specific issue with location}
 2. {Another issue}
 
 ### Verification Output
 ```
+
 ✓ type-check: 0 errors
 ✗ test: {N} passed, {M} failed
-  - {failure details}
+
+- {failure details}
+
 ```
 
 ### In Progress

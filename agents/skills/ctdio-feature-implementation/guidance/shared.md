@@ -22,11 +22,11 @@ Orchestrator (coordinates)
 
 ### Your Role in the System
 
-| Agent | Focus | You DON'T Do |
-|-------|-------|--------------|
-| state-manager | State file accuracy | Implementation, verification |
-| phase-implementer | Writing code & tests | Verification commands, state updates |
-| phase-verifier | Running checks, reporting | Fixing code, state updates |
+| Agent             | Focus                     | You DON'T Do                         |
+| ----------------- | ------------------------- | ------------------------------------ |
+| state-manager     | State file accuracy       | Implementation, verification         |
+| phase-implementer | Writing code & tests      | Verification commands, state updates |
+| phase-verifier    | Running checks, reporting | Fixing code, state updates           |
 
 ---
 
@@ -58,12 +58,14 @@ All agents should understand this structure:
 ## Spec.md is Law
 
 The `spec.md` file defines:
+
 - **Functional Requirements (FR)**: Features that MUST work
 - **Non-Functional Requirements (NFR)**: Performance, security, etc.
 - **Constraints**: Limitations that MUST be respected
 - **Acceptance Criteria**: How to verify requirements are met
 
 **All agents** should reference spec.md:
+
 - Implementer: Ensure code meets requirements
 - Verifier: Check requirements are satisfied
 - State-manager: Track requirement completion status
@@ -109,6 +111,7 @@ The `spec.md` file defines:
 ### "Verification keeps failing"
 
 After 3 attempts, the orchestrator will ask the user for help. But before that:
+
 1. Read ALL issues from previous attempts
 2. Fix issues in priority order (high → low)
 3. Don't introduce new issues while fixing
@@ -137,18 +140,19 @@ ResultType:
 
 Use consistently across all communication:
 
-| Symbol | Meaning | Use For |
-|--------|---------|---------|
-| ✅ | Complete/Pass | Finished tasks, passing tests |
-| 🔄 | In Progress | Current work |
-| ⏳ | Pending | Not yet started |
-| 🔴 | Failing | Failing tests |
-| ⛔ | Blocked | Cannot proceed |
-| ❌ | Failed | Verification failed |
+| Symbol | Meaning       | Use For                       |
+| ------ | ------------- | ----------------------------- |
+| ✅     | Complete/Pass | Finished tasks, passing tests |
+| 🔄     | In Progress   | Current work                  |
+| ⏳     | Pending       | Not yet started               |
+| 🔴     | Failing       | Failing tests                 |
+| ⛔     | Blocked       | Cannot proceed                |
+| ❌     | Failed        | Verification failed           |
 
 ### Severity Levels
 
 For issues:
+
 - **high**: Blocks completion, must fix
 - **medium**: Should fix, but not blocking
 - **low**: Nice to fix, can defer
@@ -160,6 +164,7 @@ For issues:
 ### Read Before You Act
 
 Before doing anything:
+
 1. Read the relevant plan files
 2. Read existing code you'll modify
 3. Understand patterns before implementing
@@ -179,6 +184,7 @@ Good: "Type error at src/services/user.ts:45 - 'string' not assignable to 'numbe
 ### Complete Your Role
 
 Don't leave partial work:
+
 - Implementer: All deliverables done or blocked
 - Verifier: All checks run
 - State-manager: All sections updated
@@ -239,8 +245,9 @@ Reference examples are available:
 ```
 
 Or in the skill directory:
+
 ```
-claude/skills/feature-implementation/examples/
+claude/skills/ctdio-feature-implementation/examples/
 ```
 
 These show expected formats and level of detail.
@@ -252,6 +259,7 @@ These show expected formats and level of detail.
 ### What You Receive
 
 The orchestrator provides context tailored to your role:
+
 - **Implementer**: Files to modify, technical details, testing strategy
 - **Verifier**: Deliverables to check, implementation summary, commands to run
 - **State-manager**: Operation type, data to record
@@ -259,6 +267,7 @@ The orchestrator provides context tailored to your role:
 ### What You Return
 
 Return structured results that the orchestrator can process:
+
 - Clear status (complete/blocked/pass/fail)
 - Specific details (files, issues, evidence)
 - Actionable information (what to do next)
@@ -266,6 +275,7 @@ Return structured results that the orchestrator can process:
 ### When Things Go Wrong
 
 If you can't complete your task:
+
 1. Return what you accomplished
 2. Clearly state what's blocked/failed
 3. Provide enough detail for the next attempt

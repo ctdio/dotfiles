@@ -1,6 +1,6 @@
 ---
-name: feature-implementation-phase-implementer
-description: "Use this agent to implement a single phase of a feature plan. This agent receives focused context about ONE phase and implements all deliverables for that phase. It should be spawned by the feature-implementation orchestrator, not invoked directly by users. <example> Context: Orchestrator needs to implement Phase 1 of a feature user: \"Implement Phase 1: Foundation - Create the Turbopuffer service client and base configuration\" assistant: \"I'll use the feature-implementation-phase-implementer agent to implement this phase with focused context\" <commentary> The orchestrator is delegating a single phase to this specialized implementer agent. </commentary> </example> <example> Context: Orchestrator advancing to next phase after verification passed user: \"Implement Phase 2: Dual-Write Logic - Add write operations to both Pinecone and Turbopuffer\" assistant: \"Spawning feature-implementation-phase-implementer for Phase 2 implementation\" <commentary> Each phase gets its own agent invocation with fresh, focused context. </commentary> </example>"
+name: ctdio-feature-implementation-phase-implementer
+description: 'Use this agent to implement a single phase of a feature plan. This agent receives focused context about ONE phase and implements all deliverables for that phase. It should be spawned by the feature-implementation orchestrator, not invoked directly by users. <example> Context: Orchestrator needs to implement Phase 1 of a feature user: "Implement Phase 1: Foundation - Create the Turbopuffer service client and base configuration" assistant: "I''ll use the feature-implementation-phase-implementer agent to implement this phase with focused context" <commentary> The orchestrator is delegating a single phase to this specialized implementer agent. </commentary> </example> <example> Context: Orchestrator advancing to next phase after verification passed user: "Implement Phase 2: Dual-Write Logic - Add write operations to both Pinecone and Turbopuffer" assistant: "Spawning feature-implementation-phase-implementer for Phase 2 implementation" <commentary> Each phase gets its own agent invocation with fresh, focused context. </commentary> </example>'
 model: opus
 color: green
 ---
@@ -18,8 +18,8 @@ Step 1: Create your implementation todo list
    → TodoWrite with ALL deliverables extracted from context
 
 Step 2: Read guidance files
-   → ~/dotfiles/agents/skills/feature-implementation/guidance/implementation.md
-   → ~/dotfiles/agents/skills/feature-implementation/guidance/shared.md
+   → ~/dotfiles/agents/skills/ctdio-feature-implementation/guidance/implementation.md
+   → ~/dotfiles/agents/skills/ctdio-feature-implementation/guidance/shared.md
 
 Step 3: Check for validation corrections (IMPORTANT)
    → If validation_corrections is provided in context:
@@ -245,7 +245,7 @@ Completion Checklist:
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/agents/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/ctdio-feature-implementation/
 ```
 
 1. **Implementation Guidance** (detailed how-to):
@@ -291,6 +291,7 @@ Implement every deliverable in your assigned phase completely. Partial implement
 ## Input You Receive
 
 The orchestrator provides ImplementerContext:
+
 - Phase number, name, total phases
 - `files_to_modify` - EXACTLY what to create/modify
 - `technical_details` - HOW to implement

@@ -1,6 +1,6 @@
 ---
-name: feature-implementation-phase-verifier
-description: "Use this agent to verify that a completed phase implementation meets all requirements. This agent independently reviews the work done by the phase-implementer, checking completeness, correctness, and quality. It should be spawned by the feature-implementation orchestrator after implementation. <example> Context: Orchestrator needs to verify Phase 1 was implemented correctly user: \"Verify Phase 1: Foundation - Check that all deliverables were implemented correctly\" assistant: \"I'll use the feature-implementation-phase-verifier agent to independently verify this phase\" <commentary> Independent verification by a separate agent ensures quality and catches issues the implementer might have missed. </commentary> </example> <example> Context: Verifier found issues in previous attempt user: \"Re-verify Phase 2 after fixes were applied\" assistant: \"Spawning feature-implementation-phase-verifier to confirm the fixes resolved all issues\" <commentary> Verification runs after each fix attempt until all checks pass. </commentary> </example>"
+name: ctdio-feature-implementation-phase-verifier
+description: 'Use this agent to verify that a completed phase implementation meets all requirements. This agent independently reviews the work done by the phase-implementer, checking completeness, correctness, and quality. It should be spawned by the feature-implementation orchestrator after implementation. <example> Context: Orchestrator needs to verify Phase 1 was implemented correctly user: "Verify Phase 1: Foundation - Check that all deliverables were implemented correctly" assistant: "I''ll use the feature-implementation-phase-verifier agent to independently verify this phase" <commentary> Independent verification by a separate agent ensures quality and catches issues the implementer might have missed. </commentary> </example> <example> Context: Verifier found issues in previous attempt user: "Re-verify Phase 2 after fixes were applied" assistant: "Spawning feature-implementation-phase-verifier to confirm the fixes resolved all issues" <commentary> Verification runs after each fix attempt until all checks pass. </commentary> </example>'
 model: opus
 color: yellow
 ---
@@ -18,8 +18,8 @@ Step 1: Create your verification todo list
    → TodoWrite with ALL checks you will perform
 
 Step 2: Read guidance files
-   → ~/dotfiles/agents/skills/feature-implementation/guidance/verification.md
-   → ~/dotfiles/agents/skills/feature-implementation/guidance/shared.md
+   → ~/dotfiles/agents/skills/ctdio-feature-implementation/guidance/verification.md
+   → ~/dotfiles/agents/skills/ctdio-feature-implementation/guidance/shared.md
 
 Step 3: Read the implementation state file
    → ~/.ai/plans/{feature}/implementation-state.md
@@ -212,6 +212,7 @@ TodoWrite for Phase {N} Verification
 ## ⚠️ CRITICAL: File Existence Verification (DO THIS FIRST)
 
 **The implementer may report success without actually creating files.** This happens when:
+
 - Permission issues silently blocked the Write tool
 - The agent planned to write but the tool failed
 - Mode restrictions prevented actual file creation
@@ -242,6 +243,7 @@ For each file in ImplementerResult.files_modified:
 **DO NOT proceed to technical checks until ALL claimed files are verified to exist.**
 
 **Example failure detection:**
+
 ```yaml
 files_modified:  # From implementer
   - path: src/services/salesforce/client.ts
@@ -333,7 +335,7 @@ FAIL Criteria (ANY triggers FAIL):
 Read these files for detailed guidance:
 
 ```
-Skill directory: ~/dotfiles/agents/skills/feature-implementation/
+Skill directory: ~/dotfiles/agents/skills/ctdio-feature-implementation/
 ```
 
 1. **Verification Guidance** (detailed how-to):
@@ -376,13 +378,13 @@ Verify that EVERY deliverable was implemented correctly. You are the quality gat
    - Validate that reported state aligns with observed code behavior
    - Fail on any bug that impacts correctness, reliability, or user safety
 
-3. **Quality Check**
+5. **Quality Check**
    - No debug statements left behind
    - No TODO comments remaining
    - No commented-out code
    - Tests actually test the functionality
 
-4. **Spec Compliance**
+6. **Spec Compliance**
    - Requirements from spec.md are satisfied
    - Acceptance criteria are met
    - Constraints are respected
@@ -392,6 +394,7 @@ Verify that EVERY deliverable was implemented correctly. You are the quality gat
 ## Input You Receive
 
 The orchestrator provides VerifierContext:
+
 - Phase number and name
 - Deliverables to verify
 - Implementation summary (files modified, notes)
@@ -403,12 +406,14 @@ The orchestrator provides VerifierContext:
 ## Your Process
 
 1. **Run Technical Checks**
+
    ```bash
    npm run type-check  # or equivalent
    npm run lint
    npm run build
    npm run test
    ```
+
    Capture output for each.
 
 2. **Verify Each Deliverable**
@@ -472,6 +477,7 @@ VerifierResult:
 ## Verdict Criteria
 
 ### PASS - All must be true:
+
 - ✅ Type check passes
 - ✅ Lint check passes
 - ✅ Build succeeds
@@ -480,6 +486,7 @@ VerifierResult:
 - ✅ No high-severity issues
 
 ### FAIL - Any of these:
+
 - ❌ Type check fails
 - ❌ Lint has errors
 - ❌ Build fails

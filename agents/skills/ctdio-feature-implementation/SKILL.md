@@ -1,6 +1,6 @@
 ---
-name: feature-implementation
-description: Execute feature plans from ~/.ai/plans using orchestrated sub-agents. This skill coordinates phase-implementer, phase-verifier, and state-manager agents to systematically implement features. You act as an orchestrator - you never write code directly, you delegate to agents and manage the workflow. Pairs with the feature-planning skill.
+name: ctdio-feature-implementation
+description: Execute feature plans from ~/.ai/plans using orchestrated sub-agents. This skill coordinates phase-implementer, phase-verifier, and state-manager agents to systematically implement features. You act as an orchestrator - you never write code directly, you delegate to agents and manage the workflow. Pairs with the ctdio-feature-planning skill.
 color: green
 ---
 
@@ -9,8 +9,9 @@ color: green
 You are an **orchestrator** that coordinates feature implementation through specialized sub-agents. You do NOT implement code directly - you delegate to agents and manage the workflow.
 
 **Usage with ralph-loop**:
+
 ```
-/ralph-loop "implement {feature} using the feature-implementation skill" --completion-promise "FEATURE_COMPLETE" --max-iterations 50
+/ralph-loop "implement {feature} using the ctdio-feature-implementation skill" --completion-promise "FEATURE_COMPLETE" --max-iterations 50
 ```
 
 ---
@@ -18,6 +19,7 @@ You are an **orchestrator** that coordinates feature implementation through spec
 ## Orchestrator Role
 
 Your responsibilities:
+
 1. **Read and understand the plan** - You hold the big picture
 2. **Prepare context** for sub-agents - They get focused, relevant information
 3. **Spawn agents** via the Task tool - Delegate implementation and verification
@@ -26,6 +28,7 @@ Your responsibilities:
 6. **Control flow** - Advance phases, handle failures, complete the feature
 
 **You do NOT:**
+
 - Write implementation code directly
 - Run verification commands yourself (verifier agent does this)
 - Make implementation decisions (implementer agent does this)
@@ -303,7 +306,7 @@ flowchart TD
 
 1. **Identify feature** from user request
 2. **Check** if `~/.ai/plans/{feature}/implementation-state.md` exists
-3. **If NO state file**: Spawn `feature-implementation-state-manager` with "INITIALIZE state for {feature}"
+3. **If NO state file**: Spawn `ctdio-feature-implementation-state-manager` with "INITIALIZE state for {feature}"
 4. **If state exists**: Read it to find current phase
 
 **FOR EACH PHASE (repeat until all complete):**
@@ -314,17 +317,18 @@ flowchart TD
    - `~/.ai/plans/{feature}/phase-{NN}-{name}/testing-strategy.md`
 
 5.5 **Validate plan assumptions** (if warranted - see "When to Validate"):
-   - Extract assumptions from phase docs (files, patterns, dependencies)
-   - Spawn `feature-implementation-plan-validator` with ValidatorContext
-   - Wait for `ValidationReport`
-   - If `BLOCKED`: Stop, report issues to user, do NOT spawn implementer
-   - If `NEEDS_ATTENTION`: Include corrections in ImplementerContext
-   - If `VALID`: Proceed normally
 
-6. **Spawn implementer**: `feature-implementation-phase-implementer`
+- Extract assumptions from phase docs (files, patterns, dependencies)
+- Spawn `ctdio-feature-implementation-plan-validator` with ValidatorContext
+- Wait for `ValidationReport`
+- If `BLOCKED`: Stop, report issues to user, do NOT spawn implementer
+- If `NEEDS_ATTENTION`: Include corrections in ImplementerContext
+- If `VALID`: Proceed normally
+
+6. **Spawn implementer**: `ctdio-feature-implementation-phase-implementer`
    - Wait for `ImplementerResult`
 
-7. **Spawn verifier**: `feature-implementation-phase-verifier`
+7. **Spawn verifier**: `ctdio-feature-implementation-phase-verifier`
    - Wait for `VerifierResult`
 
 8. **Check verifier verdict**:
@@ -332,7 +336,7 @@ flowchart TD
    - If `FAIL` and attempts >= 3: Stop and ask user for help
    - If `PASS`: Continue to step 9
 
-9. **Spawn reviewer**: `feature-implementation-phase-reviewer`
+9. **Spawn reviewer**: `ctdio-feature-implementation-phase-reviewer`
    - Wait for `ReviewerResult`
 
 10. **Check reviewer verdict**:
@@ -359,13 +363,13 @@ flowchart TD
 
 ### Agent Summary
 
-| Agent | Purpose | When Used |
-|-------|---------|-----------|
-| **state-manager** | Create/update implementation-state.md | INITIALIZE (no state), after every VERIFY |
-| **plan-validator** | Validate plan assumptions against codebase | Before implementer, when validation warranted |
-| **phase-implementer** | Implement one phase's deliverables | For each phase, and on fix/review retries |
-| **phase-verifier** | Verify implementation works (tests pass) | After implementer completes |
-| **phase-reviewer** | Review code quality and patterns | After verifier PASSES |
+| Agent                 | Purpose                                    | When Used                                     |
+| --------------------- | ------------------------------------------ | --------------------------------------------- |
+| **state-manager**     | Create/update implementation-state.md      | INITIALIZE (no state), after every VERIFY     |
+| **plan-validator**    | Validate plan assumptions against codebase | Before implementer, when validation warranted |
+| **phase-implementer** | Implement one phase's deliverables         | For each phase, and on fix/review retries     |
+| **phase-verifier**    | Verify implementation works (tests pass)   | After implementer completes                   |
+| **phase-reviewer**    | Review code quality and patterns           | After verifier PASSES                         |
 
 ---
 
@@ -374,9 +378,11 @@ flowchart TD
 **When this skill is invoked, follow these steps in order:**
 
 ### Step 1: Identify the Feature
+
 Extract the feature name from the user's request. The plan must exist at `~/.ai/plans/{feature}/`.
 
 ### Step 2: Check for Existing State
+
 ```
 Read: ~/.ai/plans/{feature}/implementation-state.md
 ```
@@ -384,19 +390,22 @@ Read: ~/.ai/plans/{feature}/implementation-state.md
 ### Step 3: Initialize or Resume
 
 **If NO state file exists:**
+
 ```
-SPAWN: feature-implementation-state-manager
+SPAWN: ctdio-feature-implementation-state-manager
 Prompt: "INITIALIZE state for {feature} feature"
 WAIT for confirmation that state file was created
 ```
 
 **If state file EXISTS:**
+
 - Read it to determine current phase and status
 - Resume from the current incomplete phase
 
 ### Step 4: Begin Orchestrator Loop
+
 - Read the current phase's documentation files
-- Spawn `feature-implementation-phase-implementer` with the phase context
+- Spawn `ctdio-feature-implementation-phase-implementer` with the phase context
 - **Your first Task tool call should ALWAYS be spawning an agent**
 
 ⚠️ **CRITICAL**: Do NOT write implementation code. Do NOT run verification commands. Your job is to spawn agents and process their results.
@@ -405,7 +414,7 @@ WAIT for confirmation that state file was created
 
 ## Plan Directory Structure (KNOWN)
 
-The feature-planning skill creates plans with this EXACT structure. **Do NOT search for files - read them directly.**
+The ctdio-feature-planning skill creates plans with this EXACT structure. **Do NOT search for files - read them directly.**
 
 ```
 ~/.ai/plans/{feature}/
@@ -431,6 +440,7 @@ The feature-planning skill creates plans with this EXACT structure. **Do NOT sea
 ### File Reading Strategy (NO WASTED TOOL CALLS)
 
 **On INITIALIZE, read these files directly:**
+
 ```
 ~/.ai/plans/{feature}/implementation-guide.md   # Get phase list
 ~/.ai/plans/{feature}/spec.md                   # Understand requirements
@@ -439,6 +449,7 @@ The feature-planning skill creates plans with this EXACT structure. **Do NOT sea
 ```
 
 **For EACH PHASE, read these three files directly:**
+
 ```
 ~/.ai/plans/{feature}/phase-{NN}-{name}/files-to-modify.md
 ~/.ai/plans/{feature}/phase-{NN}-{name}/technical-details.md
@@ -455,12 +466,12 @@ The feature-planning skill creates plans with this EXACT structure. **Do NOT sea
 
 The orchestrator reads the three phase files and passes their FULL contents:
 
-```yaml
+````yaml
 ImplementerContext:
   phase:
-    number: 1                           # Phase number (NN from directory name)
-    name: "foundation"                  # Phase name (from directory name)
-    total_phases: 3                     # Total phases in plan
+    number: 1 # Phase number (NN from directory name)
+    name: "foundation" # Phase name (from directory name)
+    total_phases: 3 # Total phases in plan
 
   # ═══════════════════════════════════════════════════════════════════
   # FROM: phase-{NN}-{name}/files-to-modify.md
@@ -531,7 +542,7 @@ ImplementerContext:
   # Validation corrections (from plan-validator if NEEDS_ATTENTION)
   # IMPORTANT: Apply these corrections BEFORE following the plan
   # ═══════════════════════════════════════════════════════════════════
-  validation_corrections: null  # or:
+  validation_corrections: null # or:
   # validation_corrections:
   #   verified_patterns:
   #     - "PineconeService class at src/services/pinecone.ts:23-89"
@@ -540,7 +551,7 @@ ImplementerContext:
   #     - "Install @turbopuffer/sdk before starting"
   #   new_discoveries:
   #     - "PineconeService also exports PineconeError - follow this pattern"
-```
+````
 
 ### ImplementerResult (Implementer → Orchestrator)
 
@@ -579,12 +590,12 @@ VerifierContext:
     number: 1
     name: "Foundation"
 
-  deliverables: |                       # Same deliverables text as implementer
+  deliverables: | # Same deliverables text as implementer
     ## Deliverables
     1. Create TurbopufferService class
     ...
 
-  implementation_summary:               # From ImplementerResult
+  implementation_summary: # From ImplementerResult
     files_modified:
       - src/services/turbopuffer.ts
       - src/services/__tests__/turbopuffer.test.ts
@@ -594,13 +605,13 @@ VerifierContext:
     implementation_notes: |
       Used the same pattern as PineconeService...
 
-  verification_commands:                # Commands to run
+  verification_commands: # Commands to run
     - npm run build
     - npm run lint
     - npm run type-check
     - npm run test
 
-  phase_specific_checks:                # From plan's completion criteria
+  phase_specific_checks: # From plan's completion criteria
     - "TurbopufferService exports from index.ts"
     - "All tests pass with coverage > 80%"
 ```
@@ -654,10 +665,10 @@ When verification fails, the orchestrator adds fix context to the next implement
 
 ```yaml
 fix_context:
-  attempt: 2                            # Which retry attempt
+  attempt: 2 # Which retry attempt
   max_attempts: 3
 
-  previous_issues:                      # From VerifierResult
+  previous_issues: # From VerifierResult
     - severity: "high"
       location: "src/services/turbopuffer.ts:45"
       description: "Missing error handling for network timeout"
@@ -685,7 +696,7 @@ ReviewerContext:
 
   spec_path: "~/.ai/plans/turbopuffer-search/spec.md"
 
-  files_modified:                         # From ImplementerResult
+  files_modified: # From ImplementerResult
     - path: src/services/turbopuffer.ts
       action: created
       summary: "TurbopufferService with connection pooling"
@@ -693,15 +704,15 @@ ReviewerContext:
       action: created
       summary: "Unit tests for TurbopufferService"
 
-  implementation_notes: |                 # From ImplementerResult
+  implementation_notes: | # From ImplementerResult
     Used the same pattern as PineconeService.
     Added retry logic for transient failures.
 
-  deliverables_completed:                 # From ImplementerResult
+  deliverables_completed: # From ImplementerResult
     - "Create TurbopufferService class"
     - "Write unit tests"
 
-  deviations:                             # From ImplementerResult
+  deviations: # From ImplementerResult
     - description: "Added retry logic not in plan"
       justification: "Turbopuffer API has occasional timeouts"
 ```
@@ -760,7 +771,7 @@ review_fix_context:
   attempt: 1
   max_attempts: 3
 
-  review_issues:                          # From ReviewerResult
+  review_issues: # From ReviewerResult
     - severity: "blocking"
       file: "src/services/turbopuffer.ts"
       line: 42
@@ -784,15 +795,16 @@ review_fix_context:
 
 Run the plan-validator **IF ANY** of these conditions are true:
 
-| Condition | Rationale |
-|-----------|-----------|
-| Plan modified > 24 hours ago | Codebase may have drifted |
-| Previous phase had failures | Assumptions may be wrong |
-| Phase touches > 3 files | Higher risk of conflicts |
-| State file shows `validation_needed: true` | Explicit request |
-| First attempt at Phase 1 | Establish baseline |
+| Condition                                  | Rationale                 |
+| ------------------------------------------ | ------------------------- |
+| Plan modified > 24 hours ago               | Codebase may have drifted |
+| Previous phase had failures                | Assumptions may be wrong  |
+| Phase touches > 3 files                    | Higher risk of conflicts  |
+| State file shows `validation_needed: true` | Explicit request          |
+| First attempt at Phase 1                   | Establish baseline        |
 
 **SKIP validation IF ALL** of these are true:
+
 - Plan created < 2 hours ago
 - First attempt (no failures)
 - Phase is simple (1-2 files)
@@ -898,14 +910,17 @@ ValidationReport:
 ### Handling Validation Results
 
 **If VALID:**
+
 - Proceed to spawn implementer normally
 - Optionally include `context_for_implementer.verified_patterns` in ImplementerContext
 
 **If NEEDS_ATTENTION:**
+
 - Include `context_for_implementer.corrections_needed` in ImplementerContext
 - Proceed to spawn implementer with corrections noted
 
 **If BLOCKED:**
+
 - Do NOT spawn implementer
 - Report blocking issues to user
 - Wait for user to resolve (e.g., install missing dependencies)
@@ -919,17 +934,17 @@ ValidationReport:
 
 ```markdown
 **Actions:**
+
 1. Read `~/.ai/plans/{feature}/implementation-guide.md` - get phase list
 2. Check if `~/.ai/plans/{feature}/implementation-state.md` exists
 
-**If state file DOES NOT exist:**
-3. Spawn state-manager to create it:
+**If state file DOES NOT exist:** 3. Spawn state-manager to create it:
 
-   Task(
-     subagent_type: "feature-implementation-state-manager",
-     mode: "bypassPermissions",  # REQUIRED for write access
-     prompt: """
-     INITIALIZE state for feature: {feature}
+Task(
+subagent_type: "ctdio-feature-implementation-state-manager",
+mode: "bypassPermissions", # REQUIRED for write access
+prompt: """
+INITIALIZE state for feature: {feature}
 
      Plan directory: ~/.ai/plans/{feature}/
 
@@ -938,10 +953,10 @@ ValidationReport:
      - All phases with planned tasks
      - Phase 1 marked as in_progress
      """
-   )
 
-**If state file EXISTS:**
-3. Read `~/.ai/plans/{feature}/implementation-state.md`
+)
+
+**If state file EXISTS:** 3. Read `~/.ai/plans/{feature}/implementation-state.md`
 
 4. Identify current phase from state
 5. Count total phases
@@ -952,6 +967,7 @@ ValidationReport:
 
 ```markdown
 **Actions:**
+
 1. Read phase documentation:
    - `phase-{NN}-{name}/files-to-modify.md`
    - `phase-{NN}-{name}/technical-details.md`
@@ -970,6 +986,7 @@ ValidationReport:
 Check "When to Validate" conditions. If validation warranted:
 
 **Actions:**
+
 1. Extract assumptions from phase docs:
    - Files referenced in files-to-modify.md
    - Patterns mentioned in technical-details.md
@@ -979,29 +996,33 @@ Check "When to Validate" conditions. If validation warranted:
 2. Spawn plan-validator:
 
    Task(
-     subagent_type: "feature-implementation-plan-validator",
-     prompt: """
-     Validate plan assumptions for Phase {N}: {Name}
+   subagent_type: "ctdio-feature-implementation-plan-validator",
+   prompt: """
+   Validate plan assumptions for Phase {N}: {Name}
 
-     Feature: {feature}
-     Plan directory: ~/.ai/plans/{feature}/
+   Feature: {feature}
+   Plan directory: ~/.ai/plans/{feature}/
 
-     ## Assumptions to Validate
+   ## Assumptions to Validate
 
-     ### Files
-     {list of files from files-to-modify.md}
+   ### Files
 
-     ### Patterns
-     {patterns referenced in technical-details.md}
+   {list of files from files-to-modify.md}
 
-     ### Dependencies
-     {packages used in code examples}
+   ### Patterns
 
-     ### Exports
-     {exports referenced for pattern matching}
+   {patterns referenced in technical-details.md}
 
-     Return ValidationReport with overall_status and findings.
-     """
+   ### Dependencies
+
+   {packages used in code examples}
+
+   ### Exports
+
+   {exports referenced for pattern matching}
+
+   Return ValidationReport with overall_status and findings.
+   """
    )
 
 3. Process ValidationReport:
@@ -1018,20 +1039,22 @@ Do NOT spawn implementer until resolved.
 
 ```markdown
 **Action:**
-Use Task tool to spawn feature-implementation-phase-implementer:
+Use Task tool to spawn ctdio-feature-implementation-phase-implementer:
 
 Task(
-  subagent_type: "feature-implementation-phase-implementer",
-  mode: "bypassPermissions",  # REQUIRED for write access
-  prompt: """
-  Implement Phase {N}: {Name}
+subagent_type: "ctdio-feature-implementation-phase-implementer",
+mode: "bypassPermissions", # REQUIRED for write access
+prompt: """
+Implement Phase {N}: {Name}
 
-  ## Context
-  {ImplementerContext as structured YAML/markdown}
+## Context
 
-  ## Your Task
-  Implement ALL deliverables listed above. Return ImplementerResult.
-  """
+{ImplementerContext as structured YAML/markdown}
+
+## Your Task
+
+Implement ALL deliverables listed above. Return ImplementerResult.
+"""
 )
 ```
 
@@ -1039,20 +1062,22 @@ Task(
 
 ```markdown
 **Action:**
-Use Task tool to spawn feature-implementation-phase-verifier:
+Use Task tool to spawn ctdio-feature-implementation-phase-verifier:
 
 Task(
-  subagent_type: "feature-implementation-phase-verifier",
-  mode: "bypassPermissions",  # REQUIRED for running verification commands
-  prompt: """
-  Verify Phase {N}: {Name}
+subagent_type: "ctdio-feature-implementation-phase-verifier",
+mode: "bypassPermissions", # REQUIRED for running verification commands
+prompt: """
+Verify Phase {N}: {Name}
 
-  ## Context
-  {VerifierContext as structured YAML/markdown}
+## Context
 
-  ## Your Task
-  Verify ALL deliverables were implemented correctly. Return VerifierResult.
-  """
+{VerifierContext as structured YAML/markdown}
+
+## Your Task
+
+Verify ALL deliverables were implemented correctly. Return VerifierResult.
+"""
 )
 ```
 
@@ -1060,40 +1085,47 @@ Task(
 
 ```markdown
 **If PASS:**
+
 1. Spawn state-manager to update state with results:
 
    Task(
-     subagent_type: "feature-implementation-state-manager",
-     mode: "bypassPermissions",  # REQUIRED for write access
-     prompt: """
-     UPDATE state: Phase {N} PASSED
+   subagent_type: "ctdio-feature-implementation-state-manager",
+   mode: "bypassPermissions", # REQUIRED for write access
+   prompt: """
+   UPDATE state: Phase {N} PASSED
 
-     Feature: {feature}
-     Plan directory: ~/.ai/plans/{feature}/
+   Feature: {feature}
+   Plan directory: ~/.ai/plans/{feature}/
 
-     ## Verification Results
-     {VerifierResult.technical_checks as formatted output}
+   ## Verification Results
 
-     ## Files Modified
-     {ImplementerResult.files_modified}
+   {VerifierResult.technical_checks as formatted output}
 
-     ## Deliverables Completed
-     {ImplementerResult.deliverables_completed}
+   ## Files Modified
 
-     ## Tests Written
-     {list of tests from ImplementerResult}
+   {ImplementerResult.files_modified}
 
-     ## Spec Requirements Satisfied
-     {list of FR/NFR/Constraints completed this phase}
+   ## Deliverables Completed
 
-     ## Deviations (if any)
-     {ImplementerResult.deviations}
+   {ImplementerResult.deliverables_completed}
 
-     Mark phase {N} as completed with today's date.
-     Mark phase {N+1} as in_progress (if exists).
-     Update Spec Requirements Status at top.
-     Update Overall Progress section.
-     """
+   ## Tests Written
+
+   {list of tests from ImplementerResult}
+
+   ## Spec Requirements Satisfied
+
+   {list of FR/NFR/Constraints completed this phase}
+
+   ## Deviations (if any)
+
+   {ImplementerResult.deviations}
+
+   Mark phase {N} as completed with today's date.
+   Mark phase {N+1} as in_progress (if exists).
+   Update Spec Requirements Status at top.
+   Update Overall Progress section.
+   """
    )
 
 2. Create commit: `feat({feature}): complete phase {N} - {name}`
@@ -1101,30 +1133,34 @@ Task(
 4. Advance to next phase
 
 **If FAIL (attempt < 3):**
+
 1. Spawn state-manager to record failure:
 
    Task(
-     subagent_type: "feature-implementation-state-manager",
-     mode: "bypassPermissions",  # REQUIRED for write access
-     prompt: """
-     UPDATE state: Phase {N} FAILED (attempt {M} of 3)
+   subagent_type: "ctdio-feature-implementation-state-manager",
+   mode: "bypassPermissions", # REQUIRED for write access
+   prompt: """
+   UPDATE state: Phase {N} FAILED (attempt {M} of 3)
 
-     Feature: {feature}
-     Plan directory: ~/.ai/plans/{feature}/
+   Feature: {feature}
+   Plan directory: ~/.ai/plans/{feature}/
 
-     ## Verification Output
-     {VerifierResult.technical_checks}
+   ## Verification Output
 
-     ## Issues Found
-     {VerifierResult.issues as formatted list}
+   {VerifierResult.technical_checks}
 
-     ## Verifier Summary
-     {VerifierResult.summary}
+   ## Issues Found
 
-     Keep phase {N} as in_progress.
-     Update Attempts count to {M}.
-     Add Issues (Current Attempt) section.
-     """
+   {VerifierResult.issues as formatted list}
+
+   ## Verifier Summary
+
+   {VerifierResult.summary}
+
+   Keep phase {N} as in_progress.
+   Update Attempts count to {M}.
+   Add Issues (Current Attempt) section.
+   """
    )
 
 2. Build FixContext from VerifierResult.issues
@@ -1133,6 +1169,7 @@ Task(
 5. Increment attempt counter
 
 **If FAIL (attempt >= 3):**
+
 1. Spawn state-manager to document blocker
 2. Ask user: "Phase {N} failed verification 3 times. Issues: {summary}. Need help."
 3. Do NOT output completion promise
@@ -1142,6 +1179,7 @@ Task(
 
 ```markdown
 **When all phases complete:**
+
 1. Read implementation-state.md to confirm all phases passed
 2. Spawn verifier one final time for full-feature check
 3. If PASS: output `<promise>FEATURE_COMPLETE</promise>`
@@ -1162,6 +1200,7 @@ The state-manager agent creates and maintains this file:
 **Status**: in_progress | completed
 
 ## Phase 1: {Name}
+
 **Status**: completed | in_progress | pending
 **Started**: {DATE}
 **Completed**: {DATE}
@@ -1169,26 +1208,31 @@ The state-manager agent creates and maintains this file:
 **Attempts**: 1
 
 ### Verification Results
+
 - Build: PASS
 - Lint: PASS
 - Type-check: PASS
 - Tests: PASS (142/142)
 
 ### Files Modified
+
 - `src/services/turbopuffer.ts` - Created service
 - `src/services/__tests__/turbopuffer.test.ts` - Unit tests
 
 ### Deviations
+
 - Added retry logic (justification: API timeouts)
 
 ## Phase 2: {Name}
+
 **Status**: in_progress
 **Started**: {DATE}
 **Attempts**: 2
 
 ### Issues (Current Attempt)
+
 - Missing integration test for dual-write
-...
+  ...
 ```
 
 ---
@@ -1196,16 +1240,19 @@ The state-manager agent creates and maintains this file:
 ## Error Handling
 
 ### Implementer Returns "blocked"
+
 1. Document blocker in state file via state-manager
 2. Ask user: "Phase {N} blocked: {blocker}. How should I proceed?"
 3. Wait for user guidance
 
 ### Verifier Fails 3 Times
+
 1. Document persistent issues in state file via state-manager
 2. Ask user: "Phase {N} failed verification 3 times. Issues: {summary}. Need help."
 3. Do NOT advance or output promise
 
 ### Agent Timeout/Error
+
 1. Retry the agent spawn once
 2. If still fails, document and ask user
 
@@ -1214,7 +1261,7 @@ The state-manager agent creates and maintains this file:
 ## Example Orchestrator Session
 
 ```
-User: "implement turbopuffer-search using the feature-implementation skill"
+User: "implement turbopuffer-search using the ctdio-feature-implementation skill"
 
 [INITIALIZE]
 Reading plan: ~/.ai/plans/turbopuffer-search/implementation-guide.md
@@ -1222,7 +1269,7 @@ Found 4 phases.
 Checking for state file... not found.
 
 Spawning state-manager...
-→ Task(feature-implementation-state-manager): "INITIALIZE state for turbopuffer-search..."
+→ Task(ctdio-feature-implementation-state-manager): "INITIALIZE state for turbopuffer-search..."
 
 State-manager returned:
 - Created implementation-state.md
@@ -1238,7 +1285,7 @@ Gathering context...
 - Patterns: DI, Result<T,E>, colocated tests
 
 Spawning implementer...
-→ Task(feature-implementation-phase-implementer): "Implement Phase 1: Foundation..."
+→ Task(ctdio-feature-implementation-phase-implementer): "Implement Phase 1: Foundation..."
 
 Implementer returned:
 - Status: complete
@@ -1246,7 +1293,7 @@ Implementer returned:
 - Deliverables: 5/5 complete
 
 Spawning verifier...
-→ Task(feature-implementation-phase-verifier): "Verify Phase 1: Foundation..."
+→ Task(ctdio-feature-implementation-phase-verifier): "Verify Phase 1: Foundation..."
 
 Verifier returned:
 - Verdict: PASS
@@ -1254,7 +1301,7 @@ Verifier returned:
 - All deliverables verified
 
 Spawning state-manager...
-→ Task(feature-implementation-state-manager): "UPDATE state: Phase 1 PASSED..."
+→ Task(ctdio-feature-implementation-state-manager): "UPDATE state: Phase 1 PASSED..."
 
 State-manager returned:
 - Phase 1 marked completed
@@ -1297,19 +1344,25 @@ Final verification: PASS
 **Before advancing to the next phase, you MUST complete ALL these checks:**
 
 ### 1. Verifier Must PASS
+
 The `VerifierResult` must have `verdict: "PASS"`. If not, retry with implementer.
 
 ### 2. Reviewer Must APPROVE
+
 The `ReviewerResult` must have `verdict: "APPROVED"`. If not, retry with implementer using review feedback.
 
 ### 3. State File Must Be Updated
+
 After spawning state-manager with UPDATE operation, **you MUST read the state file**:
+
 ```
 Read: ~/.ai/plans/{feature}/implementation-state.md
 ```
 
 ### 4. Confirm State Matches Work Done
+
 When reading the state file, verify:
+
 - [ ] Current phase shows `Status: completed`
 - [ ] `Files Created/Modified` section is populated
 - [ ] `Tests Written` section lists actual tests
@@ -1317,13 +1370,16 @@ When reading the state file, verify:
 - [ ] `Commit` field has the commit hash
 
 ### 5. Only THEN Advance
+
 Only after ALL above checks pass can you:
+
 - Create the commit (if not already done)
 - Advance to the next phase
 
 **If ANY check fails, DO NOT ADVANCE. Fix the issue first.**
 
 ### Anti-Pattern: Advancing Without Verification
+
 ```
 ❌ WRONG:
 1. Spawn implementer
@@ -1351,7 +1407,7 @@ Only after ALL above checks pass can you:
 ```
 # CORRECT - Bypass permissions and wait for result
 Task(
-  subagent_type: "feature-implementation-phase-implementer",
+  subagent_type: "ctdio-feature-implementation-phase-implementer",
   mode: "bypassPermissions",  # ✅ REQUIRED - agents need write access
   prompt: "Implement Phase 1: ..."
 )
@@ -1384,12 +1440,12 @@ Task(
 
 Sub-agents should read this skill overview first, then load relevant guidance files for their role:
 
-| Agent | Primary Guidance | Also Read |
-|-------|------------------|-----------|
-| **phase-implementer** | `guidance/implementation.md` | `guidance/shared.md` |
-| **phase-verifier** | `guidance/verification.md` | `guidance/shared.md` |
-| **phase-reviewer** | (embedded in agent definition) | `guidance/shared.md`, spec.md |
-| **state-manager** | `guidance/state-management.md` | `guidance/shared.md` |
+| Agent                 | Primary Guidance               | Also Read                     |
+| --------------------- | ------------------------------ | ----------------------------- |
+| **phase-implementer** | `guidance/implementation.md`   | `guidance/shared.md`          |
+| **phase-verifier**    | `guidance/verification.md`     | `guidance/shared.md`          |
+| **phase-reviewer**    | (embedded in agent definition) | `guidance/shared.md`, spec.md |
+| **state-manager**     | `guidance/state-management.md` | `guidance/shared.md`          |
 
 **Guidance files location**: `guidance/` (relative to this skill)
 
@@ -1403,6 +1459,7 @@ Sub-agents should read this skill overview first, then load relevant guidance fi
 ### Example Files
 
 For reference implementations, see:
+
 - `examples/implementation-state-example.md` - Complete state file
 - `examples/in-progress-phase-example.md` - Phase in-progress state
 
@@ -1428,7 +1485,7 @@ For reference implementations, see:
 
 ```
 After compaction:
-1. Invoke the Skill tool with skill: "feature-implementation"
+1. Invoke the Skill tool with skill: "ctdio-feature-implementation"
 2. Wait for skill to load
 3. Re-read the current implementation-state.md to reorient
 4. Continue the orchestrator loop from current phase
@@ -1437,6 +1494,7 @@ After compaction:
 ### How to Detect Compaction Occurred
 
 You may notice compaction occurred if:
+
 - Your context suddenly feels "thinner" or you're missing workflow details
 - You're unsure about next steps in the orchestrator loop
 - You forgot the agent handoff data specifications
@@ -1454,7 +1512,7 @@ You may notice compaction occurred if:
 
 ✅ CORRECT:
 [Compaction occurs]
-"Compaction completed. Reloading feature-implementation skill..."
+"Compaction completed. Reloading ctdio-feature-implementation skill..."
 [Invokes Skill tool]
 [Reads implementation-state.md]
 "Resuming Phase 2 orchestration. Spawning implementer..."
@@ -1466,11 +1524,13 @@ You may notice compaction occurred if:
 ## When to Use This Skill
 
 Invoke this skill when:
+
 - User wants to implement a feature that has a plan in `~/.ai/plans/`
 - User wants to resume work on an existing feature implementation
 - Complex feature needs systematic, multi-phase implementation
 
 **Do NOT use** this skill for:
+
 - Simple features without existing plans (just implement directly)
 - Quick fixes or small changes
-- Creating plans (use feature-planning skill first)
+- Creating plans (use ctdio-feature-planning skill first)
