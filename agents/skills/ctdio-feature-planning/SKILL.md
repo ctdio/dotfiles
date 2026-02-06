@@ -605,7 +605,11 @@ ALTER TABLE ...
 
 ### 4. Phase Directory: files-to-modify.md Template
 
-Quick reference for agents gathering context.
+Quick reference for agents gathering context. Two formats are supported: **simple** (flat file list) and **work groups** (for parallel implementation).
+
+#### Simple Format (no work groups)
+
+Use this when all files are interconnected or the phase is small. The orchestrator assigns one implementer.
 
 ```markdown
 # Phase [N]: Files to Modify
@@ -672,13 +676,6 @@ Quick reference for agents gathering context.
 
 ---
 
-## Change Dependencies
-
-**Change Order** (if specific order required):
-1. Modify `file1.ts` first (other files depend on this)
-2. Then modify `file2.ts` and `file3.ts` (can be parallel)
-3. Finally add `new-file.ts`
-
 ## File References Map
 
 Quick lookup of where important concepts are defined:
@@ -688,6 +685,89 @@ Quick lookup of where important concepts are defined:
 - **API Routes**: `app/api/v1/feature/route.ts` - `GET`, `POST` handlers
 - **Database Queries**: `lib/repositories/feature-repo.ts` - `findById()`, `create()`
 - **Tests**: `test/integration/feature.test.ts`
+```
+
+#### Work Group Format (for parallel implementation)
+
+Use this when a phase has distinct, independent sets of files that can be implemented concurrently. The orchestrator spawns one implementer per independent group.
+
+```markdown
+# Phase [N]: Files to Modify
+
+## Summary
+
+- **New Files**: [count]
+- **Modified Files**: [count]
+- **Work Groups**: [count] ([N] independent, [N] dependent)
+
+## Work Groups
+
+### Group: [name] (independent)
+
+[Brief description of this group's responsibility]
+
+#### New Files
+- `path/to/service-a.ts` - [Description]
+- `path/to/types-a.ts` - [Description]
+
+#### Tests
+- `path/to/__tests__/service-a.test.ts` - [Description]
+
+---
+
+### Group: [name] (independent)
+
+[Brief description]
+
+#### New Files
+- `path/to/service-b.ts` - [Description]
+- `path/to/types-b.ts` - [Description]
+
+#### Tests
+- `path/to/__tests__/service-b.test.ts` - [Description]
+
+---
+
+### Group: integration (depends: [group-a], [group-b])
+
+Shared files that depend on other groups completing first.
+
+#### Modified Files
+- `path/to/routes.ts` - Wire up new services
+- `path/to/index.ts` - Add barrel exports
+
+#### Tests
+- `path/to/__tests__/integration.test.ts` - End-to-end tests
+
+---
+
+## File References Map
+
+[Same as simple format]
+```
+
+#### Work Group Syntax
+
+- **Group header**: `### Group: {name} ({dependency})`
+  - `(independent)` — can run in parallel with other independent groups
+  - `(depends: group-a, group-b)` — must wait for named groups to complete
+  - No annotation defaults to `(independent)`
+- **Within each group**: Use `#### New Files`, `#### Modified Files`, `#### Tests` subsections
+- **Integration group**: A common pattern for shared files (barrel exports, route registration) that depend on all independent groups
+
+#### When to Use Work Groups
+
+**Use work groups when:**
+- Phase has 2+ distinct features or services that don't share files
+- Files can be cleanly separated by domain (auth vs. email vs. billing)
+- Each group has its own tests that don't depend on other groups
+
+**Don't use work groups when:**
+- All files are interconnected (e.g., modifying a single service)
+- The phase is small (< 5 files) — overhead isn't worth it
+- Files share types or utilities that would need to exist before any group starts
+
+**Default behavior:** If no `### Group:` markers exist, the orchestrator treats the entire phase as a single work group with one implementer. Fully backward compatible.
 ````
 
 ### 5. Phase Directory: testing-strategy.md Template

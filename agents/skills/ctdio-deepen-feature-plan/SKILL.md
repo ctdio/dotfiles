@@ -253,6 +253,21 @@ Run through this systematically. Don't just verify - **hunt for problems**.
 - [ ] What dependencies exist that the plan doesn't mention?
 - [ ] Will the proposed changes break anything?
 
+### Work Group Critique
+
+If `files-to-modify.md` uses work groups (`### Group:` markers):
+
+- [ ] Are groups correctly split? Do files in different groups share imports or dependencies?
+- [ ] Are dependency annotations accurate? Does a group marked `(independent)` actually import from another group's files?
+- [ ] Is there a missing integration group? (barrel exports, route registration, shared config that depends on multiple groups)
+- [ ] Could a flat phase benefit from work groups? (2+ distinct services with no shared files = missed parallelism)
+- [ ] Are groups too granular? (1-2 files per group adds orchestrator overhead without real parallelism benefit)
+- [ ] Are groups too coarse? (20 files in one "independent" group when half could be split out)
+
+If `files-to-modify.md` does NOT use work groups:
+
+- [ ] Should it? Look for distinct domains that don't share files — this is a parallelism opportunity
+
 ### Risk Critique
 
 - [ ] What could go wrong in production?

@@ -34,6 +34,7 @@ Before anything else, validate the state file against reality:
 **Before running any technical checks, verify that the files actually exist.**
 
 The implementer may report success without actually creating files. This happens when:
+
 - Permission issues silently blocked the Write tool
 - The agent planned to write but the tool failed
 - Mode restrictions prevented actual file creation
@@ -41,6 +42,7 @@ The implementer may report success without actually creating files. This happens
 **For each file in `ImplementerResult.files_modified`:**
 
 1. **Attempt to Read the file**
+
    ```
    Read(file_path)
    ```
@@ -62,6 +64,42 @@ The implementer may report success without actually creating files. This happens
 **DO NOT proceed to technical checks if ANY file is missing.**
 
 ---
+
+### Step 0.5: Plan vs Actual File Coverage
+
+Cross-reference the plan's file list against what was actually changed. Plans evolve during implementation — use engineering judgment, not a rigid checklist.
+
+1. **Read `planned_files`** from your VerifierContext (or read `files-to-modify.md` directly)
+2. **Extract every file path** — both "Files to Create" and "Files to Modify" sections
+3. **For each planned file**, check:
+   - In `files_modified`? → Covered
+   - In `planned_files_skipped` with a reason? → Evaluate the reason
+   - In neither? → Unexplained gap, investigate
+4. **For unexplained gaps**: attempt to Read the file, or [Team] DM the implementer
+5. **Evaluate holistically**: justified skips are fine, unexplained gaps are suspicious
+
+```yaml
+# Example: Plan says 4 files, 3 modified, 1 skipped with reason
+planned_files_coverage:
+  - path: src/services/turbopuffer.ts
+    status: modified # ✅
+  - path: src/services/__tests__/turbopuffer.test.ts
+    status: modified # ✅
+  - path: src/services/index.ts
+    status: modified # ✅
+  - path: src/components/OldSearchWidget.tsx
+    status: skipped # ⚠️ evaluate
+    reason: "Component removed in previous phase"
+    verdict: acceptable
+
+coverage: "3/4 modified, 1 justified skip"
+```
+
+**Key distinction:**
+
+- **Unexplained gap** (not modified, no reason) → likely forgotten, flag as issue
+- **Justified skip** (reason makes sense) → plans evolve, this is fine
+- **"Files to Modify"** items are most commonly forgotten — pay attention to these
 
 ### Step 1: Run Technical Checks
 
@@ -106,12 +144,14 @@ Cross-reference with `spec.md`:
 **The most common verification miss: Feature exists but isn't wired into the system.**
 
 For EACH new file/function/class:
+
 1. **Grep for imports** - Is it imported anywhere in the codebase?
 2. **Grep for calls** - Is it called anywhere?
 3. **Check entry points** - Is there a route/handler/component that uses it?
 4. **End-to-end proof** - Is there a test that exercises the full path?
 
 If new code is not imported/called from anywhere:
+
 - It's dead code
 - The feature doesn't actually work
 - **FAIL immediately** - this is a high-severity issue
@@ -134,16 +174,19 @@ Check for common issues:
 ### Type Check
 
 **What to look for:**
+
 - No type errors
 - No implicit `any` types (if strict mode)
 - Proper type exports
 
 **Pass criteria:**
+
 ```
 0 errors
 ```
 
 **Failure example:**
+
 ```
 src/services/example.ts:45:3 - error TS2322: Type 'string' is not assignable to type 'number'.
 ```
@@ -151,16 +194,19 @@ src/services/example.ts:45:3 - error TS2322: Type 'string' is not assignable to 
 ### Lint Check
 
 **What to look for:**
+
 - No lint errors
 - No warnings (or only acceptable ones)
 - Consistent code style
 
 **Pass criteria:**
+
 ```
 No lint errors or warnings
 ```
 
 **Failure example:**
+
 ```
 src/services/example.ts:12:5 - 'unused' is defined but never used
 ```
@@ -168,11 +214,13 @@ src/services/example.ts:12:5 - 'unused' is defined but never used
 ### Build Check
 
 **What to look for:**
+
 - Build completes successfully
 - No compilation errors
 - Output files generated
 
 **Pass criteria:**
+
 ```
 Build completed successfully
 ```
@@ -180,17 +228,20 @@ Build completed successfully
 ### Test Check
 
 **What to look for:**
+
 - All tests pass
 - No skipped tests (unless intentional)
 - Adequate coverage (if metrics available)
 
 **Pass criteria:**
+
 ```
 All tests passed: 142/142
 Coverage: 85% (if applicable)
 ```
 
 **Failure example:**
+
 ```
 FAIL src/__tests__/example.test.ts
   ✗ should handle error case (15ms)
@@ -220,6 +271,7 @@ deliverable_checks:
 ### Evidence Types
 
 Good evidence includes:
+
 - **File paths**: `src/services/user.ts:15`
 - **Function/class names**: `UserService.fetchData()`
 - **Test output**: `15 tests passed`
@@ -227,23 +279,23 @@ Good evidence includes:
 
 ### Common Deliverable Issues
 
-| Issue | How to Detect | Suggested Fix |
-|-------|---------------|---------------|
-| Missing file | File not found | Create the file as specified |
-| Missing function | grep/search doesn't find it | Implement the missing function |
-| Missing tests | No test file or empty tests | Write tests for the functionality |
-| Wrong signature | Function params don't match spec | Update signature to match spec |
-| Missing export | Not exported from index | Add to exports |
+| Issue            | How to Detect                    | Suggested Fix                     |
+| ---------------- | -------------------------------- | --------------------------------- |
+| Missing file     | File not found                   | Create the file as specified      |
+| Missing function | grep/search doesn't find it      | Implement the missing function    |
+| Missing tests    | No test file or empty tests      | Write tests for the functionality |
+| Wrong signature  | Function params don't match spec | Update signature to match spec    |
+| Missing export   | Not exported from index          | Add to exports                    |
 
 ### Common Integration Issues
 
-| Issue | How to Detect | Suggested Fix |
-|-------|---------------|---------------|
-| Dead code | Grep finds no imports of new file | Import and use in calling code |
-| Unused function | Grep finds no calls to function | Wire up to handler/route/component |
-| No entry point | Can't trace from user action to code | Register route, mount component, etc. |
-| Only unit tests | No tests exercise the integration | Add test that calls through entry point |
-| Incomplete wiring | Import exists but no actual call | Add the call site in handler/service |
+| Issue             | How to Detect                        | Suggested Fix                           |
+| ----------------- | ------------------------------------ | --------------------------------------- |
+| Dead code         | Grep finds no imports of new file    | Import and use in calling code          |
+| Unused function   | Grep finds no calls to function      | Wire up to handler/route/component      |
+| No entry point    | Can't trace from user action to code | Register route, mount component, etc.   |
+| Only unit tests   | No tests exercise the integration    | Add test that calls through entry point |
+| Incomplete wiring | Import exists but no actual call     | Add the call site in handler/service    |
 
 ---
 
@@ -252,6 +304,7 @@ Good evidence includes:
 Classify issues by severity:
 
 ### High Severity
+
 - Build failures
 - Test failures
 - Missing required functionality
@@ -259,12 +312,14 @@ Classify issues by severity:
 - Data corruption risks
 
 ### Medium Severity
+
 - Missing edge case handling
 - Incomplete error handling
 - Missing tests for some cases
 - Performance concerns
 
 ### Low Severity
+
 - Code style inconsistencies
 - Missing optional optimizations
 - Documentation gaps
@@ -277,6 +332,7 @@ Classify issues by severity:
 ### Functional Requirements
 
 For each FR in spec.md:
+
 1. Identify acceptance criteria
 2. Verify each criterion is met
 3. Document evidence or gaps
@@ -302,6 +358,7 @@ spec_compliance:
 ### Non-Functional Requirements
 
 Check NFRs that apply to this phase:
+
 - **Performance**: Response times, resource usage
 - **Security**: Input validation, auth checks, data protection
 - **Reliability**: Error handling, recovery, logging
@@ -316,6 +373,23 @@ Your result must include:
 ```yaml
 VerifierResult:
   verdict: "PASS" | "FAIL"
+
+  # Plan vs Actual file coverage
+  planned_files_coverage:
+    total_planned: 4
+    total_modified: 3
+    total_skipped: 1
+    coverage: "3/4 modified, 1 justified skip"
+    details:
+      - path: src/services/turbopuffer.ts
+        status: modified
+      - path: src/services/index.ts
+        status: modified
+      - path: src/components/OldWidget.tsx
+        status: skipped
+        reason: "Component removed in previous phase"
+        verdict: acceptable
+    unexplained_gaps: []  # Or list of files with no justification
 
   # ⚠️ CRITICAL: Include file existence verification
   file_existence_checks:
@@ -375,7 +449,10 @@ VerifierResult:
 ## Verdict Criteria
 
 ### PASS
+
 All of these must be true:
+
+- ✅ ALL planned files are accounted for (modified OR skipped with valid justification)
 - ✅ ALL files from files_modified exist (verified by Read)
 - ✅ ALL files have substantive content (not empty)
 - ✅ Implementation state file exists and matches observed reality
@@ -387,7 +464,10 @@ All of these must be true:
 - ✅ No high-severity issues
 
 ### FAIL
+
 Any of these triggers a FAIL:
+
+- ❌ ANY planned file has unexplained gap (not modified, no justification)
 - ❌ ANY file from files_modified does not exist (permission failure)
 - ❌ ANY file is empty or just a stub
 - ❌ Implementation state file missing or inconsistent with evidence
@@ -437,21 +517,25 @@ Any of these triggers a FAIL:
 ## Tips for Effective Verification
 
 ### Be Thorough
+
 - Run ALL verification commands
 - Check ALL deliverables
 - Verify against spec, not just "does it compile"
 
 ### Be Specific
+
 - Include exact file paths and line numbers
 - Quote error messages exactly
 - Provide copy-paste-ready fix suggestions
 
 ### Be Objective
+
 - Report what you find, not what you expect
 - Don't assume something works without checking
 - Verify independently of implementer's claims
 
 ### Be Helpful
+
 - Prioritize issues by severity
 - Suggest specific fixes
 - Note patterns (if same issue appears multiple times)

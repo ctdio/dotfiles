@@ -34,12 +34,24 @@ Step 4: ⚠️ VERIFY FILES ACTUALLY EXIST (CRITICAL - DO THIS FIRST)
    → DO NOT TRUST the implementer's summary - VERIFY YOURSELF
    → This catches permission failures where implementer reported success
 
-Step 5: Deep code inspection
+Step 5: PLAN vs ACTUAL FILE COVERAGE
+   → Read the planned_files list from your context (or read files-to-modify.md directly)
+   → Extract every file path listed under "Files to Create" and "Files to Modify"
+   → For EACH planned file:
+      - Was it created/modified by the implementer? (check files_modified list)
+      - If NOT in files_modified → check planned_files_skipped for a justification
+      - If skipped WITH justification → evaluate: does the reason make sense?
+      - If skipped WITHOUT justification → flag as a gap (likely forgotten)
+   → Use engineering judgment: plans change during implementation. A justified skip is fine.
+     An unexplained gap, especially for "Files to Modify" (wiring/UI touch points), is suspicious.
+   → If you're unsure whether a skip is justified, DM the implementer to ask [Team mode]
+
+Step 6: Deep code inspection
    → Grep/Read to find expected functions, classes, exports
    → Verify code is substantive (not just empty stubs)
    → Check imports, exports, type definitions exist
 
-Step 6: ⚠️ INTEGRATION GAP DETECTION (CRITICAL)
+Step 7: ⚠️ INTEGRATION GAP DETECTION (CRITICAL)
    → For EACH new file/function/class created:
       - Grep codebase for imports of the new module
       - Grep codebase for calls to the new function/class
@@ -53,15 +65,15 @@ Step 6: ⚠️ INTEGRATION GAP DETECTION (CRITICAL)
       - Does it exercise the feature through its entry point?
       - A feature with only unit tests but no integration test = SUSPICIOUS
 
-Step 7: Run technical checks IN ORDER
+Step 8: Run technical checks IN ORDER
    → type-check → lint → build → test
    → Capture output from EACH command
 
-Step 8: Verify EACH deliverable in code
+Step 9: Verify EACH deliverable in code
    → Read actual files, grep for expected functions/classes
    → Document evidence (file:line) for each
 
-Step 9: Check spec compliance
+Step 10: Check spec compliance
    → Cross-reference with spec.md requirements
    → Verify state file claims align with spec and evidence
 ```
@@ -72,65 +84,14 @@ Step 9: Check spec compliance
 
 ## 🔌 Integration Gap Detection (CRITICAL)
 
-**The most common implementation failure: Feature works in isolation but isn't wired into the system.**
+**Dead code is the #1 implementation failure.** For EACH new file/function/class:
 
-A feature that isn't called from anywhere is dead code. Tests can pass while the feature is completely unusable because nothing invokes it.
+1. **Import check** — Grep for imports of the new module. No imports → FAIL
+2. **Usage check** — Grep for calls to the function/class. No calls → FAIL
+3. **Entry point check** — Route registered? Component mounted? Service injected? No entry point → FAIL
+4. **End-to-end proof** — Is there an integration test through the entry point? Unit tests alone are NOT sufficient.
 
-### Integration Verification Process
-
-```
-For EACH new file/function/class the implementer created:
-
-1. IMPORT CHECK:
-   → Grep: `import.*from.*{new_file}` or `require.*{new_file}`
-   → Is the new module imported ANYWHERE in the codebase?
-   → If NO imports found → FAIL "Dead code: {file} not imported anywhere"
-
-2. USAGE CHECK:
-   → Grep: `{NewClass}` or `{newFunction}(`
-   → Is the new code CALLED anywhere?
-   → If NO calls found → FAIL "Dead code: {function/class} never called"
-
-3. ENTRY POINT CHECK:
-   → Can you trace from user action → new code?
-   → API route: Is it registered in the router/server?
-   → UI feature: Is the component mounted/rendered?
-   → Service: Is it instantiated/injected where needed?
-   → If NO entry point → FAIL "Feature not reachable"
-
-4. END-TO-END PROOF CHECK:
-   → Is there evidence the feature ACTUALLY WORKS through its intended path?
-   → Unit tests alone are NOT sufficient proof
-   → Look for: integration test, API test, or e2e test that exercises the feature
-   → The test should: trigger via entry point → execute feature → verify outcome
-   → If feature is only tested in isolation → SUSPICIOUS, investigate wiring
-```
-
-### Example: Detecting Integration Failure
-
-```yaml
-# Implementer reported:
-files_modified:
-  - src/services/turbopuffer/client.ts (created)
-  - src/services/turbopuffer/client.test.ts (created)
-
-# Verifier checks:
-grep -r "from.*turbopuffer/client" src/
-# Result: No matches
-
-grep -r "TurbopufferClient" src/
-# Result: Only in client.ts and client.test.ts
-
-# VERDICT: FAIL
-issues:
-  - severity: "high"
-    location: "src/services/turbopuffer/client.ts"
-    description: "Integration gap: TurbopufferClient is never imported or used outside its own file. The feature is implemented but not wired into the system."
-    suggested_fix: |
-      1. Import TurbopufferClient in the SearchService
-      2. Add route handler for /api/search/turbopuffer
-      3. Write integration test that calls the API endpoint
-```
+See `guidance/verification.md` for grep patterns and examples.
 
 ---
 
@@ -148,6 +109,18 @@ TodoWrite for Phase {N} Verification
 - [ ] Read {file3} → exists? has content?
 - [ ] (Add one todo per file claimed by implementer)
 - [ ] If ANY file missing → FAIL immediately, stop here
+
+## Plan vs Actual File Coverage
+- [ ] Read planned_files from context (or read files-to-modify.md from plan directory)
+- [ ] Extract every file path from "Files to Create" and "Files to Modify"
+- [ ] For EACH planned file:
+  - [ ] {planned_file_1} → modified? or skipped with justification?
+  - [ ] {planned_file_2} → modified? or skipped with justification?
+  - [ ] (Add one todo per planned file)
+- [ ] Count: {N}/{M} planned files were actually modified
+- [ ] For any SKIPPED files: does the justification make sense? (plans evolve mid-implementation)
+- [ ] For any UNEXPLAINED gaps: flag as issue — likely forgotten, not intentional
+- [ ] [Team] If unsure about a skip, DM the implementer to ask
 
 ## State File Audit (low tolerance for unsupported claims)
 - [ ] Read ~/.ai/plans/{feature}/implementation-state.md
@@ -211,82 +184,23 @@ TodoWrite for Phase {N} Verification
 
 ## ⚠️ CRITICAL: File Existence Verification (DO THIS FIRST)
 
-**The implementer may report success without actually creating files.** This happens when:
+**Implementers may report success without actually creating files** (permission failures, tool errors). You MUST Read() EVERY file in `files_modified`:
 
-- Permission issues silently blocked the Write tool
-- The agent planned to write but the tool failed
-- Mode restrictions prevented actual file creation
-
-**YOU MUST verify EVERY file exists by READING it:**
-
-```
-For each file in ImplementerResult.files_modified:
-
-1. Use Read tool: Read(file_path)
-
-2. Check the result:
-   - If "file not found" error → FAIL immediately
-     Issue: "File does not exist: {path}. Implementer claimed to create it but it was not written."
-
-   - If file is empty → FAIL immediately
-     Issue: "File is empty: {path}. File exists but has no content."
-
-   - If file has < 10 lines → SUSPICIOUS, verify it's not a stub
-     Check: Does it contain actual implementation or just placeholders?
-
-3. For files that exist with content:
-   - Grep for expected function/class names
-   - Verify exports are configured
-   - Check the content matches what was described
-```
+- File not found → **FAIL immediately**
+- File empty or < 10 lines → **FAIL** (likely stub)
+- File exists with content → proceed to verify content
 
 **DO NOT proceed to technical checks until ALL claimed files are verified to exist.**
 
-**Example failure detection:**
-
-```yaml
-files_modified:  # From implementer
-  - path: src/services/salesforce/client.ts
-    action: created
-
-# Verifier attempts Read:
-Read("src/services/salesforce/client.ts")
-# Error: file not found
-
-# Verifier MUST return:
-verdict: "FAIL"
-issues:
-  - severity: "high"
-    location: "src/services/salesforce/client.ts"
-    description: "File does not exist. Implementer reported creating this file but it was not actually written. This indicates a permission or tool failure during implementation."
-    suggested_fix: "Re-run implementer with mode: bypassPermissions to ensure writes succeed."
-```
+See `guidance/verification.md` for detailed examples.
 
 ---
 
 ## 🔍 Technical Check Commands (RUN IN ORDER)
 
-**Execute these commands and capture the FULL output:**
+Run these in order, capture FULL output: `type-check → lint → build → test`
 
-```bash
-# 1. Type Check (catch type errors first)
-npm run type-check    # or: npx tsc --noEmit
-# Expected: "0 errors" or clean output
-
-# 2. Lint Check (catch style/quality issues)
-npm run lint          # or: npx eslint .
-# Expected: No errors (warnings OK if project allows)
-
-# 3. Build Check (ensure it compiles)
-npm run build
-# Expected: "Build completed" or similar success message
-
-# 4. Test Check (ensure functionality works)
-npm run test
-# Expected: All tests pass, note the count
-```
-
-**If ANY command fails, you MUST include the error output in your result.**
+If ANY command fails, include the error output in your result. See `guidance/verification.md` for expected outputs and failure examples.
 
 ---
 
@@ -298,6 +212,7 @@ npm run test
 PASS Criteria (ALL must be true):
 - [ ] ALL files from files_modified actually exist (verified by Read)
 - [ ] ALL files have substantive content (not empty/stubs)
+- [ ] ALL planned files are accounted for — either modified or skipped with valid justification
 - [ ] Implementation state file exists and matches observed reality
 - [ ] Type check: 0 errors
 - [ ] Lint check: 0 errors (warnings documented if any)
@@ -313,6 +228,7 @@ PASS Criteria (ALL must be true):
 FAIL Criteria (ANY triggers FAIL):
 - [ ] ANY file from files_modified does not exist (permission issue)
 - [ ] ANY file is empty or just a stub
+- [ ] ANY planned file was NOT modified AND has no justification for being skipped
 - [ ] Implementation state file missing or inconsistent with evidence
 - [ ] Type check has errors
 - [ ] Lint has errors (not just warnings)
@@ -496,6 +412,22 @@ VerifierResult:
 
 ---
 
+## Teammate Communication [Team Mode]
+
+In team mode, you can message the implementer directly to clarify issues instead of relying on the orchestrator to relay.
+
+**When to message the implementer:**
+
+- A planned file wasn't modified and you want to understand why → DM implementer
+- You found a possible bug but aren't sure if it's intentional → DM implementer
+- You need context about a design choice to evaluate correctness → DM implementer
+
+**How:** Use `SendMessage(type: "message", recipient: "implementer", content: "...", summary: "...")`.
+
+**You still report your VerifierResult to the team lead.** The orchestrator needs your verdict to decide whether to advance. DMs are for gathering information to make a better verdict, not for replacing your report.
+
+---
+
 ## Critical Rules
 
 - NEVER approve if ANY deliverable is missing or partial
@@ -506,6 +438,7 @@ VerifierResult:
 - ALWAYS create TodoWrite entries FIRST before any verification
 - ALWAYS run the completion criteria before returning verdict
 - Your job is to catch problems, not rubber-stamp work
+- Use engineering judgment — plans evolve during implementation, justified deviations are fine
 
 ---
 
@@ -539,6 +472,11 @@ VerifierResult:
 
 ❌ FAILURE: Files reported as created but don't exist
    → FIX: This is a permission/mode issue - FAIL and suggest re-running implementer with bypassPermissions
+
+❌ FAILURE: Didn't check plan's file list against actual changes
+   → FIX: Read planned_files from context. Compare against files_modified + planned_files_skipped.
+   → FIX: If files are missing from BOTH lists (not modified, not explicitly skipped), investigate.
+   → FIX: "Files to Modify" items are the most commonly forgotten — flag unexplained gaps.
 
 ❌ FAILURE: Missing integration gap detection
    → FIX: For EACH new file/function, grep to verify it's imported/called somewhere

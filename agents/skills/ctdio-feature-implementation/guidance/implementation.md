@@ -4,101 +4,135 @@ This guide is for the **phase-implementer** agent. Read this for detailed guidan
 
 ## Core Principles
 
-1. **Spec is Law**: The `spec.md` file defines requirements that MUST be met - reference it continuously
-2. **TDD First**: Write tests BEFORE implementation code
-3. **Follow Existing Patterns**: Match the codebase's conventions exactly
-4. **Small Commits of Working Code**: Each change should leave the codebase in a working state
+1. **Spec is Law**: The `spec.md` file defines requirements that MUST be met
+2. **Tests Define the Target**: Write failing tests FIRST that assert expected behavior, then implement to make them pass. Tests that never failed prove nothing.
+3. **Real Tests, Not Mock Theater**: Test through real entry points with real infrastructure. Only mock external third-party APIs.
+4. **Follow Existing Patterns**: Match the codebase's conventions exactly
+5. **Ship Working Code**: Every deliverable must be wired up and functional
 
 ---
 
-## TDD Approach (CRITICAL)
+## Testing Philosophy: Real Tests, Not Mock Theater
 
-### Write Tests FIRST
+### The #1 Rule: Test Real Behavior
 
-Before writing any implementation code:
+The highest-value test is one that exercises your code the way it will actually be used. A test full of mocks proves your mocks work, not your code.
 
-1. **Read the Testing Requirements** from the plan's `testing-strategy.md`
-2. **Write unit tests** for the functionality you're about to implement
-3. **Write integration tests** for the flows you're building
-4. **Tests should initially FAIL** (red) - this confirms they're testing the right thing
-5. **Use tests to clarify your understanding** of requirements
+**Test value hierarchy:**
 
-### The Red-Green-Refactor Cycle
+| Test Type                                  | Value   | When to Use                                                                             |
+| ------------------------------------------ | ------- | --------------------------------------------------------------------------------------- |
+| Integration test through real entry point  | Highest | **Default for everything** — API routes, service calls, UI interactions                 |
+| Integration test with real DB/dependencies | High    | Data layer, queries, transactions                                                       |
+| Unit test of pure logic (no mocks)         | Medium  | Algorithms, transformers, validators, pure functions                                    |
+| Unit test with mocks                       | **Low** | ONLY when you literally cannot run the real dependency (external paid API, SMS gateway) |
+
+### Set Up Real Infrastructure First
+
+**Before writing integration tests, ensure the environment is ready.** This is your responsibility — don't skip it.
+
+If the phase includes schema changes (new tables, columns, indexes):
 
 ```
-1. RED:    Write a failing test that defines expected behavior
-2. GREEN:  Write minimal code to make the test pass
-3. REFACTOR: Clean up while keeping tests green
+Run the appropriate migration command:
+  - prisma db push / npx prisma migrate dev    → then npx prisma generate
+  - drizzle-kit push / drizzle-kit migrate     → then drizzle-kit generate (if needed)
+  - knex migrate:latest
+  - python manage.py migrate
+  - rails db:migrate
+  - Any project-specific migration scripts
 ```
 
-### Test Status Tracking
+If the phase needs new dependencies:
 
-Track each test's status in your result:
-
-```markdown
-**Unit Tests**:
-- ✅ `test_function_happy_path` - Written, passing
-- ✅ `test_function_edge_case` - Written, passing
-- 🔴 `test_component_behavior` - Written, failing (implementing now)
-- ⏳ `test_error_handling` - Not yet written
-
-**Integration Tests**:
-- ✅ `test_api_endpoint_success` - Written, passing
-- 🔴 `test_flow_complete` - Written, failing (implementing now)
+```
+Install them:
+  - npm install {package}
+  - pip install {package}
+  - Check package.json/requirements.txt for the project's package manager
 ```
 
-### What Tests to Write
+If tests need seed data or fixtures, set them up. The goal: when your integration test runs, it hits a **real database with the correct schema**, not a mock.
 
-From the plan's `testing-strategy.md`, identify:
-- **Unit tests**: Individual functions, classes, modules
-- **Integration tests**: Multiple components working together
-- **Edge cases**: Boundary conditions, error scenarios
-- **Regression tests**: Prevent bugs from recurring
+### What NOT to Mock
 
----
+**Do not mock these — use the real thing:**
 
-## Testing Philosophy: Integration Over Isolation
+- Database/ORM (Prisma, Drizzle, etc.) — use a real test database (run migrations first!)
+- Internal services and repositories — test them together
+- File system operations — use a temp directory
+- Your own code — if you're mocking your own modules, your test is worthless
 
-### The Testing Pyramid is Upside Down for AI Agents
+**Only mock these:**
 
-Traditional TDD emphasizes unit tests. But for AI-assisted development with cloned databases, **integration tests provide much higher confidence:**
+- External third-party APIs you don't control (Stripe, SendGrid, Twilio)
+- Time-sensitive operations (use fake timers, not mocked functions)
+- Non-deterministic inputs (random IDs, current timestamps)
 
-| Test Type | Confidence | Use When |
-|-----------|------------|----------|
-| Integration tests (real DB) | ⭐⭐⭐⭐⭐ | Default - most features |
-| Integration tests (test DB) | ⭐⭐⭐⭐ | External API boundaries |
-| Unit tests (mocked) | ⭐⭐ | Pure functions, algorithms |
+### What Good Tests Look Like
 
-### Why Mocked Unit Tests Fail Us
+```typescript
+// ✅ HIGH VALUE: Tests the real API endpoint with real service layer
+describe("POST /api/users", () => {
+  it("creates a user and returns it", async () => {
+    const response = await request(app)
+      .post("/api/users")
+      .send({ name: "Alice", email: "alice@example.com" });
 
-Mocked tests often:
-- Test the mock, not the real behavior
-- Pass while real integration fails
-- Create false confidence
-- Miss schema mismatches, constraint violations, transaction bugs
+    expect(response.status).toBe(201);
+    expect(response.body.name).toBe("Alice");
 
-### Prefer Real Database Tests
+    // Verify it actually hit the database
+    const user = await db.user.findUnique({
+      where: { email: "alice@example.com" },
+    });
+    expect(user).not.toBeNull();
+  });
+});
 
-Since worktrees have isolated cloned databases via `db-branch`:
-1. **Write integration tests that hit the real database**
-2. Use `prisma db push` to apply schema changes to your worktree DB
-3. Run tests against actual database operations
-4. Mock only external services (APIs, email, etc.)
+// ✅ HIGH VALUE: Tests pure logic without mocks
+describe("validateEmail", () => {
+  it("rejects invalid formats", () => {
+    expect(validateEmail("not-an-email")).toBe(false);
+    expect(validateEmail("also@bad")).toBe(false);
+  });
+});
+```
 
-### When to Write Unit Tests
+```typescript
+// ❌ LOW VALUE: Mocks everything, proves nothing
+describe("UserService", () => {
+  it("creates a user", async () => {
+    const mockRepo = {
+      create: vi.fn().mockResolvedValue({ id: 1, name: "Alice" }),
+    };
+    const service = new UserService(mockRepo);
+    const result = await service.createUser({ name: "Alice" });
+    expect(mockRepo.create).toHaveBeenCalledWith({ name: "Alice" }); // Testing the mock!
+  });
+});
+```
 
-Unit tests with mocks ARE appropriate for:
-- Pure utility functions (formatters, validators, transformers)
-- Complex algorithms with many edge cases
-- Code that truly has no I/O dependencies
+### Test Strategy Per Phase
 
-### Anti-Pattern: Mock Everything
+- **Data/Foundation phases**: Run schema migrations first, then integration tests against real DB — create, read, update, delete actual records
+- **API/Service phases**: Hit the real API endpoints, verify real responses, check database state
+- **UI phases**: Render real components, simulate real user interactions, verify real state changes
+- **Integration phases**: End-to-end tests through the full stack
 
-❌ **Don't**: Create elaborate mocks of Prisma, database, and services
-✅ **Do**: Write tests that exercise the real code path with a real DB
+### Minimum Test Requirements
 
-❌ **Don't**: 10 unit tests with mocked repositories
-✅ **Do**: 3 integration tests that create, query, and update real data
+For every phase, you MUST have:
+
+1. At least one integration test that exercises the real code path through its entry point
+2. Unit tests (without mocks) for any non-trivial pure logic
+3. Edge case coverage for error paths and boundary conditions
+
+You should NOT have:
+
+- Tests where >50% of the code is mock setup
+- Tests that only verify mock calls were made (`.toHaveBeenCalledWith`)
+- Tests that pass even when the implementation is broken
 
 ---
 
@@ -107,6 +141,7 @@ Unit tests with mocks ARE appropriate for:
 ### Step 1: Understand the Context
 
 Before coding, ensure you understand:
+
 - The deliverables from `files-to-modify.md`
 - The approach from `technical-details.md`
 - The testing requirements from `testing-strategy.md`
@@ -115,26 +150,47 @@ Before coding, ensure you understand:
 ### Step 2: Read Reference Files
 
 The plan lists reference files to follow. Read them to understand:
+
 - Naming conventions
 - Code structure patterns
 - Error handling approaches
 - Testing patterns
 
-### Step 3: Write Tests (TDD)
+### Step 3: Set Up Environment
 
-For each deliverable:
-1. Identify what tests are needed
-2. Write the test file first
-3. Run tests to confirm they fail
-4. Document test status
+Before writing tests, ensure the environment supports real integration testing:
 
-### Step 4: Implement to Make Tests Pass
+- **Schema changes**: If the phase modifies the database, run migrations now (`prisma db push`, `drizzle-kit push`, `knex migrate:latest`, etc.) and codegen (`npx prisma generate`)
+- **Dependencies**: If the phase needs new packages, install them
+- **Fixtures**: If tests need seed data, set it up
 
-- Write the minimal code to make tests pass
+### Step 4: Write Failing Tests (Red)
+
+For each deliverable, write tests that describe the **expected behavior** before writing the implementation:
+
+1. Read `testing_strategy` and `files_to_modify` to understand what each deliverable should do
+2. Write integration tests through real entry points (API routes, service methods, components)
+3. Write unit tests for pure logic (no mocks)
+4. **Run tests — they MUST fail.** If they pass before you've implemented anything, they aren't testing real behavior.
+5. Tests that never failed prove nothing — the red phase is what gives them value.
+
+```
+Example TDD flow for an API endpoint:
+
+  1. Write test: POST /api/users → expects 201, user in DB
+  2. Run test → FAILS (route doesn't exist yet)           ← RED
+  3. Create route handler, service, schema
+  4. Run test → PASSES (real user created in real DB)      ← GREEN
+```
+
+### Step 5: Implement to Make Tests Pass (Green)
+
+- Write the minimal code to make each failing test pass
 - Follow the patterns from reference files exactly
 - Cross-reference `spec.md` to ensure requirements are met
+- Run tests after each deliverable — watch them go from red to green
 
-### Step 5: Refactor While Green
+### Step 6: Clean Up While Green
 
 - Clean up code while keeping tests passing
 - Extract common patterns
@@ -174,6 +230,7 @@ Before marking a deliverable complete:
 Sometimes you need to deviate from the plan. When this happens:
 
 1. **Document the deviation** in your result:
+
    ```yaml
    deviations:
      - description: "Added retry logic not in plan"
@@ -194,6 +251,7 @@ Sometimes you need to deviate from the plan. When this happens:
 If you encounter something that prevents completion:
 
 1. **Document the blocker clearly**:
+
    ```yaml
    status: "blocked"
    blockers:
@@ -224,6 +282,7 @@ fix_context:
 ```
 
 **When fixing:**
+
 1. Address ALL issues listed, starting with highest severity
 2. Re-run tests after each fix
 3. Don't introduce new issues while fixing
@@ -235,14 +294,20 @@ fix_context:
 
 ### Testing Anti-Patterns
 
-❌ **Don't**: Write implementation code before tests
-✅ **Do**: Write tests FIRST (TDD), then implement to make them pass
+❌ **Don't**: Mock internal services, repositories, or your own code
+✅ **Do**: Test real code paths with real dependencies
+
+❌ **Don't**: Write tests where most of the code is mock setup
+✅ **Do**: Write tests that exercise the real entry point (API route, service call, component render)
+
+❌ **Don't**: Assert on mock calls (`.toHaveBeenCalledWith`) as your primary assertion
+✅ **Do**: Assert on actual outputs, database state, or response bodies
 
 ❌ **Don't**: Skip tests because "it's simple"
-✅ **Do**: Write tests for all functionality, especially edge cases
+✅ **Do**: Write integration tests for all significant functionality
 
-❌ **Don't**: Write tests that always pass (testing nothing)
-✅ **Do**: Verify tests fail before implementation (red-green-refactor)
+❌ **Don't**: Mock the database because you didn't run migrations
+✅ **Do**: Run schema migrations (prisma db push, etc.) first, then test against the real DB
 
 ### Implementation Anti-Patterns
 
@@ -324,9 +389,23 @@ ImplementerResult:
 
 ## Tips for Effective Implementation
 
+### Track Every File From the Plan
+
+Before writing any code:
+
+1. Read `files_to_modify` from your context
+2. Create a TodoWrite entry for **each individual file** — one per file, not grouped by concept
+3. As you implement, check each file off
+4. At the end, reconcile: every planned file should be either DONE or SKIPPED with a reason in `planned_files_skipped`
+
+Plans evolve during implementation — you may discover a file isn't needed, or that you need a different file. That's fine. **Just document it.** An unexplained gap looks like you forgot; an explained skip looks like engineering judgment.
+
+**"Files to Modify" entries are the most commonly missed.** These are existing files where you need to add something (a button in a component, an import in a barrel, a route in a router). They're easy to overlook when you're focused on the core logic.
+
 ### Chunk Size Matters
 
 Break deliverables into chunks that:
+
 - Take 30-60 minutes to implement
 - Have clear completion criteria
 - Can be tested independently
@@ -335,6 +414,7 @@ Break deliverables into chunks that:
 ### Test as You Go
 
 Don't save all testing for the end:
+
 - Write tests for each chunk
 - Run tests before moving to next chunk
 - Fix failures immediately
@@ -344,6 +424,7 @@ Don't save all testing for the end:
 **The most common failure: Feature works in isolation but isn't wired into the system.**
 
 Before considering any feature "done":
+
 1. **Grep for imports** - Is your new code imported anywhere?
 2. **Grep for usage** - Is your new code called anywhere?
 3. **Check entry points** - Is the feature reachable via API/UI/trigger?
@@ -354,6 +435,7 @@ If your code isn't called from anywhere, you've created dead code. The feature d
 ### Read Before Write
 
 Before modifying any existing file:
+
 - Read and understand the current code
 - Identify patterns to follow
 - Note any dependencies
@@ -361,6 +443,7 @@ Before modifying any existing file:
 ### Verify Continuously
 
 After each significant change:
+
 - Run the test suite
 - Check for type errors
 - Verify linting passes

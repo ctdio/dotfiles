@@ -9,24 +9,24 @@ This guide applies to ALL agents in the feature implementation system. Read this
 ### The Orchestrator Model
 
 ```
-Orchestrator (coordinates)
+Orchestrator (coordinates, writes state directly)
     │
-    ├── state-manager (creates/updates implementation-state.md)
+    ├── phase-implementer (implements one phase — lives for duration of phase, terminated by orchestrator)
     │
-    ├── phase-implementer (implements one phase)
+    ├── phase-verifier (verifies implementation — persistent teammate or ephemeral)
     │
-    └── phase-verifier (verifies one phase)
+    └── phase-reviewer (reviews code quality — concurrent with verifier, persistent or ephemeral)
 ```
 
-**Key insight**: Each agent has a focused role. The orchestrator manages flow; you do your specific job.
+**Key insight**: Each agent has a focused role. The orchestrator manages flow, state, and agent lifecycle. Verifier and reviewer run concurrently after implementation. The implementer stays alive through verify/review so teammates can DM it for clarification.
 
 ### Your Role in the System
 
 | Agent             | Focus                     | You DON'T Do                         |
 | ----------------- | ------------------------- | ------------------------------------ |
-| state-manager     | State file accuracy       | Implementation, verification         |
 | phase-implementer | Writing code & tests      | Verification commands, state updates |
 | phase-verifier    | Running checks, reporting | Fixing code, state updates           |
+| phase-reviewer    | Code quality review       | Fixing code, running tests           |
 
 ---
 
@@ -68,7 +68,7 @@ The `spec.md` file defines:
 
 - Implementer: Ensure code meets requirements
 - Verifier: Check requirements are satisfied
-- State-manager: Track requirement completion status
+- Reviewer: Ensure code quality and pattern adherence
 
 ---
 
@@ -110,7 +110,7 @@ The `spec.md` file defines:
 
 ### "Verification keeps failing"
 
-After 3 attempts, the orchestrator will ask the user for help. But before that:
+After 3 failed attempts, the orchestrator widens context and retries with a fresh approach. Before that:
 
 1. Read ALL issues from previous attempts
 2. Fix issues in priority order (high → low)
@@ -187,7 +187,7 @@ Don't leave partial work:
 
 - Implementer: All deliverables done or blocked
 - Verifier: All checks run
-- State-manager: All sections updated
+- Reviewer: All files reviewed, verdict given
 
 ### Trust the System
 
@@ -262,7 +262,7 @@ The orchestrator provides context tailored to your role:
 
 - **Implementer**: Files to modify, technical details, testing strategy
 - **Verifier**: Deliverables to check, implementation summary, commands to run
-- **State-manager**: Operation type, data to record
+- **Reviewer**: Files modified, implementation notes, spec path
 
 ### What You Return
 
