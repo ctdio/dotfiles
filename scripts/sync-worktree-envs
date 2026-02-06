@@ -15,6 +15,11 @@
 #   - Numeric: platform-wt1 -> 3001, platform-wt2 -> 3002
 #   - Alpha: platform-wta -> 3001, platform-wtb -> 3002 (a=1, b=2, ...)
 #
+# Page Title:
+# - NEXT_PUBLIC_PAGE_TITLE_PREFIX is updated per worktree
+# - platform (source) uses "platform |"
+# - Worktrees replace "platform" with suffix: "wta |", "wtb |", etc.
+#
 # Database Configuration:
 # - POSTGRES_DATABASE is updated per worktree for database isolation
 # - platform (source) uses database "platform"
@@ -94,6 +99,16 @@ update_port_for_worktree() {
     "${SED_INPLACE[@]}" "s/:3000/:$new_port/g" "$target_file" 2>/dev/null || true
     "${SED_INPLACE[@]}" "s/^PORT=3000/PORT=$new_port/g" "$target_file" 2>/dev/null || true
     "${SED_INPLACE[@]}" "s/\(INNGEST_BASE_URL.*\):8288/\1:$new_inngest_port/g" "$target_file" 2>/dev/null || true
+}
+
+# Update page title prefix in .env file
+update_title_for_worktree() {
+    local target_file="$1"
+    local worktree_suffix="$2"
+
+    [[ "$(basename "$target_file")" != ".env" ]] && return 0
+
+    "${SED_INPLACE[@]}" 's/^NEXT_PUBLIC_PAGE_TITLE_PREFIX="platform |"/NEXT_PUBLIC_PAGE_TITLE_PREFIX="wt'"${worktree_suffix}"' |"/' "$target_file" 2>/dev/null || true
 }
 
 # Update database name in .env file
@@ -202,6 +217,7 @@ for worktree in "${WORKTREES[@]}"; do
         if sync_file "$env_file" "$target_file" "$worktree"; then
             update_port_for_worktree "$target_file" "$SLOT"
             update_database_for_worktree "$target_file" "$SUFFIX"
+            update_title_for_worktree "$target_file" "$SUFFIX"
             ((wt_files++)) || true
         else
             ((ERROR_COUNT++)) || true
@@ -214,6 +230,7 @@ for worktree in "${WORKTREES[@]}"; do
         if sync_file "$env_file" "$target_file" "$worktree"; then
             update_port_for_worktree "$target_file" "$SLOT"
             update_database_for_worktree "$target_file" "$SUFFIX"
+            update_title_for_worktree "$target_file" "$SUFFIX"
             ((wt_files++)) || true
         else
             ((ERROR_COUNT++)) || true
