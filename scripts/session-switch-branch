@@ -12,7 +12,9 @@ DIM=$'\033[2m'
 RESET=$'\033[0m'
 GREEN=$'\033[38;5;71m'
 CYAN=$'\033[36m'
+ORANGE=$'\033[38;5;208m'
 TMPDIR="${TMPDIR:-/tmp}"
+STALE_CACHE="$TMPDIR/wt-stale-sessions"
 SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
 current_session=$(tmux display-message -p '#S' 2>/dev/null)
@@ -39,9 +41,56 @@ get_branch() {
   fi
 }
 
+# --refresh-stale: check worktree branches for merged PRs, write to cache
+if [[ "$1" == "--refresh-stale" ]]; then
+  stale_dir=$(mktemp -d)
+  trap 'rm -rf "$stale_dir"' EXIT
+  pids=()
+
+  while read -r session spath _ppath; do
+    [[ "$session" =~ -wt[a-z]$ ]] || continue
+
+    path="$spath"
+    [ -n "$path" ] && [ -d "$path" ] || continue
+
+    home_branch="${session##*-}"
+    branch=$(get_branch "$path")
+    [ -n "$branch" ] || continue
+    [[ "$branch" == "$home_branch" ]] && continue
+
+    gh_repo=$(git -C "$path" remote get-url origin 2>/dev/null | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')
+    [ -n "$gh_repo" ] || continue
+
+    (
+      count=$(gh pr list --repo "$gh_repo" --head "$branch" --state merged --json number --limit 1 --jq 'length' 2>/dev/null)
+      [ "$count" = "1" ] && echo "$session" > "$stale_dir/$session"
+    ) &
+    pids+=($!)
+  done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
+
+  for pid in "${pids[@]}"; do
+    wait "$pid" 2>/dev/null || true
+  done
+
+  # Write cache atomically
+  cat "$stale_dir"/* 2>/dev/null > "${STALE_CACHE}.tmp"
+  mv "${STALE_CACHE}.tmp" "$STALE_CACHE" 2>/dev/null || rm -f "${STALE_CACHE}.tmp"
+  exit 0
+fi
+
 # --list [ports]: output sorted session list to stdout
 if [[ "$1" == "--list" ]]; then
   OUTFILE="$TMPDIR/session-list-$$"
+
+  check_ports=false
+  check_stale=false
+  shift
+  for arg in "$@"; do
+    case "$arg" in
+      ports) check_ports=true ;;
+      stale) check_stale=true ;;
+    esac
+  done
 
   sessions=()
   paths=()
@@ -61,7 +110,7 @@ if [[ "$1" == "--list" ]]; then
 
   # Port detection (only when requested)
   declare -A session_ports
-  if [[ "$2" == "ports" ]]; then
+  if $check_ports; then
     # Get listening port/pid pairs (cross-platform)
     list_listeners() {
       if command -v ss &>/dev/null; then
@@ -112,11 +161,20 @@ if [[ "$1" == "--list" ]]; then
     fi
   fi
 
+  # Read stale session cache
+  declare -A stale_sessions
+  if [ -f "$STALE_CACHE" ]; then
+    while read -r s; do
+      [ -n "$s" ] && stale_sessions[$s]=1
+    done < "$STALE_CACHE"
+  fi
+
   for i in "${!sessions[@]}"; do
     session="${sessions[$i]}"
     path="${paths[$i]}"
     cur="${is_current[$i]}"
     ports="${session_ports[$session]}"
+    is_stale="${stale_sessions[$session]:-}"
     {
       branch=$(get_branch "$path")
       port_display=""
@@ -124,15 +182,19 @@ if [[ "$1" == "--list" ]]; then
         sorted_ports=$(echo "$ports" | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/ $//')
         port_display=" ${CYAN}:${sorted_ports// / :}${RESET}"
       fi
+      stale_display=""
+      if [ -n "$is_stale" ]; then
+        stale_display=" ${ORANGE}merged${RESET}"
+      fi
       if [ "$cur" = "1" ]; then
         if [ -n "$branch" ]; then
-          printf "%s\t${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s\n" "$session" "$session" "$branch" "$port_display"
+          printf "%s\t${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s%s\n" "$session" "$session" "$branch" "$stale_display" "$port_display"
         else
           printf "%s\t${GREEN}%s${RESET}%s\n" "$session" "$session" "$port_display"
         fi
       else
         if [ -n "$branch" ]; then
-          printf "%s\t%s ${DIM}[%s]${RESET}%s\n" "$session" "$session" "$branch" "$port_display"
+          printf "%s\t%s ${DIM}[%s]${RESET}%s%s\n" "$session" "$session" "$branch" "$stale_display" "$port_display"
         else
           printf "%s\t%s%s\n" "$session" "$session" "$port_display"
         fi
@@ -146,12 +208,17 @@ if [[ "$1" == "--list" ]]; then
   exit 0
 fi
 
-# Main: show fzf immediately, async reload with ports
+# Kick off stale PR check in background — results appear on next reload
+"$SELF" --refresh-stale &
+disown
+
+# Main: show fzf immediately, async reload with ports + stale cache
 selected=$("$SELF" --list | fzf \
   --ansi \
   --prompt="› " \
   --no-border \
   --bind "start:reload($SELF --list ports)" \
+  --bind "ctrl-r:reload($SELF --list ports)" \
   --preview='
     session=$(echo {} | sed "s/\x1b\[[0-9;]*m//g; s/ .*//")
     tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
