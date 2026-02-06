@@ -1,0 +1,132 @@
+#!/bin/bash
+
+# Release worktrees whose feature branch PRs have been merged.
+# Switches them back to their home branch (e.g., platform-wtc → branch wtc).
+#
+# Usage: wt-release [--dry-run]
+
+set -euo pipefail
+
+# Colors
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RED=$'\033[31m'
+DIM=$'\033[2m'
+BOLD=$'\033[1m'
+RESET=$'\033[0m'
+
+dry_run=false
+[[ "${1:-}" == "--dry-run" ]] && dry_run=true
+
+# Project roots to scan (add more entries as needed)
+PROJECT_ROOTS=(
+  "$HOME/projects/private/opine/platform"
+  "$HOME/projects/open-source/skim"
+)
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+# Collect candidates and kick off PR checks in parallel
+candidates=()
+pids=()
+
+for project_root in "${PROJECT_ROOTS[@]}"; do
+  [[ -d "$project_root/.git" ]] || continue
+
+  project_name=$(basename "$project_root")
+
+  remote_url=$(git -C "$project_root" remote get-url origin 2>/dev/null)
+  gh_repo=$(echo "$remote_url" | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')
+
+  while read -r line; do
+    wt_path=$(echo "$line" | awk '{print $1}')
+    [[ -d "$wt_path" ]] || continue
+
+    dir_name=$(basename "$wt_path")
+    home_branch="${dir_name#"$project_name"-}"
+
+    # Skip the main worktree
+    [[ "$home_branch" == "$dir_name" ]] && continue
+
+    current_branch=$(git -C "$wt_path" symbolic-ref --short HEAD 2>/dev/null || echo "detached")
+
+    # Already on home branch
+    [[ "$current_branch" == "$home_branch" ]] && continue
+
+    # Check for uncommitted changes (cheap, do synchronously)
+    if [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]; then
+      # Mark as dirty — store sentinel file
+      echo "dirty" > "$tmpdir/$dir_name"
+      candidates+=("$dir_name|$wt_path|$home_branch|$current_branch|$gh_repo")
+      continue
+    fi
+
+    candidates+=("$dir_name|$wt_path|$home_branch|$current_branch|$gh_repo")
+
+    # Fire off gh pr check in background
+    (
+      gh pr list --repo "$gh_repo" --head "$current_branch" --state merged \
+        --json number,title --limit 1 --jq '.[0] // empty' 2>/dev/null \
+        > "$tmpdir/$dir_name"
+    ) &
+    pids+=($!)
+  done < <(git -C "$project_root" worktree list 2>/dev/null)
+done
+
+if [[ ${#candidates[@]} -eq 0 ]]; then
+  echo "All worktrees are on their home branches."
+  exit 0
+fi
+
+printf "${DIM}Checking %d worktrees for merged PRs...${RESET}\n" "${#candidates[@]}"
+
+# Wait for all background checks
+for pid in "${pids[@]}"; do
+  wait "$pid" 2>/dev/null || true
+done
+
+# Process results
+released=0
+skipped=0
+
+for entry in "${candidates[@]}"; do
+  IFS='|' read -r dir_name wt_path home_branch current_branch gh_repo <<< "$entry"
+
+  result_file="$tmpdir/$dir_name"
+
+  # Dirty worktree
+  if [[ -f "$result_file" ]] && [[ "$(cat "$result_file")" == "dirty" ]]; then
+    printf "${YELLOW}%-20s${RESET} %-40s ${RED}dirty – skipping${RESET}\n" "$dir_name" "$current_branch"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  # No result or empty — no merged PR
+  if [[ ! -s "$result_file" ]]; then
+    printf "${DIM}%-20s${RESET} %-40s ${DIM}no merged PR${RESET}\n" "$dir_name" "$current_branch"
+    continue
+  fi
+
+  pr_number=$(jq -r '.number' < "$result_file")
+  pr_title=$(jq -r '.title' < "$result_file")
+
+  if $dry_run; then
+    printf "${GREEN}%-20s${RESET} %-40s ${BOLD}→ %s${RESET}  ${DIM}(PR #%s: %s)${RESET}\n" \
+      "$dir_name" "$current_branch" "$home_branch" "$pr_number" "$pr_title"
+  else
+    git -C "$wt_path" checkout "$home_branch" --quiet 2>/dev/null
+
+    printf "${GREEN}%-20s${RESET} %-40s ${BOLD}→ %s${RESET}  ${DIM}(PR #%s: %s)${RESET}\n" \
+      "$dir_name" "$current_branch" "$home_branch" "$pr_number" "$pr_title"
+    released=$((released + 1))
+  fi
+done
+
+if $dry_run; then
+  echo ""
+  echo "${DIM}Dry run – no changes made. Run without --dry-run to release.${RESET}"
+else
+  echo ""
+  echo "${GREEN}Released: $released${RESET}  ${YELLOW}Skipped: $skipped${RESET}"
+fi
