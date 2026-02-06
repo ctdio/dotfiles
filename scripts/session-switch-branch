@@ -251,7 +251,7 @@ selected=$("$SELF" --list | fzf \
   --ansi \
   --prompt="› " \
   --no-border \
-  --bind "load:reload-sync($SELF --list ports)" \
+  --bind "load:transform([ -f /tmp/.ss-$$ ] || { touch /tmp/.ss-$$; echo reload-sync\($SELF --list ports\); })" \
   --bind "ctrl-r:reload($SELF --release 2>/dev/null; $SELF --list ports)" \
   --preview='
     session=$(echo {} | awk "{gsub(/\033\[[0-9;]*m/,\"\"); print \$1}")
