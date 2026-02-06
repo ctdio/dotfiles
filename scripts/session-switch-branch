@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Session switcher with branch information and server port detection
 # Format: session_name [branch] :port1 :port2
@@ -15,9 +15,14 @@ CYAN=$'\033[36m'
 ORANGE=$'\033[38;5;208m'
 TMPDIR="${TMPDIR:-/tmp}"
 STALE_CACHE="$TMPDIR/wt-stale-sessions"
-SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+SELF="${0:A}"
 
 current_session=$(tmux display-message -p '#S' 2>/dev/null)
+
+# Strip ANSI codes and extract first word
+strip_ansi_first() {
+  echo "$*" | sed $'s/\033\\[[0-9;]*m//g; s/ .*//'
+}
 
 # Fast branch lookup - reads .git/HEAD directly, handles worktrees
 get_branch() {
@@ -44,7 +49,7 @@ get_branch() {
 # --release <fzf-line>: switch a worktree session back to its home branch
 if [[ "$1" == "--release" ]]; then
   shift
-  session=$(echo "$*" | sed 's/\x1b\[[0-9;]*m//g; s/ .*//')
+  session=$(strip_ansi_first "$*")
 
   # Must be a worktree session
   [[ "$session" =~ -wt[a-z]$ ]] || exit 1
@@ -72,15 +77,15 @@ if [[ "$1" == "--refresh-stale" ]]; then
   while read -r session spath _ppath; do
     [[ "$session" =~ -wt[a-z]$ ]] || continue
 
-    path="$spath"
-    [ -n "$path" ] && [ -d "$path" ] || continue
+    sdir="$spath"
+    [ -n "$sdir" ] && [ -d "$sdir" ] || continue
 
     home_branch="${session##*-}"
-    branch=$(get_branch "$path")
+    branch=$(get_branch "$sdir")
     [ -n "$branch" ] || continue
     [[ "$branch" == "$home_branch" ]] && continue
 
-    gh_repo=$(git -C "$path" remote get-url origin 2>/dev/null | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')
+    gh_repo=$(git -C "$sdir" remote get-url origin 2>/dev/null | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')
     [ -n "$gh_repo" ] || continue
 
     (
@@ -94,16 +99,14 @@ if [[ "$1" == "--refresh-stale" ]]; then
     wait "$pid" 2>/dev/null || true
   done
 
-  # Write cache atomically
-  cat "$stale_dir"/* 2>/dev/null > "${STALE_CACHE}.tmp"
+  # Write cache atomically (nullglob for empty stale_dir)
+  cat "$stale_dir"/*(N) 2>/dev/null > "${STALE_CACHE}.tmp"
   mv "${STALE_CACHE}.tmp" "$STALE_CACHE" 2>/dev/null || rm -f "${STALE_CACHE}.tmp"
   exit 0
 fi
 
 # --list [ports]: output sorted session list to stdout
 if [[ "$1" == "--list" ]]; then
-  OUTFILE="$TMPDIR/session-list-$$"
-
   check_ports=false
   check_stale=false
   shift
@@ -120,10 +123,8 @@ if [[ "$1" == "--list" ]]; then
   while read -r session spath ppath; do
     [[ "$session" == slot-* ]] && continue
     sessions+=("$session")
-    is_current+=("$([[ "$session" = "$current_session" ]] && echo "1" || echo "0")")
-    if [[ "$session" == slot-* ]]; then
-      paths+=("$ppath")
-    elif [ -n "$spath" ] && [ -d "$spath" ]; then
+    if [[ "$session" = "$current_session" ]]; then is_current+=(1); else is_current+=(0); fi
+    if [ -n "$spath" ] && [ -d "$spath" ]; then
       paths+=("$spath")
     else
       paths+=("$ppath")
@@ -131,46 +132,46 @@ if [[ "$1" == "--list" ]]; then
   done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
 
   # Port detection (only when requested)
-  declare -A session_ports
+  typeset -A session_ports
   if $check_ports; then
-    # Get listening port/pid pairs (cross-platform)
-    list_listeners() {
-      if command -v ss &>/dev/null; then
-        ss -tlnp 2>/dev/null | awk '/LISTEN/ && /pid=/ {
-          n = split($4, a, ":")
-          port = a[n] + 0
-          if (port >= 32768) next
-          match($0, /pid=[0-9]+/)
-          pid = substr($0, RSTART+4, RLENGTH-4)
-          print port, pid
-        }'
-      elif command -v lsof &>/dev/null; then
-        lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null | awk 'NR > 1 {
-          pid = $2 + 0
-          n = split($9, a, ":")
-          port = a[n] + 0
-          if (port >= 49152) next
-          print port, pid
-        }'
-      fi
-    }
+    # Collect data in parallel: lsof is slow on macOS (~60ms)
+    local tmp_listeners="$TMPDIR/ss-listeners-$$"
+    local tmp_panes="$TMPDIR/ss-panes-$$"
+    local tmp_ps="$TMPDIR/ss-ps-$$"
 
-    listeners=$(list_listeners)
-    if [ -n "$listeners" ]; then
-      declare -A pid_to_session
+    if command -v ss &>/dev/null; then
+      ss -tlnp 2>/dev/null | awk '/LISTEN/ && /pid=/ {
+        n = split($4, a, ":"); port = a[n] + 0
+        if (port >= 32768) next
+        match($0, /pid=[0-9]+/); pid = substr($0, RSTART+4, RLENGTH-4)
+        print port, pid
+      }' > "$tmp_listeners" &
+    elif command -v lsof &>/dev/null; then
+      lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null | awk 'NR > 1 {
+        pid = $2 + 0; n = split($9, a, ":"); port = a[n] + 0
+        if (port >= 49152) next
+        print port, pid
+      }' > "$tmp_listeners" &
+    fi
+    tmux list-panes -a -F '#{session_name} #{pane_pid}' > "$tmp_panes" 2>/dev/null &
+    ps -e -o pid=,ppid= > "$tmp_ps" 2>/dev/null &
+    wait
+
+    if [ -s "$tmp_listeners" ]; then
+      typeset -A pid_to_session
       while read -r sess pid; do
         pid_to_session[$pid]=$sess
-      done < <(tmux list-panes -a -F '#{session_name} #{pane_pid}')
+      done < "$tmp_panes"
 
-      declare -A ppid_map
+      typeset -A ppid_map
       while read -r pid ppid; do
         ppid_map[$pid]=$ppid
-      done < <(ps -e -o pid=,ppid=)
+      done < "$tmp_ps"
 
       while read -r port pid; do
         current=$pid
         while [ -n "$current" ] && [ "$current" != "1" ] && [ "$current" != "0" ]; do
-          if [ -n "${pid_to_session[$current]+x}" ]; then
+          if (( ${+pid_to_session[$current]} )); then
             sess="${pid_to_session[$current]}"
             if [[ " ${session_ports[$sess]} " != *" $port "* ]]; then
               session_ports[$sess]+="${session_ports[$sess]:+ }$port"
@@ -179,54 +180,68 @@ if [[ "$1" == "--list" ]]; then
           fi
           current="${ppid_map[$current]}"
         done
-      done <<< "$listeners"
+      done < "$tmp_listeners"
     fi
+    rm -f "$tmp_listeners" "$tmp_panes" "$tmp_ps"
   fi
 
   # Read stale session cache
-  declare -A stale_sessions
+  typeset -A stale_sessions
   if [ -f "$STALE_CACHE" ]; then
     while read -r s; do
       [ -n "$s" ] && stale_sessions[$s]=1
     done < "$STALE_CACHE"
   fi
 
-  for i in "${!sessions[@]}"; do
+  # tmux returns sessions in alphabetical order — no sort needed
+  for (( i=1; i<=${#sessions}; i++ )); do
     session="${sessions[$i]}"
-    path="${paths[$i]}"
+    sdir="${paths[$i]}"
     cur="${is_current[$i]}"
     ports="${session_ports[$session]}"
     is_stale="${stale_sessions[$session]:-}"
-    {
-      branch=$(get_branch "$path")
-      port_display=""
-      if [ -n "$ports" ]; then
-        sorted_ports=$(echo "$ports" | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/ $//')
-        port_display=" ${CYAN}:${sorted_ports// / :}${RESET}"
-      fi
-      stale_display=""
-      if [ -n "$is_stale" ]; then
-        stale_display=" ${ORANGE}merged${RESET}"
-      fi
-      if [ "$cur" = "1" ]; then
-        if [ -n "$branch" ]; then
-          printf "%s\t${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s%s\n" "$session" "$session" "$branch" "$stale_display" "$port_display"
-        else
-          printf "%s\t${GREEN}%s${RESET}%s\n" "$session" "$session" "$port_display"
-        fi
-      else
-        if [ -n "$branch" ]; then
-          printf "%s\t%s ${DIM}[%s]${RESET}%s%s\n" "$session" "$session" "$branch" "$stale_display" "$port_display"
-        else
-          printf "%s\t%s%s\n" "$session" "$session" "$port_display"
-        fi
-      fi
-    } >> "$OUTFILE" &
-  done
-  wait
 
-  sort < "$OUTFILE" | cut -f2-
-  rm -f "$OUTFILE"
+    # Inline branch lookup — avoids a fork per session
+    branch=""
+    _git_dir="$sdir/.git"
+    if [ -f "$_git_dir" ]; then
+      _git_dir="${sdir}/$(< "$_git_dir")"
+      _git_dir="${_git_dir#*gitdir: }"
+    fi
+    if [ -f "$_git_dir/HEAD" ]; then
+      read -r _head < "$_git_dir/HEAD"
+      if [[ "$_head" == ref:\ refs/heads/* ]]; then
+        branch="${_head#ref: refs/heads/}"
+      else
+        branch="HEAD"
+      fi
+    fi
+
+    port_display=""
+    if [ -n "$ports" ]; then
+      # Pure zsh sort — no subprocesses
+      local -a _parr=(${(n)${=ports}})
+      _parr=(${_parr/#/:})
+      port_display=" ${CYAN}${(j: :)_parr}${RESET}"
+    fi
+    stale_display=""
+    if [ -n "$is_stale" ]; then
+      stale_display=" ${ORANGE}merged${RESET}"
+    fi
+    if [ "$cur" = "1" ]; then
+      if [ -n "$branch" ]; then
+        printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s%s\n" "$session" "$branch" "$stale_display" "$port_display"
+      else
+        printf "${GREEN}%s${RESET}%s\n" "$session" "$port_display"
+      fi
+    else
+      if [ -n "$branch" ]; then
+        printf "%s ${DIM}[%s]${RESET}%s%s\n" "$session" "$branch" "$stale_display" "$port_display"
+      else
+        printf "%s%s\n" "$session" "$port_display"
+      fi
+    fi
+  done
   exit 0
 fi
 
@@ -239,15 +254,15 @@ selected=$("$SELF" --list | fzf \
   --ansi \
   --prompt="› " \
   --no-border \
-  --bind "start:reload($SELF --list ports)" \
+  --bind "load:reload-sync($SELF --list ports)" \
   --bind "ctrl-r:execute-silent($SELF --release {})+reload($SELF --list ports)" \
   --preview='
-    session=$(echo {} | sed "s/\x1b\[[0-9;]*m//g; s/ .*//")
+    session=$(echo {} | awk "{gsub(/\033\[[0-9;]*m/,\"\"); print \$1}")
     tmux capture-pane -t "$session" -p -e 2>/dev/null | head -50
   ' \
   --preview-window=right:45%:noborder) || exit 0
 
 if [ -n "$selected" ]; then
-  session_name=$(echo "$selected" | sed 's/\x1b\[[0-9;]*m//g; s/ .*//')
+  session_name=$(strip_ansi_first "$selected")
   tmux switch-client -t "$session_name"
 fi
