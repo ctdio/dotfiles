@@ -107,6 +107,34 @@ export function newFunction() { ... }
 
 **If you cannot find something after searching, say so explicitly** - don't assume it doesn't exist.
 
+## Pre-Implementation Convention Check (MANDATORY)
+
+**Before writing any code, run a targeted convention precheck for the specific areas you're about to touch.**
+
+This is not general exploration — it's a focused investigation scoped to the changes you're about to make.
+
+**What to check (based on the nature of your change):**
+
+1. **Find 2-3 existing examples** of the same kind of thing you're about to create or modify (e.g., adding a service? read existing services. Adding an API route? read existing routes. Writing a test? read existing tests in the same area)
+2. **Note the patterns** — naming conventions, file organization, error handling style, import patterns, abstractions used, type patterns
+3. **Check for project-level configuration** that governs the area — linter rules, tsconfig paths, build configuration, test setup files
+4. **Look for shared utilities** already available for what you need — don't reinvent what exists
+
+**Scoping the check to your task:**
+
+| If you're changing... | Check conventions for... |
+|---|---|
+| A React component | Existing components in same directory — props patterns, hooks usage, styling approach, test patterns |
+| An API endpoint | Existing endpoints — route structure, validation, error responses, middleware, auth patterns |
+| A database query/model | Existing models — naming, relations, migration style, query patterns |
+| A utility/helper | Existing utils — module structure, export patterns, test coverage expectations |
+| Tests | Existing tests nearby — framework, assertion style, mock patterns, fixture conventions |
+| Configuration | Existing config files — format, environment handling, validation |
+
+**The output of this check is internalized, not reported** — don't dump a conventions report to the user. Just absorb the patterns and write code that fits.
+
+**The acid test:** Could someone reviewing your code tell it apart from the surrounding codebase? If yes, you missed a convention.
+
 ## Handling Uncertainty
 
 **When you're unsure about:**
