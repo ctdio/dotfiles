@@ -5,13 +5,30 @@ slot_letter="${1:-default}"
 target_session_name="slot-${slot_letter}"
 mode=$(tmux show-option -gqv @slot_mode)
 
+# Read directory binding from config
+slot_dir=""
+config_file="$HOME/dotfiles/slotterm.conf"
+if [[ -f "$config_file" ]]; then
+    while IFS='=' read -r key value; do
+        key="${key%%[[:space:]]*}"
+        value="${value##[[:space:]]}"
+        [[ -z "$key" || "$key" == \#* ]] && continue
+        if [[ "$key" == "$slot_letter" ]]; then
+            slot_dir="${value/#\~/$HOME}"
+            break
+        fi
+    done < "$config_file"
+fi
+new_session_args=(-d -s "${target_session_name}")
+[[ -n "$slot_dir" ]] && new_session_args+=(-c "$slot_dir")
+
 if [[ "$mode" == "switch" ]]; then
     # Switch mode: switch to session full-screen (create if needed)
     if [[ "${current_session_name}" == "${target_session_name}" ]]; then
         # Already in target session, do nothing
         exit 0
     else
-        tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session -d -s "${target_session_name}"
+        tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session "${new_session_args[@]}"
         tmux switch-client -t "${target_session_name}"
         tmux set-option -g @last_slot "${slot_letter}"
     fi
@@ -22,7 +39,7 @@ elif [[ ${current_session_name} == slot-* ]]; then
         tmux detach-client
     else
         # Different slot - switch to it within overlay
-        tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session -d -s "${target_session_name}"
+        tmux has-session -t "${target_session_name}" 2>/dev/null || tmux new-session "${new_session_args[@]}"
         tmux switch-client -t "${target_session_name}"
         tmux set-option -g @last_slot "${slot_letter}"
     fi
@@ -31,5 +48,5 @@ else
     tmux set-option -g @last_slot "${slot_letter}"
     tmux popup \
       -w90% -h90% \
-      -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}"
+      -E "tmux attach -t ${target_session_name} || tmux new -s ${target_session_name}${slot_dir:+ -c \"$slot_dir\"}"
 fi
