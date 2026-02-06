@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Sync agents, skills, and commands to tool-specific directories
+# Sync agents, skills, commands, and rules to tool-specific directories
 # Creates symlinks for Claude Code/Codex/OpenCode, copies for Cursor
 #
 # Usage: sync-agents
@@ -8,6 +8,7 @@
 # Run this after:
 #   - Adding/modifying skills in ~/dotfiles/agents/skills/
 #   - Adding/modifying agents in ~/dotfiles/agents/agents/
+#   - Adding/modifying rules in ~/dotfiles/prompts/
 #   - Installing external skills (they get picked up from ~/.agents/skills/)
 #
 # KNOWN LIMITATION - Cursor symlink bug:
@@ -24,11 +25,13 @@
 #   ~/dotfiles/agents/skills/   → Shared skills (SKILL.md format)
 #   ~/dotfiles/agents/agents/   → Shared agents (Claude + Cursor)
 #   ~/dotfiles/agents/commands/ → Claude-only slash commands
+#   ~/dotfiles/prompts/         → Merged into CLAUDE.md / AGENTS.md
 
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AGENTS_DIR="${DOTFILES_DIR}/agents"
+PROMPTS_DIR="${DOTFILES_DIR}/prompts"
 
 echo "Syncing agents from ${AGENTS_DIR}..."
 
@@ -150,12 +153,65 @@ function sync_commands() {
   ln -sf "${AGENTS_DIR}/commands" "$commands_target"
 }
 
+# Merge prompts (.mdc files) into a single instructions file (CLAUDE.md or AGENTS.md)
+# Strips YAML frontmatter from each file and concatenates the markdown content
+# Ordered prompts are merged first, then any remaining files alphabetically
+PROMPT_ORDER=(
+  base
+  locality-of-behavior
+)
+
+function merge_prompt() {
+  local target_file="$1"
+  local prompt_file="$2"
+  local prompt_name=$(basename "$prompt_file" .mdc)
+
+  sed '1{/^---$/!q;};1,/^---$/d' "$prompt_file" >> "$target_file"
+  echo "" >> "$target_file"
+  echo "    Merged: ${prompt_name}"
+}
+
+function sync_prompts() {
+  local target_file="$1"
+
+  echo "  Merging prompts to ${target_file}"
+
+  : > "$target_file"
+
+  # Merge ordered prompts first
+  for name in "${PROMPT_ORDER[@]}"; do
+    local prompt_file="${PROMPTS_DIR}/${name}.mdc"
+    if [[ -f "$prompt_file" ]]; then
+      merge_prompt "$target_file" "$prompt_file"
+    fi
+  done
+
+  # Merge remaining prompts alphabetically
+  for prompt_file in "${PROMPTS_DIR}"/*.mdc; do
+    if [[ -f "$prompt_file" ]]; then
+      local prompt_name=$(basename "$prompt_file" .mdc)
+      # Skip if already merged via PROMPT_ORDER
+      local already_merged=false
+      for name in "${PROMPT_ORDER[@]}"; do
+        if [[ "$prompt_name" == "$name" ]]; then
+          already_merged=true
+          break
+        fi
+      done
+      if [[ "$already_merged" == false ]]; then
+        merge_prompt "$target_file" "$prompt_file"
+      fi
+    fi
+  done
+}
+
 # Claude Code
 echo "Claude Code (~/.claude):"
 mkdir -p ~/.claude
 sync_skills_symlink ~/.claude
 sync_agents ~/.claude
 sync_commands ~/.claude
+sync_prompts ~/.claude/CLAUDE.md
 
 # Also link settings.json and hooks from claude/ dir
 ln -sf "${DOTFILES_DIR}/claude/settings.json" ~/.claude/settings.json
@@ -167,12 +223,14 @@ echo "Cursor (~/.cursor):"
 mkdir -p ~/.cursor
 sync_skills_copy ~/.cursor
 sync_agents ~/.cursor
+sync_prompts ~/.cursor/AGENTS.md
 # Note: Commands are Claude-specific, Cursor uses different mechanism
 
 # Codex
 echo "Codex (~/.codex):"
 mkdir -p ~/.codex/skills
 sync_skills_symlink ~/.codex
+sync_prompts ~/.codex/AGENTS.md
 # Note: Codex doesn't support agents/subagents yet
 
 # Sync agents with frontmatter transformation (for OpenCode)
@@ -222,6 +280,7 @@ mkdir -p ~/.opencode/skills
 sync_skills_symlink ~/.opencode
 sync_agents_transformed ~/.opencode
 sync_commands ~/.opencode
+sync_prompts ~/.opencode/AGENTS.md
 
 echo ""
 echo "Sync complete!"
@@ -230,6 +289,7 @@ echo "Structure:"
 echo "  ~/dotfiles/agents/skills/  → ~/.claude/skills/, ~/.cursor/skills/, ~/.codex/skills/, ~/.opencode/skills/"
 echo "  ~/dotfiles/agents/agents/  → ~/.claude/agents/, ~/.cursor/agents/, ~/.opencode/agents/ (transformed)"
 echo "  ~/dotfiles/agents/commands/ → ~/.claude/commands/"
+echo "  ~/dotfiles/prompts/        → ~/.claude/CLAUDE.md, ~/.cursor/AGENTS.md, ~/.codex/AGENTS.md, ~/.opencode/AGENTS.md"
 echo ""
 echo "Note: Cursor skills are COPIED (not symlinked) due to a Cursor bug."
 echo "      Re-run sync-agents after modifying skills to update Cursor."

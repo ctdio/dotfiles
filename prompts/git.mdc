@@ -1,0 +1,15 @@
+---
+description: Git Operations
+---
+
+# Git Rules
+
+## Rebase & Conflict Resolution
+
+**Every conflict has two sides that both exist for a reason. The default is to incorporate both.**
+
+1. **Before resolving:** Read both sides of every conflict. Understand what each was trying to do
+2. **Resolve with intent:** Don't accept only ours or only theirs wholesale — merge the intent from both sides. Adapt changes to fit the current shape of the code (renames, refactors, moves)
+3. **Verify before `--continue`:** Review `git diff` of every resolved file. Check for silently dropped changes, broken references, and duplicated code. Typecheck if possible
+4. **Per-commit verification:** Each commit in a multi-commit rebase gets its own review pass — don't batch and hope
+5. **Abort when uncertain:** `git rebase --abort` is better than a bad resolution. Ask the user before aborting
