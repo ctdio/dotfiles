@@ -1,7 +1,20 @@
 ---
-description: PostgreSQL / psql defaults for local development
+description: Database access, Prisma workflow, and safety rules
 alwaysApply: true
 ---
+
+## Prisma Workflow
+
+**Schema Changes:**
+- ALLOWED: `npx prisma db push` to apply schema changes to the local dev database
+- ALLOWED: `prisma migrate dev --create-only` to generate migration files
+- Do NOT create migration files unless explicitly asked — the user handles final migrations
+- When schema changes are needed, edit `schema.prisma` and run `npx prisma db push`
+
+**Still FORBIDDEN everywhere:**
+- Executing schema changes or raw SQL altering structure on production
+- Running `prisma migrate deploy` against production
+- Running seed commands without explicit permission
 
 ## PostgreSQL / psql Defaults
 
@@ -38,3 +51,15 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d <database> -c "<query>"
 - `-A` unaligned output - good for piping to other tools
 
 **Skill:** Use `/local-postgres` for interactive exploration (list tables, describe schema, sample data).
+
+## Worktree Databases
+
+- Worktrees use isolated cloned databases via `db-branch` — safe to modify freely
+- Use `db-branch clone <source> <target>` to clone databases for isolated testing
+- Use `db-branch -c platform-vector-db clone <source> <target>` for vector database
+- Use `db-branch list` to see available databases
+
+**Detecting Worktrees:**
+Worktree directories follow these naming patterns:
+- `<repo>-wt<suffix>` (e.g., `platform-wta`, `platform-wt1`, `platform-wtf`)
+- `<repo>-<branch-name>` (e.g., `myapp-feature-auth`, `platform-fix-login`)

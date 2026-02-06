@@ -191,35 +191,6 @@ export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 
 **Import patterns:** Static imports only (no `await import()` except for route splitting)
 
-## Database and System Safety
-
-**Protected Branches (main/master):**
-- FORBIDDEN: Running `prisma db push`, `prisma migrate deploy`, or any destructive database commands
-- ALLOWED: `prisma migrate dev --create-only` to generate migration files
-- When asked about DB changes: "I've created the migration file. You need to run `[command]` to apply it"
-
-**Feature Branches & Worktrees:**
-- ALLOWED: `npx prisma db push` - safe because worktrees use cloned databases via `db-worktree`
-- ALLOWED: Running migrations on worktree-specific databases
-- Before running prisma commands, verify: `git rev-parse --abbrev-ref HEAD` is NOT main/master
-
-**Detecting Worktrees:**
-Worktree directories follow these naming patterns:
-- `<repo>-wt<suffix>` (e.g., `platform-wta`, `platform-wt1`, `platform-wtf`)
-- `<repo>-<branch-name>` (e.g., `myapp-feature-auth`, `platform-fix-login`)
-
-If your current directory matches these patterns, you're likely in a worktree with an isolated database.
-
-**Database Cloning (for worktrees):**
-- Use `db-branch clone <source> <target>` to clone databases for isolated testing
-- Use `db-branch -c platform-vector-db clone <source> <target>` for vector database
-- Use `db-branch list` to see available databases
-- Worktree databases are isolated and safe to modify
-
-**Still FORBIDDEN everywhere:**
-- Executing schema changes or raw SQL altering structure on production
-- Running seed commands without explicit permission
-
 ## Server Management (CRITICAL)
 
 **FORBIDDEN:** Starting dev servers without explicit request (`npm run dev`, `yarn start`, etc.)
