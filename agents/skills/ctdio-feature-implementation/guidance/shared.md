@@ -15,18 +15,21 @@ Orchestrator (coordinates, writes state directly)
     │
     ├── phase-verifier (verifies implementation — persistent teammate or ephemeral)
     │
-    └── phase-reviewer (reviews code quality — concurrent with verifier, persistent or ephemeral)
+    ├── phase-reviewer (reviews code quality — concurrent with verifier, persistent or ephemeral)
+    │
+    └── phase-tester (custom verification — only if verification-harness.md exists)
 ```
 
-**Key insight**: Each agent has a focused role. The orchestrator manages flow, state, and agent lifecycle. Verifier and reviewer run concurrently after implementation. The implementer stays alive through verify/review so teammates can DM it for clarification.
+**Key insight**: Each agent has a focused role. The orchestrator manages flow, state, and agent lifecycle. Verifier, reviewer, and tester (when harness exists) run concurrently after implementation. The implementer stays alive through verify/review so teammates can DM it for clarification.
 
 ### Your Role in the System
 
-| Agent             | Focus                     | You DON'T Do                         |
-| ----------------- | ------------------------- | ------------------------------------ |
-| phase-implementer | Writing code & tests      | Verification commands, state updates |
-| phase-verifier    | Running checks, reporting | Fixing code, state updates           |
-| phase-reviewer    | Code quality review       | Fixing code, running tests           |
+| Agent             | Focus                                  | You DON'T Do                                   |
+| ----------------- | -------------------------------------- | ---------------------------------------------- |
+| phase-implementer | Writing code & tests                   | Verification commands, state updates           |
+| phase-verifier    | Running checks, reporting              | Fixing code, state updates                     |
+| phase-reviewer    | Code quality review                    | Fixing code, running tests                     |
+| phase-tester      | Eval scripts, API smoke, browser tests | Fixing code, standard test runs, state updates |
 
 ---
 
@@ -42,7 +45,8 @@ All agents should understand this structure:
 ├── phase-01-{name}/
 │   ├── files-to-modify.md           # What to create/modify
 │   ├── technical-details.md         # How to implement
-│   └── testing-strategy.md          # How to test
+│   ├── testing-strategy.md          # How to test
+│   └── verification-harness.md      # Optional: custom verification tests
 ├── phase-NN-{name}/
 │   └── ...
 ├── shared/
@@ -188,6 +192,7 @@ Don't leave partial work:
 - Implementer: All deliverables done or blocked
 - Verifier: All checks run
 - Reviewer: All files reviewed, verdict given
+- Tester: All available capabilities tested or skipped with reasons
 
 ### Trust the System
 
@@ -263,6 +268,7 @@ The orchestrator provides context tailored to your role:
 - **Implementer**: Files to modify, technical details, testing strategy
 - **Verifier**: Deliverables to check, implementation summary, commands to run
 - **Reviewer**: Files modified, implementation notes, spec path
+- **Tester**: Verification harness, implementation summary, architecture context
 
 ### What You Return
 
@@ -285,8 +291,9 @@ If you can't complete your task:
 
 ## Remember
 
-1. **You're part of a system** - Do your role well
-2. **Spec is law** - Requirements must be met
-3. **State is truth** - Keep it accurate
-4. **Be specific** - Vague doesn't help
-5. **Complete or document** - No silent failures
+1. **You own your output** — The orchestrator owns the feature. The verifier owns the quality gate. The reviewer owns code quality. If your piece fails, that's on you. Don't hide behind "the other agent should have caught it."
+2. **Think in systems, not files** — Every change exists in a system. Trace how your work connects to the rest. A service nobody calls is dead code. A test that passes but doesn't exercise the real path is theater.
+3. **Spec is law** — Requirements must be met
+4. **State is truth** — Keep it accurate
+5. **Be specific** — Vague doesn't help
+6. **Complete or document** — No silent failures

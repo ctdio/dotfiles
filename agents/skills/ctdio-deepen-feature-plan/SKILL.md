@@ -133,20 +133,21 @@ You also actively:
 
 When you see these in a plan, dig deeper:
 
-| Red Flag                                  | What to investigate                                             |
-| ----------------------------------------- | --------------------------------------------------------------- |
-| "Follow existing pattern"                 | Which pattern? There are usually multiple.                      |
-| "Handle errors appropriately"             | What specifically? Retry? Log? Throw? Return null?              |
-| "Should be straightforward"               | Why? What assumptions make it straightforward?                  |
-| "Similar to X feature"                    | How similar? What's different? Did X have problems?             |
-| "Add a new service/class"                 | Does the codebase use services? Is this creating a new pattern? |
-| "Update the schema"                       | Migration strategy? Backwards compatibility? Rollback?          |
-| "Call external API"                       | Rate limits? Timeouts? Retries? Fallback?                       |
-| "Just need to add a field"                | Where else does this type flow? What breaks?                    |
-| Vague location ("somewhere in search.ts") | Which function? Which method? Be specific.                      |
-| Missing test strategy                     | How will you know this works?                                   |
-| No error cases mentioned                  | What happens when things go wrong?                              |
-| Single-phase plan for complex feature     | Is this really one atomic unit?                                 |
+| Red Flag                                     | What to investigate                                             |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| "Follow existing pattern"                    | Which pattern? There are usually multiple.                      |
+| "Handle errors appropriately"                | What specifically? Retry? Log? Throw? Return null?              |
+| "Should be straightforward"                  | Why? What assumptions make it straightforward?                  |
+| "Similar to X feature"                       | How similar? What's different? Did X have problems?             |
+| "Add a new service/class"                    | Does the codebase use services? Is this creating a new pattern? |
+| "Update the schema"                          | Migration strategy? Backwards compatibility? Rollback?          |
+| "Call external API"                          | Rate limits? Timeouts? Retries? Fallback?                       |
+| "Just need to add a field"                   | Where else does this type flow? What breaks?                    |
+| Vague location ("somewhere in search.ts")    | Which function? Which method? Be specific.                      |
+| Missing test strategy                        | How will you know this works?                                   |
+| No error cases mentioned                     | What happens when things go wrong?                              |
+| Single-phase plan for complex feature        | Is this really one atomic unit?                                 |
+| Phase has API/UI but no verification-harness | Needs behavioral verification beyond unit tests                 |
 
 ---
 
@@ -223,6 +224,7 @@ These questions surface problems. Ask them even when the plan looks complete.
 - **Dependency Discovery**: Finding files the plan missed
 - **Pattern Extraction**: Adding implementation-ready code examples from the real codebase
 - **Gap Identification**: Finding edge cases from similar existing features
+- **Verification Harness**: Ensuring phases with API endpoints, UI changes, or complex behavior have concrete verification harnesses — and creating them when missing
 
 **The key insight**: Initial planning happens through conversation. Deepening happens through codebase exploration. Both are valuable, but they're different activities.
 
@@ -281,6 +283,16 @@ If `files-to-modify.md` does NOT use work groups:
 - [ ] What edge cases need tests?
 - [ ] What's the mocking strategy for external dependencies?
 - [ ] How will you verify this works end-to-end?
+
+### Verification Harness Critique
+
+- [ ] Does this phase have API endpoints, UI changes, or complex integration behavior?
+- [ ] If yes, does `verification-harness.md` exist? If not, it should be created.
+- [ ] If harness exists, are eval scripts concrete enough for a tester agent to run?
+- [ ] Are API smoke tests hitting real endpoints with specific request/response checks?
+- [ ] Are browser tests (if any) using actual page paths and selectors?
+- [ ] Is the harness testing behavior beyond what unit/integration tests cover?
+- [ ] If the phase is purely foundational (types, configs, schemas), harness is NOT needed — don't create one.
 
 ---
 
@@ -387,6 +399,62 @@ When deepening approach/architecture, explore these:
 4. **"What's the simplest version?"** - Find the minimal change that achieves the goal
 5. **"What could go wrong?"** - Identify risks the plan doesn't address
 
+### Creating Missing Verification Harnesses
+
+When a phase has API endpoints, UI changes, or complex integration behavior but no `verification-harness.md`, **create one**. Place it at `~/.ai/plans/{feature}/phase-NN-{name}/verification-harness.md`.
+
+**Structure** (follow the template from ctdio-feature-planning):
+
+```markdown
+# Phase [N]: Verification Harness
+
+> Custom verification tests run by a tester agent AFTER implementation.
+
+## Dev Server Configuration (optional overrides)
+
+- **Port**: [actual port from project]
+- **Start Command**: [actual start command]
+- **Health Endpoint**: [actual health check URL]
+
+## Eval Scripts
+
+### Eval: [Name]
+
+**Runner**: vitest | jest | node
+**Purpose**: [What this verifies beyond standard tests]
+**Script Outline**: [Concrete code referencing real implementation paths]
+**Expected Outcome**: [What passing looks like]
+
+## API Smoke Tests
+
+### Smoke: [Endpoint Name]
+
+**Method**: POST | GET
+**URL**: [/actual/endpoint/path]
+**Body**: [Real request payload]
+**Expected Status**: [200]
+**Response Checks**: [Specific field/value assertions]
+
+## Browser Tests
+
+### Browser: [Test Name]
+
+**Page**: [/actual/page/path]
+**Steps**: [Real user actions]
+**Assertions**: [What should be visible/true]
+
+## Graceful Degradation
+
+Capabilities unavailable in the environment are SKIPPED, not failed.
+```
+
+**Key rules when creating harnesses:**
+
+- Reference real implementation paths, not placeholders
+- Dev server config must match the actual project (check package.json scripts)
+- Only create for phases that genuinely benefit — skip foundational/cleanup phases
+- Propose the harness to the user before writing it
+
 ### Updating the Plan's Approach
 
 When you find architectural improvements:
@@ -436,12 +504,16 @@ For each phase:
   Read: phase-NN/files-to-modify.md
   Read: phase-NN/technical-details.md
   Read: phase-NN/testing-strategy.md
+  Read: phase-NN/verification-harness.md (if exists)
 
   Assess:
   - Are file paths verified against actual codebase?
   - Are function/class names specific and verified?
   - Are code examples from actual code or hypothetical?
   - Are edge cases comprehensive?
+  - Does this phase have API endpoints, UI changes, or complex behavior
+    that would benefit from a verification harness?
+  - If verification-harness.md exists, are the tests concrete and runnable?
 ```
 
 **Step 3**: Present assessment to user
@@ -460,21 +532,25 @@ Assessment:
 │ files-to-modify:       ⚠️  Paths exist, function refs vague         │
 │ technical-details:     ✓  Has code examples                         │
 │ testing-strategy:      ⚠️  Basic scenarios only                     │
+│ verification-harness:  —  Not needed (foundational phase)            │
 ├─────────────────────────────────────────────────────────────────────┤
 │ Phase 2: Dual-Write                                                 │
 │ files-to-modify:       ⚠️  Missing dependency files                 │
 │ technical-details:     ✗  Pattern refs not verified                 │
 │ testing-strategy:      ⚠️  No mocking strategy                      │
+│ verification-harness:  ⚠️  Missing (has API endpoints to verify)     │
 ├─────────────────────────────────────────────────────────────────────┤
 │ Phase 3: Query Migration                                            │
 │ files-to-modify:       ✓  Verified                                  │
 │ technical-details:     ⚠️  Edge cases sparse                        │
 │ testing-strategy:      ✓  Comprehensive                             │
+│ verification-harness:  ✓  Has API smoke tests                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │ Phase 4: Cleanup                                                    │
 │ files-to-modify:       ✗  Outline only                              │
 │ technical-details:     ✗  Minimal                                   │
 │ testing-strategy:      ✗  Not started                               │
+│ verification-harness:  —  Not needed (cleanup phase)                 │
 └─────────────────────────────────────────────────────────────────────┘
 
 Recommended focus:
@@ -739,6 +815,16 @@ grep -n "edge\|boundary\|empty\|null\|invalid" src/services/__tests__/*.ts
 - [ ] **Test file locations**: Specify exact paths
 - [ ] **Coverage requirements**: What's the project standard?
 - [ ] **Fixture needs**: What test data/fixtures are needed?
+
+### verification-harness.md Deepening
+
+- [ ] **Exists where needed**: Phases with API endpoints, UI pages, or complex behavior have a harness
+- [ ] **Eval scripts concrete**: Script outlines reference real implementation paths and exports
+- [ ] **API smoke tests specific**: Endpoints, methods, request bodies, and expected responses are concrete
+- [ ] **Browser tests actionable**: Page paths, selectors, and assertion criteria are real (not placeholder)
+- [ ] **Dev server config**: Port, start command, and health endpoint match the actual project setup
+- [ ] **Beyond standard tests**: Harness tests behavior that unit/integration tests don't cover
+- [ ] **Not over-applied**: Foundational phases (types, configs, schemas) do NOT have unnecessary harnesses
 
 ### spec.md Deepening
 
@@ -1019,6 +1105,6 @@ Apply this update?
 **Expected structure**:
 
 - overview.md, spec.md, implementation-guide.md
-- phase-NN-{name}/ directories with files-to-modify.md, technical-details.md, testing-strategy.md
+- phase-NN-{name}/ directories with files-to-modify.md, technical-details.md, testing-strategy.md, and optionally verification-harness.md
 
 **Your job**: Ground the plan in codebase reality through exploration and verification

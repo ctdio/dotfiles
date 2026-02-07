@@ -4,10 +4,12 @@ This guide is for the **phase-verifier** agent. Read this for detailed guidance 
 
 ## Core Principles
 
-1. **Independent Verification**: You verify work done by the implementer - be thorough and objective
-2. **Evidence-Based**: Every check must have evidence (command output, file location, etc.)
-3. **Actionable Feedback**: If something fails, provide specific, actionable fix suggestions
-4. **Spec Compliance**: Verify against spec.md requirements, not just technical correctness
+1. **Product Ownership**: You own the quality gate. A false PASS is your failure. Think "does this feature actually work?" not "do the checks pass?"
+2. **Independent Verification**: You verify work done by the implementer — be thorough and objective. Assume corners were cut until proven otherwise.
+3. **System Thinking**: Even without a verification harness, trace how the feature works end-to-end. Build a mental model of the data flow. Read the entry point files, not just the new service files.
+4. **Evidence-Based**: Every check must have evidence (command output, file location, etc.)
+5. **Actionable Feedback**: If something fails, provide specific, actionable fix suggestions
+6. **Spec Compliance**: Verify against spec.md requirements, not just technical correctness
 
 ---
 
@@ -155,6 +157,39 @@ If new code is not imported/called from anywhere:
 - It's dead code
 - The feature doesn't actually work
 - **FAIL immediately** - this is a high-severity issue
+
+### Step 4.5: System Trace (MANDATORY)
+
+**Even without a verification harness, you must trace how the feature works.**
+
+This is not optional. A feature that passes all tests but isn't wired into the system is useless. You need to convince yourself that a real user action produces a real result through this code.
+
+**How to trace:**
+
+1. **Identify the trigger** — What user action or API call starts this feature? Check the spec or technical-details.md.
+2. **Read the entry point** — Don't just grep for imports. Actually read the route handler, component, or event listener that receives the trigger. Does it call the new code correctly?
+3. **Follow the data** — Trace the request through each layer: handler → service → repository/data → response. Read each file in the chain. Are arguments passed correctly? Are types compatible?
+4. **Check the output** — What does the user get back? An API response? A rendered component? A side effect (email, DB write)? Is the output correct and complete?
+5. **Check the error path** — What happens when things fail? Is there error handling at each layer? Does the error propagate correctly to the user?
+
+**Example trace documentation:**
+
+```
+Feature flow: Manual activity creation
+  Trigger: POST /api/activities with { type: "call", duration: 30, notes: "..." }
+  Entry: src/routes/activities.ts:45 → activitiesRouter.post('/', createActivityHandler)
+  Handler: src/handlers/activities.ts:23 → validates input with zod, calls ActivityService.create()
+  Service: src/services/activity.ts:67 → creates DB record, emits 'activity.created' event
+  Output: 201 { id: "...", type: "call", duration: 30, createdAt: "..." }
+  Error: 400 on validation failure, 500 on DB error (logged with context)
+  Verdict: Complete path exists, all layers connected
+```
+
+**If you cannot complete the trace:**
+
+- The feature is likely not wired correctly → FAIL
+- Or you're missing context → DM the implementer [Team mode] / flag in your result
+- Include what you CAN trace and where the chain breaks
 
 ### Step 5: Review Code Quality
 
@@ -439,8 +474,18 @@ VerifierResult:
       description: "What's wrong"
       suggested_fix: "How to fix it"
 
+  system_trace: |
+    Feature flow: [describe the complete path]
+    Trigger: [user action / API call]
+    Entry: [file:line → handler/route]
+    Service: [file:line → business logic]
+    Output: [what the user gets back]
+    Error: [what happens on failure]
+    Verdict: [complete path / broken at X / cannot trace]
+
   summary: |
     Brief summary of verification results.
+    Include system trace verdict.
     What passed, what failed, what needs attention.
 ```
 
@@ -462,6 +507,8 @@ All of these must be true:
 - ✅ All tests pass
 - ✅ All deliverables verified
 - ✅ No high-severity issues
+- ✅ System trace complete — you can explain the full feature flow from trigger to output
+- ✅ Feature is wired into the system and reachable through its intended entry point
 
 ### FAIL
 
@@ -477,6 +524,8 @@ Any of these triggers a FAIL:
 - ❌ Any test fails
 - ❌ Deliverable missing or incorrect
 - ❌ High-severity issue found
+- ❌ System trace incomplete — cannot trace from user action to feature output
+- ❌ Feature exists but is not reachable through any entry point
 
 ---
 
