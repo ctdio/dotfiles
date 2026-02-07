@@ -17,8 +17,8 @@
 #
 # Page Title:
 # - NEXT_PUBLIC_PAGE_TITLE_PREFIX is updated per worktree
-# - platform (source) uses "platform |"
-# - Worktrees replace "platform" with suffix: "wta |", "wtb |", etc.
+# - platform (source) uses "platform |" (or "platform-local |", etc.)
+# - Worktrees replace "platform" prefix with suffix: "wta |", "wta-local |", etc.
 #
 # Database Configuration:
 # - POSTGRES_DATABASE is updated per worktree for database isolation
@@ -108,7 +108,7 @@ update_title_for_worktree() {
 
     [[ "$(basename "$target_file")" != ".env" ]] && return 0
 
-    "${SED_INPLACE[@]}" 's/^NEXT_PUBLIC_PAGE_TITLE_PREFIX="platform |"/NEXT_PUBLIC_PAGE_TITLE_PREFIX="wt'"${worktree_suffix}"' |"/' "$target_file" 2>/dev/null || true
+    "${SED_INPLACE[@]}" 's/^\(NEXT_PUBLIC_PAGE_TITLE_PREFIX="\)platform/\1wt'"${worktree_suffix}"'/' "$target_file" 2>/dev/null || true
 }
 
 # Update database name in .env file
