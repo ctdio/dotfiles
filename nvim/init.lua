@@ -36,18 +36,20 @@ vim.opt.rtp:prepend(lazypath)
 -- use project-local prettier
 vim.g.neoformat_try_node_exe = 1
 vim.g.neoformat_enabled_sql = {}
--- OSC 52 clipboard (works over SSH)
-vim.g.clipboard = {
-  name = "OSC 52",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  },
-  paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-  },
-}
+-- OSC 52 clipboard only over SSH (locally, neovim uses pbcopy/pbpaste automatically)
+if os.getenv("SSH_TTY") then
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+    },
+  }
+end
 vim.g.camelsnek_alternative_camel_commands = 1
 vim.g.db_ui_use_nvim_notify = 1
 vim.g.jupytext_fmt = "py"
