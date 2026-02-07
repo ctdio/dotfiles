@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Start Cloudflare tunnel for wt*.ctdio.dev -> localhost:300X
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG="$DOTFILES_DIR/cloudflared/platform.yml"
+
+if ! command -v cloudflared &> /dev/null; then
+  echo "cloudflared not found. Install with: brew install cloudflare/cloudflare/cloudflared (macOS) or see https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/"
+  exit 1
+fi
+
+echo "Starting Cloudflare tunnel (wt{a-z}.ctdio.dev -> localhost:3001-3026)..."
+cloudflared tunnel --config "$CONFIG" run

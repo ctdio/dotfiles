@@ -3,19 +3,24 @@
 # Parse arguments
 NGROK_DOMAIN=""
 CLOUDFLARED=false
+CADDY=false
 while [[ $# -gt 0 ]]; do
   case $1 in
     --domain|--ngrok)
       NGROK_DOMAIN="$2"
       shift 2
       ;;
-    --cloudflared)
+    --cloudflare)
       CLOUDFLARED=true
+      shift
+      ;;
+    --caddy)
+      CADDY=true
       shift
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: start-dev [--ngrok <domain>] [--cloudflared]"
+      echo "Usage: start-dev [--ngrok <domain>] [--cloudflare] [--caddy]"
       exit 1
       ;;
   esac
@@ -61,15 +66,16 @@ INNGEST_CONNECT_GATEWAY_PORT=$((8290 + SLOT))
 INNGEST_CONNECT_GATEWAY_GRPC_PORT=$((50050 + SLOT))
 INNGEST_CONNECT_EXECUTOR_GRPC_PORT=$((50060 + SLOT))
 
-# Derive cloudflared domain from worktree name
-if [[ "$CLOUDFLARED" == "true" ]]; then
+# Derive domain from worktree name
+if [[ "$CLOUDFLARED" == "true" || "$CADDY" == "true" ]]; then
   if [[ "$DIR_NAME" =~ ^platform-wt([a-z])$ ]]; then
     CLOUDFLARED_DOMAIN="wt${BASH_REMATCH[1]}.ctdio.dev"
+    CADDY_DOMAIN="wt${BASH_REMATCH[1]}.localhost"
   elif [[ "$DIR_NAME" == "platform" ]]; then
-    echo "Error: --cloudflared requires a worktree (platform-wt*), not the main platform directory"
+    echo "Error: --cloudflared/--caddy requires a worktree (platform-wt*), not the main platform directory"
     exit 1
   else
-    echo "Error: Cannot derive cloudflared domain from directory: $DIR_NAME"
+    echo "Error: Cannot derive domain from directory: $DIR_NAME"
     exit 1
   fi
 fi
@@ -78,6 +84,8 @@ if [[ -n "$NGROK_DOMAIN" ]]; then
   echo "Starting opine-dev for $DIR_NAME with ngrok (domain: $NGROK_DOMAIN, inngest: $INNGEST_PORT)"
 elif [[ "$CLOUDFLARED" == "true" ]]; then
   echo "Starting opine-dev for $DIR_NAME with cloudflared (domain: $CLOUDFLARED_DOMAIN, inngest: $INNGEST_PORT)"
+elif [[ "$CADDY" == "true" ]]; then
+  echo "Starting opine-dev for $DIR_NAME with caddy (domain: $CADDY_DOMAIN, inngest: $INNGEST_PORT)"
 else
   echo "Starting opine-dev for $DIR_NAME (server: $PORT, inngest: $INNGEST_PORT)"
 fi
@@ -90,6 +98,8 @@ if [[ -n "$NGROK_DOMAIN" ]]; then
   tmux send-keys "nx run platform:serve:ngrok --exclude-task-dependencies --domain $NGROK_DOMAIN" C-m
 elif [[ "$CLOUDFLARED" == "true" ]]; then
   tmux send-keys "NEXT_PUBLIC_HOST=$CLOUDFLARED_DOMAIN NEXT_PUBLIC_SITE_URL=https://$CLOUDFLARED_DOMAIN nx run platform:serve:turbo --exclude-task-dependencies" C-m
+elif [[ "$CADDY" == "true" ]]; then
+  tmux send-keys "NEXT_PUBLIC_HOST=$CADDY_DOMAIN NEXT_PUBLIC_SITE_URL=https://$CADDY_DOMAIN nx run platform:serve:turbo --exclude-task-dependencies" C-m
 else
   tmux send-keys "nx run platform:serve:turbo --exclude-task-dependencies" C-m
 fi

@@ -4,6 +4,7 @@
   vars:
     packages:
       - awscli
+      - caddy
       - antidote
       - bat
       - databricks

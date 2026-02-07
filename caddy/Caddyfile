@@ -1,0 +1,112 @@
+(local-proxy) {
+	tls internal
+	reverse_proxy https://localhost:{args[0]} {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+wta.localhost {
+	import local-proxy 3001
+}
+
+wtb.localhost {
+	import local-proxy 3002
+}
+
+wtc.localhost {
+	import local-proxy 3003
+}
+
+wtd.localhost {
+	import local-proxy 3004
+}
+
+wte.localhost {
+	import local-proxy 3005
+}
+
+wtf.localhost {
+	import local-proxy 3006
+}
+
+wtg.localhost {
+	import local-proxy 3007
+}
+
+wth.localhost {
+	import local-proxy 3008
+}
+
+wti.localhost {
+	import local-proxy 3009
+}
+
+wtj.localhost {
+	import local-proxy 3010
+}
+
+wtk.localhost {
+	import local-proxy 3011
+}
+
+wtl.localhost {
+	import local-proxy 3012
+}
+
+wtm.localhost {
+	import local-proxy 3013
+}
+
+wtn.localhost {
+	import local-proxy 3014
+}
+
+wto.localhost {
+	import local-proxy 3015
+}
+
+wtp.localhost {
+	import local-proxy 3016
+}
+
+wtq.localhost {
+	import local-proxy 3017
+}
+
+wtr.localhost {
+	import local-proxy 3018
+}
+
+wts.localhost {
+	import local-proxy 3019
+}
+
+wtt.localhost {
+	import local-proxy 3020
+}
+
+wtu.localhost {
+	import local-proxy 3021
+}
+
+wtv.localhost {
+	import local-proxy 3022
+}
+
+wtw.localhost {
+	import local-proxy 3023
+}
+
+wtx.localhost {
+	import local-proxy 3024
+}
+
+wty.localhost {
+	import local-proxy 3025
+}
+
+wtz.localhost {
+	import local-proxy 3026
+}

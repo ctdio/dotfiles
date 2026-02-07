@@ -29,6 +29,7 @@
     # Arch-specific packages
     arch_packages:
       - base-devel
+      - caddy
       - ninja
       - fzf
       - github-cli
@@ -62,6 +63,7 @@
     # Ubuntu-specific packages
     ubuntu_packages:
       - build-essential
+      - caddy
       - neovim
       - ninja-build
       - fzf

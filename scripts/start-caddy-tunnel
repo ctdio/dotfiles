@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Start Caddy reverse proxy for wt*.localhost -> localhost:300X
+# Maps wta.localhost:3001 through wtz.localhost:3026
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CADDYFILE="$DOTFILES_DIR/caddy/Caddyfile"
+
+if ! command -v caddy &> /dev/null; then
+  echo "caddy not found. Install with: brew install caddy (macOS) or your package manager (linux)"
+  exit 1
+fi
+
+echo "Starting Caddy (wt{a-z}.localhost -> localhost:3001-3026)..."
+caddy run --config "$CADDYFILE"
