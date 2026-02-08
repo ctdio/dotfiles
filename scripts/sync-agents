@@ -206,15 +206,16 @@ function sync_prompts() {
 }
 
 # Claude Code
-echo "Claude Code (~/.claude):"
-mkdir -p ~/.claude
-sync_skills_symlink ~/.claude
-sync_agents ~/.claude
-sync_commands ~/.claude
-sync_prompts ~/.claude/CLAUDE.md
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+echo "Claude Code (${CLAUDE_DIR}):"
+mkdir -p "${CLAUDE_DIR}"
+sync_skills_symlink "${CLAUDE_DIR}"
+sync_agents "${CLAUDE_DIR}"
+sync_commands "${CLAUDE_DIR}"
+sync_prompts "${CLAUDE_DIR}/CLAUDE.md"
 
 # Also link settings.json and hooks from claude/ dir
-ln -sf "${DOTFILES_DIR}/claude/settings.json" ~/.claude/settings.json
+ln -sf "${DOTFILES_DIR}/claude/settings.json" "${CLAUDE_DIR}/settings.json"
 echo "  Linked: settings.json"
 
 # Cursor (uses rsync because Cursor doesn't follow symlinks for skills)
@@ -286,10 +287,10 @@ echo ""
 echo "Sync complete!"
 echo ""
 echo "Structure:"
-echo "  ~/dotfiles/agents/skills/  → ~/.claude/skills/, ~/.cursor/skills/, ~/.codex/skills/, ~/.opencode/skills/"
-echo "  ~/dotfiles/agents/agents/  → ~/.claude/agents/, ~/.cursor/agents/, ~/.opencode/agents/ (transformed)"
-echo "  ~/dotfiles/agents/commands/ → ~/.claude/commands/"
-echo "  ~/dotfiles/prompts/        → ~/.claude/CLAUDE.md, ~/.cursor/AGENTS.md, ~/.codex/AGENTS.md, ~/.opencode/AGENTS.md"
+echo "  ~/dotfiles/agents/skills/  → ${CLAUDE_DIR}/skills/, ~/.cursor/skills/, ~/.codex/skills/, ~/.opencode/skills/"
+echo "  ~/dotfiles/agents/agents/  → ${CLAUDE_DIR}/agents/, ~/.cursor/agents/, ~/.opencode/agents/ (transformed)"
+echo "  ~/dotfiles/agents/commands/ → ${CLAUDE_DIR}/commands/"
+echo "  ~/dotfiles/prompts/        → ${CLAUDE_DIR}/CLAUDE.md, ~/.cursor/AGENTS.md, ~/.codex/AGENTS.md, ~/.opencode/AGENTS.md"
 echo ""
 echo "Note: Cursor skills are COPIED (not symlinked) due to a Cursor bug."
 echo "      Re-run sync-agents after modifying skills to update Cursor."
