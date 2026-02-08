@@ -110,10 +110,17 @@ if [[ "$OSTYPE" == linux* ]]; then
 fi
 
 # SSH agent configuration
-# Priority: 1) Already set (e.g., forwarded agent)
-#           2) gnome-keyring on local GNOME sessions
-#           3) systemd user ssh-agent (for remote/headless)
-if [[ -z "$SSH_AUTH_SOCK" ]]; then
+# Priority: 1) OpenClaw (no pinentry available, use systemd ssh-agent)
+#           2) Already set (e.g., forwarded agent)
+#           3) gnome-keyring on local GNOME sessions
+#           4) systemd user ssh-agent (for remote/headless)
+if [[ -n "$OPENCLAW_SERVICE_MARKER" ]]; then
+  # OpenClaw runs without TTY - gpg-agent can't prompt for passphrase
+  # Use the systemd user ssh-agent instead
+  if [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+  fi
+elif [[ -z "$SSH_AUTH_SOCK" ]]; then
   if [[ -z "$SSH_CONNECTION" && -S "$XDG_RUNTIME_DIR/keyring/ssh" ]]; then
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
   elif [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
