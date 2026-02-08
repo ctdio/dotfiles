@@ -31,6 +31,8 @@ The format is: `postgresql://<user>:<password>@<host>:<port>/<database>`
 
 If no port is specified, default to `5432`. If no user/password, default to `postgres`/`postgres`.
 
+**Docker host substitution:** If the parsed host is `host.docker.internal`, replace it with `localhost`. This hostname is used by Docker containers to reach the host machine and won't resolve outside Docker.
+
 ### Defaults
 
 When no URL or env vars are available, use: host=`localhost`, port=`5432`, user=`postgres`, password=`postgres`.
@@ -57,7 +59,7 @@ Lists databases, helps pick one, shows tables.
 /local-postgres SELECT * FROM users LIMIT 5
 ```
 
-Runs the query directly.
+Verify referenced tables/columns exist via schema check, then run the query.
 
 **With table name:**
 
@@ -65,7 +67,7 @@ Runs the query directly.
 /local-postgres users
 ```
 
-Describes the table and shows sample rows.
+Verify the table exists via `\dt`, then describe it and show sample rows.
 
 **Rediscover (clear cache and re-run discovery):**
 
@@ -77,25 +79,35 @@ Clears cached database, runs discovery again, updates cache.
 
 ## Schema-First Rule (MANDATORY)
 
-**NEVER assume table or column names. ALWAYS verify against the actual schema before constructing queries.**
+**NEVER assume table names, column names, column types, or relationships. ALWAYS verify against the actual schema before constructing or running ANY query.**
 
-Before running any query (whether user-provided or self-constructed):
+**Every interaction follows this sequence:**
 
-1. **List tables** - Run `\dt` to get actual table names in the database
-2. **Describe target tables** - Run `\d <table>` on every table you intend to query
-3. **Verify column names** - Use the schema output to confirm column names, types, and constraints before referencing them in queries
+1. **Connect** - Resolve connection, select database
+2. **Fetch schema** - Run `\dt` to list tables, then `\d <table>` on each table you intend to query
+3. **Verify** - Confirm every table and column name referenced in the query actually exists in the schema output
+4. **Execute** - Only now run the query, using verified names
 
-**This applies to ALL queries, including:**
+**This is non-negotiable for ALL queries:**
 
-- User-requested queries (verify the tables/columns they reference actually exist)
-- Self-generated exploration queries
-- Follow-up queries in a conversation (schema may have changed)
+- User-provided queries — verify the tables/columns they reference before executing
+- Self-generated queries — only use column names you have seen in `\d` output
+- Follow-up queries — re-check schema if targeting new tables
+- Suggested queries — never suggest queries referencing columns you haven't confirmed exist (e.g., don't assume `created_at`, `updated_at`, `name`, `email` — check first)
 
 **If a table or column doesn't exist:**
 
-- Report what actually exists (show the schema)
-- Suggest the closest match if the name looks like a typo
-- Ask the user to clarify rather than guessing
+- Show what actually exists (list tables or columns from schema)
+- Suggest the closest match if it looks like a typo
+- Ask the user to clarify — never guess or substitute
+
+**Common assumption traps to avoid:**
+
+- Assuming `id` is the primary key (could be `uuid`, `<table>_id`, etc.)
+- Assuming timestamp columns exist (`created_at`, `updated_at`)
+- Assuming column naming conventions (`camelCase` vs `snake_case`)
+- Assuming `public` schema — check with `\dn` if tables aren't found
+- Assuming singular/plural table names (`user` vs `users`)
 
 **Quick schema reference query:**
 
@@ -138,18 +150,20 @@ echo '{"database": "<db>", "discovered_at": "'$(date -I)'"}' > ~/.ai/cache/$PROJ
 
 ### Describe Table
 
+First verify the table exists by checking `\dt` output, then describe it:
+
 ```bash
 PGPASSWORD="$PASSWORD" psql -h "$HOST" -p "$PORT" -U "$USER" -d <db> -c "\d <table>"
 ```
 
-Then show 5 sample rows.
+Then show 5 sample rows using `SELECT * FROM <table> LIMIT 5`.
 
 ### Quick Queries
 
-For simple lookups, suggest useful queries:
+After verifying schema, suggest queries using confirmed column names:
 
 - `SELECT COUNT(*) FROM <table>`
-- `SELECT * FROM <table> ORDER BY created_at DESC LIMIT 10`
+- `SELECT * FROM <table> LIMIT 10` (add `ORDER BY` only using a column confirmed via `\d`)
 - `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '<table>'`
 
 ### Find Foreign Keys
