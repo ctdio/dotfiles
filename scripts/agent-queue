@@ -1,0 +1,163 @@
+#!/bin/bash
+
+# Agent queue viewer - fzf picker for all tracked Claude Code agents
+# Shows idle agents first, lets you jump to pane or dismiss entries.
+#
+# Usage:
+#   agent-queue          Start fzf picker
+#   agent-queue --list   Output agent list to stdout
+#   agent-queue --switch <pane_id>   Switch to agent pane
+#   agent-queue --dismiss <pane_id>  Remove registry entry
+
+QUEUE_DIR="$HOME/.ai/agent-queue"
+SELF="$(readlink -f "$0")"
+
+DIM=$'\033[2m'
+RESET=$'\033[0m'
+GREEN=$'\033[38;5;71m'
+YELLOW=$'\033[38;5;220m'
+CYAN=$'\033[36m'
+GRAY=$'\033[38;5;245m'
+
+# --dismiss <pane_id>: remove registry file
+if [[ "$1" == "--dismiss" ]]; then
+  pane_id="$2"
+  pane_num="${pane_id#%}"
+  rm -f "$QUEUE_DIR/$pane_num.json"
+  exit 0
+fi
+
+# --switch <pane_id>: jump to the agent's tmux pane
+if [[ "$1" == "--switch" ]]; then
+  pane_id="$2"
+
+  # Find which session/window this pane currently belongs to
+  pane_info=$(tmux list-panes -a -F '#{pane_id} #{session_name} #{window_id}' 2>/dev/null | grep "^$pane_id ")
+  [ -n "$pane_info" ] || exit 1
+
+  target_session=$(echo "$pane_info" | awk '{print $2}')
+  target_window=$(echo "$pane_info" | awk '{print $3}')
+
+  # Handle hidden _agent_* sessions: rejoin pane to parent session
+  if [[ "$target_session" == _agent_* ]]; then
+    parent_session="${target_session#_agent_}"
+
+    # Find the leftmost pane in the parent session's current window
+    leftmost_pane=$(tmux list-panes -t "$parent_session" -F '#{pane_left} #{pane_id}' 2>/dev/null | sort -n | head -1 | awk '{print $2}')
+    [ -n "$leftmost_pane" ] || exit 1
+
+    # Calculate width (30% of window, max 80 cols)
+    window_width=$(tmux display-message -t "$parent_session" -p '#{window_width}' 2>/dev/null)
+    target_width=$((window_width * 30 / 100))
+    [ "$target_width" -gt 80 ] && target_width=80
+
+    # Join the agent pane back into the parent session
+    tmux join-pane -hb -l "$target_width" -s "$pane_id" -t "$leftmost_pane" 2>/dev/null
+    tmux switch-client -t "$parent_session" 2>/dev/null
+    tmux select-pane -t "$pane_id" 2>/dev/null
+  else
+    tmux switch-client -t "$target_session" 2>/dev/null
+    tmux select-window -t "$target_window" 2>/dev/null
+    tmux select-pane -t "$pane_id" 2>/dev/null
+  fi
+  exit 0
+fi
+
+# --list: output all agents, idle first, with dead-pane pruning
+if [[ "$1" == "--list" ]]; then
+  [ -d "$QUEUE_DIR" ] || exit 0
+
+  # Get all live panes
+  live_panes=$(tmux list-panes -a -F '#{pane_id}' 2>/dev/null)
+
+  idle_lines=()
+  running_lines=()
+
+  for f in "$QUEUE_DIR"/*.json; do
+    [ -f "$f" ] || continue
+
+    # Read entry
+    entry=$(jq -r '[.pane_id, .status, .tmux_session, .branch, .cwd, .updated_at] | @tsv' "$f" 2>/dev/null)
+    [ -n "$entry" ] || continue
+
+    IFS=$'\t' read -r pane_id status tmux_session branch cwd updated_at <<< "$entry"
+
+    # Prune dead panes
+    if ! echo "$live_panes" | grep -q "^${pane_id}$"; then
+      rm -f "$f"
+      continue
+    fi
+
+    # Format relative time
+    now=$(date +%s)
+    elapsed=$((now - updated_at))
+    if [ "$elapsed" -lt 60 ]; then
+      time_str="${elapsed}s ago"
+    elif [ "$elapsed" -lt 3600 ]; then
+      time_str="$((elapsed / 60))m ago"
+    else
+      time_str="$((elapsed / 3600))h ago"
+    fi
+
+    # Shorten cwd: replace $HOME with ~
+    short_cwd="${cwd/#$HOME/~}"
+    # Further shorten: keep last 2 path components
+    if [[ "$short_cwd" == */*/* ]]; then
+      short_cwd="../${short_cwd##*/}"
+      # Get parent too
+      parent="${cwd%/*}"
+      parent="${parent##*/}"
+      short_cwd="../$parent/${cwd##*/}"
+      short_cwd="${short_cwd/#$HOME/~}"
+    fi
+
+    if [ "$status" = "idle" ]; then
+      line="${pane_id}\t${YELLOW}[idle]${RESET} ${tmux_session} ${DIM}${branch}${RESET} ${CYAN}${short_cwd}${RESET} ${GRAY}${time_str}${RESET}"
+      idle_lines+=("$line")
+    else
+      line="${pane_id}\t${GREEN}[running]${RESET} ${tmux_session} ${DIM}${branch}${RESET} ${CYAN}${short_cwd}${RESET} ${GRAY}${time_str}${RESET}"
+      running_lines+=("$line")
+    fi
+  done
+
+  # Idle first (most recent at top), then running
+  for line in "${idle_lines[@]}"; do
+    echo -e "$line"
+  done
+  for line in "${running_lines[@]}"; do
+    echo -e "$line"
+  done
+  exit 0
+fi
+
+# Default: launch fzf picker
+listing=$("$SELF" --list)
+
+if [ -z "$listing" ]; then
+  # Show fzf with empty state — keeps the popup open so it doesn't flash
+  echo "" | fzf \
+    --ansi \
+    --prompt="agent › " \
+    --no-border \
+    --header="No agents tracked. Start a Claude Code session in tmux to populate." \
+    --no-info
+  exit 0
+fi
+
+selected=$(echo "$listing" | fzf \
+  --ansi \
+  --prompt="agent › " \
+  --no-border \
+  --delimiter=$'\t' \
+  --with-nth=2 \
+  --bind "ctrl-d:execute-silent($SELF --dismiss {1})+reload($SELF --list)" \
+  --preview='
+    pane_id={1}
+    tmux capture-pane -t "$pane_id" -p -e 2>/dev/null | tail -40
+  ' \
+  --preview-window=right:50%:noborder) || exit 0
+
+if [ -n "$selected" ]; then
+  pane_id=$(echo "$selected" | cut -f1)
+  "$SELF" --switch "$pane_id"
+fi

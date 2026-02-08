@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Claude Code hook: Track agent status in ~/.ai/agent-queue/
+# Handles SessionStart, Stop, SessionEnd, and UserPromptSubmit events.
+# Registry keyed by tmux pane ID for multi-agent-per-session support.
+
+QUEUE_DIR="$HOME/.ai/agent-queue"
+
+# Silent exit if not in tmux
+[ -n "$TMUX_PANE" ] || exit 0
+
+pane_num="${TMUX_PANE#%}"
+registry_file="$QUEUE_DIR/$pane_num.json"
+
+# Read stdin JSON
+input=$(cat)
+event=$(echo "$input" | jq -r '.hook_event_name // empty')
+
+[ -n "$event" ] || exit 0
+
+mkdir -p "$QUEUE_DIR"
+
+now=$(date +%s)
+
+case "$event" in
+  SessionStart)
+    session_id=$(echo "$input" | jq -r '.session_id // empty')
+    tmux_session=$(tmux display-message -p '#{session_name}' 2>/dev/null)
+    tmux_window=$(tmux display-message -p '#{window_id}' 2>/dev/null)
+    cwd=$(echo "$input" | jq -r '.cwd // empty')
+
+    # Fast branch lookup from .git/HEAD (same pattern as get-session-branch)
+    branch=""
+    git_dir="$cwd/.git"
+    if [ -f "$git_dir" ]; then
+      git_dir="$cwd/$(cat "$git_dir")"
+      git_dir="${git_dir#*gitdir: }"
+    fi
+    if [ -f "$git_dir/HEAD" ]; then
+      read -r head < "$git_dir/HEAD"
+      case "$head" in
+        ref:\ refs/heads/*) branch="${head#ref: refs/heads/}" ;;
+        *) branch="HEAD" ;;
+      esac
+    fi
+
+    tmp="$registry_file.tmp.$$"
+    jq -n \
+      --arg pane_id "$TMUX_PANE" \
+      --arg tmux_session "$tmux_session" \
+      --arg tmux_window "$tmux_window" \
+      --arg cwd "$cwd" \
+      --arg branch "$branch" \
+      --arg session_id "$session_id" \
+      --arg status "running" \
+      --argjson registered_at "$now" \
+      --argjson updated_at "$now" \
+      '{
+        pane_id: $pane_id,
+        tmux_session: $tmux_session,
+        tmux_window: $tmux_window,
+        cwd: $cwd,
+        branch: $branch,
+        session_id: $session_id,
+        status: $status,
+        registered_at: $registered_at,
+        updated_at: $updated_at
+      }' > "$tmp" && mv "$tmp" "$registry_file"
+    ;;
+
+  Stop)
+    if [ -f "$registry_file" ]; then
+      tmp="$registry_file.tmp.$$"
+      jq --argjson now "$now" '.status = "idle" | .updated_at = $now' "$registry_file" > "$tmp" && mv "$tmp" "$registry_file"
+    fi
+    # Never block the agent
+    echo '{"decision":"approve"}'
+    ;;
+
+  UserPromptSubmit)
+    if [ -f "$registry_file" ]; then
+      tmp="$registry_file.tmp.$$"
+      jq --argjson now "$now" '.status = "running" | .updated_at = $now' "$registry_file" > "$tmp" && mv "$tmp" "$registry_file"
+    fi
+    ;;
+
+  SessionEnd)
+    rm -f "$registry_file"
+    ;;
+esac
+
+exit 0
