@@ -26,6 +26,7 @@ return {
           preset = "none",
           ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
           ["<C-e>"] = { "hide", "fallback" },
+          ["<C-k>"] = { "accept", "fallback" },
           ["<CR>"] = { "accept", "fallback" },
           ["<Tab>"] = {},
           ["<S-Tab>"] = { "snippet_backward", "fallback" },
@@ -201,7 +202,11 @@ return {
 
       -- tsgo (TypeScript native Go port) - built from source
       vim.lsp.config("tsgo", {
-        cmd = { vim.env.HOME .. "/typescript-go/built/local/tsgo", "--lsp", "--stdio" },
+        cmd = {
+          vim.env.HOME .. "/typescript-go/built/local/tsgo",
+          "--lsp",
+          "--stdio",
+        },
         on_attach = on_attach,
         capabilities = capabilities,
         filetypes = {
