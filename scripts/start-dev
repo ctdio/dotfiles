@@ -6,7 +6,7 @@ CLOUDFLARED=false
 CADDY=false
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --domain|--ngrok)
+    --ngrok)
       NGROK_DOMAIN="$2"
       shift 2
       ;;
