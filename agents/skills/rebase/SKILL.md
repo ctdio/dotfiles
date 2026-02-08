@@ -90,84 +90,71 @@ Resolution rules:
 - **Account for renames and refactors** — if the target branch renamed a function or moved code, apply the incoming change to the new location/name
 - **Watch for semantic conflicts** — code that merges cleanly at the text level but breaks at the logic level (duplicate imports, conflicting business rules, incompatible type changes)
 
-### Step 5: Verify the Resolution (MANDATORY - DO NOT SKIP)
+### Step 5: Stage Resolved Files
 
-After resolving all conflicts for this commit, **before running `git rebase --continue`**:
+```bash
+git add <resolved-files>
+```
 
-1. **Review the diff of every resolved file:**
+---
 
-   ```bash
-   git diff
-   ```
+## VERIFICATION GATE (runs after EVERY commit resolution)
 
-   Check for:
-   - Silently dropped changes (lines from one side missing entirely)
-   - Broken references (renamed variables/functions not updated)
-   - Duplicated code (same logic appearing twice)
-   - Orphaned imports (imports for removed code, or missing imports for added code)
+**STOP. You MUST complete every gate below before running `git rebase --continue`. Do NOT batch commits. Do NOT skip gates. Each gate produces output you must review — if you have no output, you skipped the gate.**
 
-2. **Run the project's prepare/codegen script** (if available):
+### Gate 1: Diff Review
 
-   Projects often have scripts that regenerate schemas, types, or other derived artifacts. These MUST run before typecheck so generated code reflects the current state.
+Run `git diff --cached` and read the full output. For each resolved file, confirm:
 
-   Discovery order — use the first one that exists:
-   - Check `CLAUDE.md` or `AGENT.md` for a documented prepare command
-   - Check `package.json` scripts for `prepare`, `codegen`, `generate`, or `build:types`
-   - Check for `nx` projects: `nx run <project>:prepare`
-   - Check for `prisma` projects: `npx prisma generate`
+- No lines from either side were silently dropped
+- Renamed variables/functions are updated consistently
+- No duplicated code blocks (same logic appearing twice from both sides)
+- No orphaned imports (for removed code) or missing imports (for added code)
 
-   Common examples:
+**If you find issues:** fix them and re-stage before proceeding.
 
-   ```bash
-   # Nx monorepo
-   nx run platform:prepare
+### Gate 2: Prepare / Codegen (if applicable)
 
-   # package.json script
-   npm run prepare
+Projects with generated code must regenerate before typecheck. Run the first matching command:
 
-   # Prisma
-   npx prisma generate
-   ```
+1. Check `CLAUDE.md` or `AGENT.md` for a documented prepare command
+2. Check `package.json` scripts for `prepare`, `codegen`, `generate`, or `build:types`
+3. `nx` projects: `nx run <project>:prepare`
+4. Prisma projects: `npx prisma generate`
 
-3. **Run the project's type checker** (if available):
+### Gate 3: Type Check (if applicable)
 
-   ```bash
-   # TypeScript projects
-   npx tsc --noEmit
+```bash
+npm run typecheck 2>/dev/null || npx tsc --noEmit
+```
 
-   # Or check package.json for the typecheck script
-   npm run typecheck 2>/dev/null || npx tsc --noEmit
-   ```
+**If typecheck fails:** the resolution broke something. Fix it, re-stage, re-run typecheck. Do NOT continue with type errors.
 
-4. **Run the project's linter** (if available):
+### Gate 4: Lint (if applicable)
 
-   ```bash
-   # Check package.json for lint script
-   npm run lint 2>/dev/null || npx eslint . 2>/dev/null
-   ```
+```bash
+npm run lint 2>/dev/null || npx eslint . 2>/dev/null
+```
 
-5. **Run tests** (if available):
+### Gate 5: Tests (if applicable)
 
-   ```bash
-   # Check package.json for test script
-   npm test 2>/dev/null
-   ```
+```bash
+npm test 2>/dev/null
+```
 
-6. **If any verification step fails:** Fix the issues BEFORE continuing. These failures often indicate a resolution that silently broke something.
+### Gate Result
 
-7. **Stage the resolved files:**
+**ALL gates must pass before continuing.** If any gate fails, fix the issue and re-run that gate. Failures here almost always indicate a resolution that silently broke something.
 
-   ```bash
-   git add <resolved-files>
-   ```
+Only after all gates pass:
 
-8. **Continue the rebase:**
+```bash
+git rebase --continue
+```
 
-   ```bash
-   git rebase --continue
-   ```
+If more commits conflict, return to Step 1.
 
-9. **If more commits conflict**, return to Step 1.
+---
 
 ## Post-Rebase Verification
 
