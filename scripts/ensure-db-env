@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Ensure DB_UI_PLATFORM* environment variables exist in ~/.env
+# Discovers worktrees dynamically from git and creates a variable per worktree.
+# Idempotent: updates existing values, appends missing ones
+#
+# Variables managed:
+#   DB_UI_PLATFORM          -> postgresql://postgres:postgres@localhost:5432/platform
+#   DB_UI_PLATFORM_WT<X>    -> postgresql://postgres:postgres@localhost:5432/platform_wt<x>
+#     (one per discovered worktree, e.g. WTA, WTB, WT1, etc.)
+
+set -e
+
+ENV_FILE="$HOME/.env"
+SOURCE_DIR="$HOME/projects/private/opine/platform"
+BASE_URL="postgresql://postgres:postgres@localhost:5432"
+
+touch "$ENV_FILE"
+
+ensure_var() {
+  local var="$1"
+  local value="$2"
+
+  if grep -q "^${var}=" "$ENV_FILE"; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s|^${var}=.*|${var}=${value}|" "$ENV_FILE"
+    else
+      sed -i "s|^${var}=.*|${var}=${value}|" "$ENV_FILE"
+    fi
+  else
+    echo "${var}=${value}" >> "$ENV_FILE"
+  fi
+}
+
+# Base platform database
+ensure_var "DB_UI_PLATFORM" "${BASE_URL}/platform"
+
+# Worktree databases
+git -C "$SOURCE_DIR" worktree list --porcelain 2>/dev/null \
+  | grep "^worktree " | cut -d' ' -f2 | tail -n +2 \
+  | while IFS= read -r worktree; do
+      dir_name=$(basename "$worktree")
+      if [[ "$dir_name" =~ ^platform-wt(.+)$ ]]; then
+        suffix="${BASH_REMATCH[1]}"
+        suffix_upper=$(echo "$suffix" | tr '[:lower:]' '[:upper:]')
+        ensure_var "DB_UI_PLATFORM_WT${suffix_upper}" "${BASE_URL}/platform_wt${suffix}"
+      fi
+    done
