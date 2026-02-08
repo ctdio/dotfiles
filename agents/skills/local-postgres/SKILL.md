@@ -59,7 +59,7 @@ Lists databases, helps pick one, shows tables.
 /local-postgres SELECT * FROM users LIMIT 5
 ```
 
-Verify referenced tables/columns exist via schema check, then run the query.
+Runs the query after fetching schema.
 
 **With table name:**
 
@@ -67,7 +67,7 @@ Verify referenced tables/columns exist via schema check, then run the query.
 /local-postgres users
 ```
 
-Verify the table exists via `\dt`, then describe it and show sample rows.
+Describes the table and shows sample rows.
 
 **Rediscover (clear cache and re-run discovery):**
 
@@ -150,8 +150,6 @@ echo '{"database": "<db>", "discovered_at": "'$(date -I)'"}' > ~/.ai/cache/$PROJ
 
 ### Describe Table
 
-First verify the table exists by checking `\dt` output, then describe it:
-
 ```bash
 PGPASSWORD="$PASSWORD" psql -h "$HOST" -p "$PORT" -U "$USER" -d <db> -c "\d <table>"
 ```
@@ -160,7 +158,7 @@ Then show 5 sample rows using `SELECT * FROM <table> LIMIT 5`.
 
 ### Quick Queries
 
-After verifying schema, suggest queries using confirmed column names:
+For simple lookups, using column names from the schema:
 
 - `SELECT COUNT(*) FROM <table>`
 - `SELECT * FROM <table> LIMIT 10` (add `ORDER BY` only using a column confirmed via `\d`)
