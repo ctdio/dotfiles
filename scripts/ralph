@@ -22,6 +22,7 @@ DIM="\033[2m"
 # Timing
 TOTAL_START_TIME=0
 ITERATION_START_TIME=0
+CHILD_PID=""
 
 # Ctrl-C protection
 LAST_INTERRUPT=0
@@ -55,11 +56,16 @@ format_duration() {
 handle_interrupt() {
   local now
   now=$(date +%s)
+
+  # Kill child process tree if running
+  if [[ -n "${CHILD_PID:-}" ]] && kill -0 "$CHILD_PID" 2>/dev/null; then
+    pkill -TERM -P "$CHILD_PID" 2>/dev/null || true
+    kill -TERM "$CHILD_PID" 2>/dev/null || true
+  fi
+
   if ((now - LAST_INTERRUPT <= 2)); then
     echo -e "\n${RED}Interrupted${RESET}"
-    # Clean up temp file if it exists
     [[ -n "${temp_output:-}" ]] && rm -f "$temp_output" 2>/dev/null
-    # Print total time if we started
     if ((TOTAL_START_TIME > 0)); then
       local total_elapsed=$((now - TOTAL_START_TIME))
       echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
@@ -78,6 +84,7 @@ STREAM_PARSER="${RALPH_STREAM_PARSER:-${CLAUDE_AGENT_STREAM_PARSER:-$HOME/dotfil
 # Defaults
 MAX_ITERATIONS=10
 COMPLETION_PROMISE="TASK_COMPLETE"
+REQUIRED_CONSECUTIVE=2
 PROMPT=""
 PROMPT_FILE=""
 AGENT="claude"
@@ -98,6 +105,7 @@ ${YELLOW}OPTIONS:${RESET}
   -f, --file <path>               Read prompt from file
   -m, --max-iterations <n>        Maximum iterations (default: 10)
   -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
+  -n, --required-consecutive <n>  Successive completions needed to exit (default: 2)
   -a, --agent <claude|codex|opencode>  Agent preset to use (default: claude)
   -M, --model <model>             Model to use (opencode default: openai/gpt-5.2-codex; format provider/model)
   -h, --help                      Show this help message
@@ -111,6 +119,7 @@ ${YELLOW}EXAMPLES:${RESET}
 ${YELLOW}COMPLETION:${RESET}
   Claude must output <promise>YOUR_PHRASE</promise> to signal completion.
   The promise must be TRUE - Claude should not lie to exit the loop.
+  The loop requires convergence (successive confirmations) before exiting.
 
 ${YELLOW}ENV VARS:${RESET}
   RALPH_AGENT_CMD     Full command string override (takes precedence over --agent)
@@ -135,6 +144,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -c|--completion-promise)
       COMPLETION_PROMISE="$2"
+      shift 2
+      ;;
+    -n|--required-consecutive)
+      REQUIRED_CONSECUTIVE="$2"
       shift 2
       ;;
     -a|--agent)
@@ -231,6 +244,9 @@ resolve_agent_cmd() {
   echo "$cmd"
 }
 
+# Export COLUMNS so piped subprocesses (stream parser) can detect terminal width
+export COLUMNS
+
 AGENT_CMD=$(resolve_agent_cmd)
 
 # Check stream parser exists (only if set)
@@ -242,6 +258,24 @@ fi
 
 build_prompt() {
   local iteration=$1
+  local iteration_context=""
+
+  if [[ $CONSECUTIVE_COMPLETIONS -gt 0 ]]; then
+    iteration_context="
+⚠️  VERIFICATION PASS
+Your previous iteration claimed the task was complete, but the system
+could not confirm it. Do NOT trust the previous assessment.
+Re-run every check from scratch and independently verify the current state.
+Only emit the completion promise if your fresh checks confirm it.
+"
+  elif [[ $iteration -gt 1 ]]; then
+    iteration_context="
+This is a continuation. Previous iterations did not complete the task.
+Check git log and file state to understand what has been done so far,
+then pick up where the previous iteration left off.
+"
+  fi
+
   cat <<EOF
 $PROMPT
 
@@ -249,22 +283,28 @@ $PROMPT
 RALPH LOOP CONTEXT - Iteration ${iteration}/${MAX_ITERATIONS}
 ═══════════════════════════════════════════════════════════
 
-You are in a Ralph Loop. This means:
-- Your output will be analyzed for completion
-- If not complete, you'll receive the SAME PROMPT again
-- Your previous work persists in files and git history
+You are in a Ralph Loop — an automated retry harness.
+- Each iteration is a FRESH session. You have no memory of prior iterations.
+- Your previous work persists in files and git history — inspect them.
+- If the task is not complete, you will receive this prompt again.
+${iteration_context}
+ORIENTATION (do this first):
+  1. Check git log/diff to see what prior iterations changed
+  2. Inspect the current state of the task (run checks, read files)
+  3. Identify what remains to be done
+  4. Act on it
 
 COMPLETION:
-To signal completion, output this EXACT text:
+When the task is genuinely finished, output this EXACT text:
   <promise>${COMPLETION_PROMISE}</promise>
 
-STRICT REQUIREMENTS:
-  ✓ Use <promise> XML tags EXACTLY as shown
-  ✓ The statement MUST be completely and unequivocally TRUE
-  ✓ Do NOT output false statements to exit the loop
-  ✓ Do NOT lie even if you think you should exit
+The promise MUST be true. Do not emit it to escape the loop — only when
+the task is verifiably complete. A false promise wastes another iteration.
 
-If stuck, keep trying. The loop continues until the promise is GENUINELY TRUE.
+IF STUCK:
+  - Re-read the original task requirements above
+  - Check if a different approach would work
+  - Look at what prior iterations attempted (git log) and try something new
 ═══════════════════════════════════════════════════════════
 EOF
 }
@@ -286,12 +326,16 @@ echo -e "agent:      ${AGENT}"
 [[ -n "$MODEL" ]] && echo -e "model:      ${MODEL}"
 echo -e "iterations: ${MAX_ITERATIONS}"
 echo -e "promise:    ${COMPLETION_PROMISE}"
+echo -e "converge:   ${REQUIRED_CONSECUTIVE} successive"
 echo ""
 echo -e "prompt:     ${PROMPT}"
 echo ""
 
 # Start total timer
 TOTAL_START_TIME=$(date +%s)
+
+# Convergence tracking
+CONSECUTIVE_COMPLETIONS=0
 
 # Main loop
 for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
@@ -303,15 +347,19 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
   # Create temp file to capture output while streaming
   temp_output=$(mktemp)
 
-  # Run agent with streaming JSON, pipe through parser when configured, capture output
-  # Use || true to prevent script exit on ctrl-c (trap handles exit logic)
-  # Stream parser works with claude and opencode JSON output
+  # Run pipeline in background subshell so `wait` is interruptible by SIGINT trap.
+  # Foreground pipelines absorb SIGINT, preventing the trap handler from firing.
   local -a agent_cmd_parts=(${=AGENT_CMD})
-  if [[ -n "$STREAM_PARSER" && ("$AGENT" == "claude" || "$AGENT" == "opencode") ]]; then
-    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output" || true
-  else
-    "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output" || true
-  fi
+  (
+    if [[ -n "$STREAM_PARSER" && ("$AGENT" == "claude" || "$AGENT" == "opencode") ]]; then
+      "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | "$STREAM_PARSER" | tee "$temp_output"
+    else
+      "${agent_cmd_parts[@]}" "$augmented_prompt" 2>/dev/null | tee "$temp_output"
+    fi
+  ) &
+  CHILD_PID=$!
+  wait $CHILD_PID 2>/dev/null || true
+  CHILD_PID=""
 
   # Calculate iteration duration
   iteration_end=$(date +%s)
@@ -320,17 +368,26 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
 
   # Check for completion (check file directly, stripping ANSI codes)
   if check_completion "$temp_output"; then
+    CONSECUTIVE_COMPLETIONS=$((CONSECUTIVE_COMPLETIONS + 1))
     rm -f "$temp_output"
-    total_elapsed=$((iteration_end - TOTAL_START_TIME))
-    echo -e "\n${GREEN}✓${RESET} Promise fulfilled after ${iteration} iteration(s)"
-    echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
-    exit 0
-  fi
 
-  rm -f "$temp_output"
+    if [[ $CONSECUTIVE_COMPLETIONS -ge $REQUIRED_CONSECUTIVE ]]; then
+      total_elapsed=$((iteration_end - TOTAL_START_TIME))
+      echo -e "\n${GREEN}✓${RESET} Promise fulfilled ${CONSECUTIVE_COMPLETIONS}x consecutively after ${iteration} iteration(s)"
+      echo -e "${DIM}total time: $(format_duration $total_elapsed)${RESET}"
+      exit 0
+    fi
 
-  if [[ $iteration -lt $MAX_ITERATIONS ]]; then
-    echo -e "${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
+    if [[ $iteration -lt $MAX_ITERATIONS ]]; then
+      echo -e "${YELLOW}Promise detected (${CONSECUTIVE_COMPLETIONS}/${REQUIRED_CONSECUTIVE}) — verifying with another iteration...${RESET}"
+    fi
+  else
+    CONSECUTIVE_COMPLETIONS=0
+    rm -f "$temp_output"
+
+    if [[ $iteration -lt $MAX_ITERATIONS ]]; then
+      echo -e "${YELLOW}Promise not detected. Continuing to next iteration...${RESET}"
+    fi
   fi
 done
 

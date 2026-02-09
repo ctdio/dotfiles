@@ -189,11 +189,13 @@ Run the `wait-for-bugbot.sh` script in this skill's directory.
 
 Run the `check-ci-status.sh` script in this skill's directory.
 
+The script excludes bugbot checks (tracked by `wait-for-bugbot.sh`) and polls internally until all CI checks reach a terminal state.
+
 **Evaluate the result:**
 
-- **Exit code 0 (SUCCESS):** All checks passing → Continue to Step 8
-- **Exit code 2 (PENDING):** Checks still running → **YOU MUST WAIT.** Wait 30s and re-run `check-ci-status.sh`. Keep looping until you get exit code 0 or 1. **NEVER conclude the task is complete while checks are pending.** Do not assume pending checks are "stale" or ignorable.
+- **Exit code 0 (SUCCESS):** All CI checks passing → Continue to Step 8
 - **Exit code 1 (FAILURE):** Failing checks found → Fix them (see below)
+- **Exit code 2 (TIMEOUT):** Checks still pending after polling timeout → Wait 60s and re-run. **NEVER conclude the task while checks are pending.**
 
 #### Fixing CI Failures
 
@@ -276,10 +278,25 @@ After pushing and waiting for checks:
 
 - The ralph-loop will re-run this skill
 - Next iteration will re-fetch comments (bugbot has finished re-analyzing)
-- Task is complete when:
-  - Step 2 finds zero unresolved bugbot comments, AND
-  - Step 7 shows all CI checks passing (exit code 0)
-- **Task is NOT complete if any checks are pending (exit code 2).** You must wait for all checks to reach a terminal state (SUCCESS, FAILURE, etc.) before concluding.
+
+**Completion criteria — ALL must be true simultaneously:**
+
+1. `wait-for-bugbot.sh` reached a terminal state (not pending, not timed out)
+2. Step 2 finds zero unresolved bugbot comments
+3. `check-ci-status.sh` exits 0 (all CI checks passing)
+
+**You are NOT done until everything has settled.** Do not rationalize early exits. Do not describe pending checks as "just a status indicator" or "external check that can be ignored." If a script is still polling, a check is still pending, or bugbot hasn't finished — you wait. The entire purpose of this skill is to keep going until the PR is clean.
+
+### CRITICAL: Handling Pending States
+
+**If bugbot or any CI check is in a PENDING state, you MUST wait for it to finish before emitting the completion promise.** Specifically:
+
+- If `wait-for-bugbot.sh` reports bugbot is still running or pending → **wait for it to complete, then re-fetch comments**
+- If `check-ci-status.sh` exits with code 2 (timeout/pending) → **sleep 60 seconds and re-run the script**
+- **NEVER emit `<promise>` while any check is pending** — a pending check is not a passing check
+- **NEVER describe a pending check as "external" or "not blocking"** — all checks must reach a terminal state
+
+If you find yourself writing "pending" in your progress report, that is a signal you are NOT done. Go back and wait.
 
 ## Rules
 
@@ -295,7 +312,8 @@ After pushing and waiting for checks:
 10. **Fix CI failures** - After addressing bugbot, check and fix lint/format/test failures
 11. **Run locally first** - For CI failures, run the failing check locally before pushing fixes
 12. **Never rebase, push, or pull** - Only use `git add`, `git commit`, and `gt submit --update-only`. Graphite handles branch management.
-13. **Never conclude with pending checks** - If any CI check is pending/running, you MUST wait for it to complete. Do not assume pending checks are stale or ignorable. Keep polling until all checks reach a terminal state.
+13. **Never conclude until fully settled** - If any check is pending, any script is polling, or bugbot hasn't finished analyzing, you are not done. Do not rationalize pending checks as "status indicators" or "external checks." Wait until everything reaches a terminal state.
+14. **Never emit `<promise>` while anything is pending** - The word "pending" in your output means you are NOT done. If you wrote "pending" anywhere in your progress report, do not emit the completion promise. Go back and wait for the pending item to resolve.
 
 ## Usage
 
