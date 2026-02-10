@@ -3,10 +3,13 @@
 # Usage: check-ci-status [PR_NUMBER]
 # If no PR number provided, uses current PR from gh pr view
 #
+# Bugbot checks are excluded (tracked separately by wait-for-bugbot.sh).
+# Pending CI checks are polled internally until they reach a terminal state.
+#
 # Exit codes:
 #   0 = all checks passing
 #   1 = one or more checks failing
-#   2 = checks still pending/running
+#   2 = checks still pending after polling timeout
 
 set -euo pipefail
 
@@ -17,50 +20,72 @@ if [[ -z "$PR_NUM" ]]; then
   exit 1
 fi
 
-echo "Checking CI status on PR #$PR_NUM..."
+MAX_POLL_WAIT="${CI_POLL_TIMEOUT:-300}"
+POLL_INTERVAL=30
+POLL_ELAPSED=0
 
-# Get all checks - use the actual available fields
-# Capture exit code separately to detect API failures
-if ! CHECKS=$(gh pr checks "$PR_NUM" --json name,state,link 2>&1); then
-  echo "Error: Failed to fetch CI checks from GitHub API" >&2
-  echo "$CHECKS" >&2
-  exit 1
-fi
+while true; do
+  echo "Checking CI status on PR #$PR_NUM..."
 
-if [[ "$CHECKS" == "[]" ]] || [[ -z "$CHECKS" ]]; then
-  echo "No checks found on this PR"
-  exit 0
-fi
+  # Capture exit code separately to detect API failures
+  if ! RAW_CHECKS=$(gh pr checks "$PR_NUM" --json name,state,link 2>&1); then
+    echo "Error: Failed to fetch CI checks from GitHub API" >&2
+    echo "$RAW_CHECKS" >&2
+    exit 1
+  fi
 
-# Count statuses (state values: PENDING, SUCCESS, FAILURE, CANCELLED, TIMED_OUT, ERROR, ACTION_REQUIRED, STALE, etc.)
-PENDING=$(echo "$CHECKS" | jq '[.[] | select(.state == "PENDING" or .state == "IN_PROGRESS" or .state == "QUEUED")] | length')
-# Count FAILURE and other problematic states as failing
-FAILING=$(echo "$CHECKS" | jq '[.[] | select(.state == "FAILURE" or .state == "CANCELLED" or .state == "TIMED_OUT" or .state == "ERROR" or .state == "ACTION_REQUIRED" or .state == "STALE")] | length')
-PASSING=$(echo "$CHECKS" | jq '[.[] | select(.state == "SUCCESS" or .state == "SKIPPED" or .state == "NEUTRAL")] | length')
-TOTAL=$(echo "$CHECKS" | jq 'length')
+  if [[ "$RAW_CHECKS" == "[]" ]] || [[ -z "$RAW_CHECKS" ]]; then
+    echo "No checks found on this PR"
+    exit 0
+  fi
 
-echo ""
-echo "=== CI Status Summary ==="
-echo "Total: $TOTAL | Passing: $PASSING | Failing: $FAILING | Pending: $PENDING"
-echo ""
+  # Exclude bugbot checks — tracked separately by wait-for-bugbot.sh
+  CHECKS=$(echo "$RAW_CHECKS" | jq '[.[] | select(.name | test("bugbot|bug-bot|cursor-bugbot|Cursor Bugbot"; "i") | not)]')
 
-# If there are pending checks
-if [[ "$PENDING" -gt 0 ]]; then
-  echo "Pending checks:"
+  if [[ "$(echo "$CHECKS" | jq 'length')" -eq 0 ]]; then
+    echo "No CI checks found (only bugbot checks present, tracked separately)"
+    exit 0
+  fi
+
+  # Count statuses
+  PENDING=$(echo "$CHECKS" | jq '[.[] | select(.state == "PENDING" or .state == "IN_PROGRESS" or .state == "QUEUED")] | length')
+  FAILING=$(echo "$CHECKS" | jq '[.[] | select(.state == "FAILURE" or .state == "CANCELLED" or .state == "TIMED_OUT" or .state == "ERROR" or .state == "ACTION_REQUIRED" or .state == "STALE")] | length')
+  PASSING=$(echo "$CHECKS" | jq '[.[] | select(.state == "SUCCESS" or .state == "SKIPPED" or .state == "NEUTRAL")] | length')
+  TOTAL=$(echo "$CHECKS" | jq 'length')
+
+  echo ""
+  echo "=== CI Status Summary ==="
+  echo "Total: $TOTAL | Passing: $PASSING | Failing: $FAILING | Pending: $PENDING"
+  echo ""
+
+  if [[ "$PENDING" -eq 0 ]]; then
+    break
+  fi
+
+  POLL_ELAPSED=$((POLL_ELAPSED + POLL_INTERVAL))
+  if [[ $POLL_ELAPSED -ge $MAX_POLL_WAIT ]]; then
+    echo "Timeout: $PENDING checks still pending after ${MAX_POLL_WAIT}s"
+    echo ""
+    echo "Pending checks:"
+    echo "$CHECKS" | jq -r '.[] | select(.state == "PENDING" or .state == "IN_PROGRESS" or .state == "QUEUED") | "  - \(.name): \(.state)"'
+    echo ""
+    echo "STATUS: PENDING (timed out)"
+    exit 2
+  fi
+
+  echo "Waiting for $PENDING pending CI checks... (${POLL_ELAPSED}s/${MAX_POLL_WAIT}s)"
   echo "$CHECKS" | jq -r '.[] | select(.state == "PENDING" or .state == "IN_PROGRESS" or .state == "QUEUED") | "  - \(.name): \(.state)"'
   echo ""
-  echo "STATUS: PENDING"
-  exit 2
-fi
+  sleep "$POLL_INTERVAL"
+done
 
-# If all passing
+# All checks are terminal
 if [[ "$FAILING" -eq 0 ]]; then
   echo "All checks passing!"
   echo "STATUS: SUCCESS"
   exit 0
 fi
 
-# Show failing checks with details (includes FAILURE and other problematic states)
 echo "=== Failing Checks ==="
 echo "$CHECKS" | jq -r '.[] | select(.state == "FAILURE" or .state == "CANCELLED" or .state == "TIMED_OUT" or .state == "ERROR" or .state == "ACTION_REQUIRED" or .state == "STALE") | "- \(.name) [\(.state)]\n  URL: \(.link)"'
 echo ""
