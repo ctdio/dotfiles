@@ -1414,7 +1414,7 @@ When using this skill, follow this sequence:
 3. **Phase C: Informed Drill-Down** (USE AskUserQuestion TOOL)
    - Challenge user assumptions with codebase evidence
    - Surface discoveries the user didn't mention
-   - Make per-phase verification harness decisions (MANDATORY)
+   - Make per-phase verification harness decisions (MANDATORY for multi-phase plans)
    - Probe edge cases with real code context
 
 4. **Phase D: Final Verification** (USE AskUserQuestion TOOL)
@@ -1422,13 +1422,16 @@ When using this skill, follow this sequence:
    - Get explicit confirmation before proceeding
    - **DO NOT START PLANNING until user confirms understanding is correct**
 
-5. **Propose Structure**
-   - Suggest feature name for directory
-   - Outline proposed phases with harness decisions
-   - Preview key requirements that will go in spec.md
-   - Get user approval on approach
+5. **Assess Scale** — Decide single-phase or multi-phase (see Scale Assessment below)
 
-6. **Create Documents**
+6. **Create Documents** — Structure depends on scale assessment:
+
+   **Single-phase features:**
+   - Create overview.md (using Single-Phase overview.md Template below)
+   - Create single phase directory with `files-to-modify.md` and `technical-details.md` (testing combined into technical-details)
+   - Skip `spec.md`, `implementation-guide.md`, `shared/`, `testing-strategy.md`, `verification-harness.md`
+
+   **Multi-phase features:**
    - Start with overview.md
    - Create spec.md with all requirements (CRITICAL — this defines what MUST be implemented)
    - Create implementation-guide.md
@@ -1439,16 +1442,94 @@ When using this skill, follow this sequence:
 
 7. **Summarize**
    - Show directory tree created
-   - Highlight key requirements from spec.md
-   - List which phases have verification harnesses and why
+   - Highlight key requirements
+   - For multi-phase: list which phases have verification harnesses and why
    - Explain how to navigate the plan
-   - Suggest where to start implementation
+   - Suggest implementation via `/ctdio-feature-implementation`
 
 8. **STOP** — Do NOT begin implementation. The plan is your deliverable. Implementation is a separate step via `/ctdio-feature-implementation`.
 
+### Scale Assessment
+
+After completing Phases A-D, you now understand the full scope. Decide whether this feature needs one phase or multiple.
+
+**Single-phase when ALL of these are true:**
+
+- Touches ≤ 5 files (create + modify combined)
+- Fits in a single PR
+- No complex architectural decisions requiring phased rollout
+- No cross-system integration that needs careful sequencing
+
+**Multi-phase when ANY of these are true:**
+
+- Touches 6+ files or naturally splits into independent deliverables
+- Needs careful sequencing (e.g., schema changes before API, API before UI)
+- Involves architectural decisions affecting multiple systems
+- Benefits from incremental verification between phases
+
+**When in doubt, default to multi-phase.** It's safer to over-structure than to discover mid-implementation that you needed phasing.
+
+### Single-Phase Plan Format
+
+Single-phase plans use a reduced directory structure:
+
+```
+~/.ai/plans/{feature-name}/
+├── overview.md              # Combined: problem + solution + requirements + testing approach
+└── phase-01-{name}/
+    ├── files-to-modify.md
+    └── technical-details.md  # Implementation + testing combined
+```
+
+**Omitted files** (not needed for single-phase features):
+
+- `spec.md` — requirements are captured directly in `overview.md`
+- `implementation-guide.md` — single phase needs no phasing strategy
+- `shared/` directory — no cross-phase concerns
+- `testing-strategy.md` — testing approach is combined into `technical-details.md`
+- `verification-harness.md` — single-phase features use standard verification only
+
+#### Single-Phase overview.md Template
+
+```markdown
+# [Feature Name] - Overview
+
+## Problem
+
+[2-3 sentences describing the problem]
+
+## Solution
+
+[3-5 sentences describing the approach]
+
+## Requirements
+
+- [Requirement 1 — specific and testable]
+- [Requirement 2]
+- [Requirement 3]
+
+## Testing Approach
+
+- [How to verify requirement 1]
+- [How to verify requirement 2]
+
+## Key Decisions
+
+- [Decision 1 with brief rationale]
+- [Decision 2 with brief rationale]
+```
+
 ## Success Criteria for Plans
 
-A good feature plan should:
+### Single-Phase Plans
+
+- ✅ Be navigable in under 1 minute (overview.md has everything)
+- ✅ Have clear, testable requirements in overview.md
+- ✅ Enable agent to start implementation with full context
+- ✅ Include specific file and function/class references from codebase exploration
+- ✅ Document key decisions with rationale
+
+### Multi-Phase Plans
 
 - ✅ Be navigable in under 2 minutes (via overview)
 - ✅ Have spec.md with ALL requirements clearly defined and verifiable
@@ -1463,6 +1544,6 @@ A good feature plan should:
 - ✅ Include verification checklist in spec.md
 - ✅ Have `verification-harness.md` for every phase with API endpoints, UI changes, or complex behavior
 
-Remember: These plans are "mini-skills" that make future implementation faster and more confident. The spec.md is especially critical - it's the authoritative definition of what MUST be implemented. Invest time upfront to save time later.
+Remember: These plans are "mini-skills" that make future implementation faster and more confident. For multi-phase plans, spec.md is especially critical — it's the authoritative definition of what MUST be implemented. Invest time upfront to save time later.
 
 **Reminder: Your job ends when the plan documents are complete. Do NOT start implementing the feature.**
