@@ -171,7 +171,6 @@ return {
       local servers = {
         "astro",
         "bashls",
-        "eslint",
         "gopls",
         "mojo",
         "lua_ls",
@@ -200,26 +199,22 @@ return {
       })
       vim.lsp.enable("zls")
 
-      -- tsgo (TypeScript native Go port) - built from source
+      -- eslint - uses lspconfig defaults for config file detection and root_dir
+      vim.lsp.config("eslint", {
+        on_attach = on_attach,
+        capabilities = capabilities,
+      })
+      vim.lsp.enable("eslint")
+
+      -- tsgo (TypeScript native Go port) - via @typescript/native-preview
       vim.lsp.config("tsgo", {
-        cmd = {
-          vim.env.HOME .. "/typescript-go/built/local/tsgo",
-          "--lsp",
-          "--stdio",
-        },
         on_attach = on_attach,
         capabilities = capabilities,
         filetypes = {
-          "typescript",
-          "typescriptreact",
           "javascript",
           "javascriptreact",
-        },
-        root_markers = {
-          "tsconfig.json",
-          "jsconfig.json",
-          "package.json",
-          ".git",
+          "typescript",
+          "typescriptreact",
         },
       })
       vim.lsp.enable("tsgo")
