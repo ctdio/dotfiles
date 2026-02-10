@@ -1,6 +1,6 @@
 ---
 name: local-postgres
-description: Explore and query local PostgreSQL databases. Use when user mentions psql, postgres, or wants to list tables, describe schema, explore data, or run queries against a local database.
+description: Explore and query local PostgreSQL databases. Use when user mentions psql, postgres, postgresql, SQL, database, db, or wants to list tables, describe schema, explore data, run queries, check indexes, inspect columns, view rows, sample data, or debug query results against a local database.
 color: blue
 ---
 

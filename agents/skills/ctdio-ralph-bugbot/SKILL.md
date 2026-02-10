@@ -47,14 +47,16 @@ OWNER=$(gh repo view --json owner -q '.owner.login')
 REPO=$(gh repo view --json name -q '.name')
 PR_NUM=$(gh pr view --json number -q '.number')
 
-echo "Fetching bugbot comments on PR #$PR_NUM..."
+echo "Fetching unresolved bugbot comments on PR #$PR_NUM..."
 
-# Get unresolved review threads from bugbot (with thread IDs for resolving)
-gh api graphql -f query='
+# Get ONLY unresolved review threads from bugbot (with thread IDs for resolving)
+# IMPORTANT: The jq filter ensures only isResolved==false threads are returned.
+# Do NOT process any threads outside this output.
+UNRESOLVED=$(gh api graphql -f query='
 query {
   repository(owner: "'"$OWNER"'", name: "'"$REPO"'") {
     pullRequest(number: '"$PR_NUM"') {
-      reviewThreads(first: 50) {
+      reviewThreads(first: 100) {
         nodes {
           id
           isResolved
@@ -70,15 +72,22 @@ query {
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | select(.comments.nodes[0].author.login == "cursor")'
+}' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | select(.comments.nodes[0].author.login == "cursor")]')
+
+COUNT=$(echo "$UNRESOLVED" | jq 'length')
+echo ""
+echo "=== Unresolved Bugbot Comments: $COUNT ==="
+echo "$UNRESOLVED" | jq '.'
 ```
+
+**CRITICAL:** Only the comments printed above are unresolved. Do NOT re-fetch, re-query, or look at any other source of comments. The `isResolved == false` filter has already excluded resolved threads. Work exclusively from this output.
 
 ### Step 3: Evaluate Bugbot Comments
 
-**IMMEDIATELY after Step 2:**
+**IMMEDIATELY after Step 2, check the count from `$COUNT`:**
 
-- **Zero comments?** → Skip to Step 7 (Check CI Status). Bugbot is satisfied but CI may still need fixes.
-- **Has comments?** → Continue to Step 4. Do not deliberate.
+- **`$COUNT` is 0?** → Skip to Step 7 (Check CI Status). Bugbot is satisfied but CI may still need fixes.
+- **`$COUNT` > 0?** → Continue to Step 4. Process ONLY the comments in `$UNRESOLVED`. Do not deliberate.
 
 ### Step 4: Process Each Comment
 
@@ -301,7 +310,7 @@ If you find yourself writing "pending" in your progress report, that is a signal
 ## Rules
 
 1. **Move fast** - Execute commands immediately. No deliberation between steps.
-2. **Only unresolved bugbot comments** - Ignore resolved threads and other reviewers
+2. **Only unresolved bugbot comments** - Work EXCLUSIVELY from the `$UNRESOLVED` output from Step 2. Never re-fetch threads, never look at resolved threads, never process comments from other reviewers. If a thread is not in `$UNRESOLVED`, it does not exist for you.
 3. **Verify rigorously** - For false positives, gather evidence before resolving
 4. **Resolve false positives** - Use GraphQL mutation to mark them resolved (don't just skip)
 5. **Never blindly fix OR resolve** - Both bugs and false positives need verification
