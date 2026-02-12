@@ -13,8 +13,12 @@ RESET=$'\033[0m'
 GREEN=$'\033[38;5;71m'
 CYAN=$'\033[36m'
 ORANGE=$'\033[38;5;208m'
+PR_PASS=$'\033[32m'
+PR_PENDING=$'\033[33m'
+PR_FAIL=$'\033[31m'
 TMPDIR="${TMPDIR:-/tmp}"
 STALE_CACHE="$TMPDIR/wt-stale-sessions"
+PR_CACHE="$TMPDIR/wt-pr-sessions"
 SELF="${0:A}"
 
 current_session=$(tmux display-message -p '#S' 2>/dev/null)
@@ -99,6 +103,56 @@ if [[ "$1" == "--refresh-stale" ]]; then
   # Write cache atomically (nullglob for empty stale_dir)
   cat "$stale_dir"/*(N) 2>/dev/null > "${STALE_CACHE}.tmp"
   mv "${STALE_CACHE}.tmp" "$STALE_CACHE" 2>/dev/null || rm -f "${STALE_CACHE}.tmp"
+  exit 0
+fi
+
+# --refresh-prs: check branches for open PRs, write to cache
+if [[ "$1" == "--refresh-prs" ]]; then
+  pr_dir=$(mktemp -d)
+  trap 'rm -rf "$pr_dir"' EXIT
+  pids=()
+
+  while read -r session spath ppath; do
+    [[ "$session" == slot-* ]] && continue
+
+    sdir="$spath"
+    [ -n "$sdir" ] && [ -d "$sdir" ] || sdir="$ppath"
+    [ -n "$sdir" ] && [ -d "$sdir" ] || continue
+
+    branch=$(get_branch "$sdir")
+    [ -n "$branch" ] || continue
+    [[ "$branch" == "HEAD" || "$branch" == "main" || "$branch" == "master" ]] && continue
+
+    gh_repo=$(git -C "$sdir" remote get-url origin 2>/dev/null | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')
+    [ -n "$gh_repo" ] || continue
+
+    (
+      pr_info=$(gh pr list --repo "$gh_repo" --head "$branch" --state open \
+        --json number,statusCheckRollup --limit 1 \
+        --jq '.[0] // empty | "\(.number) " + (
+          (.statusCheckRollup // []) as $c |
+          if ($c | length) == 0 then "none"
+          elif ($c | any((.conclusion // .state) as $s |
+            $s == "FAILURE" or $s == "CANCELLED" or $s == "TIMED_OUT" or
+            $s == "ACTION_REQUIRED" or $s == "STARTUP_FAILURE" or $s == "ERROR"
+          )) then "fail"
+          elif ($c | all((.conclusion // .state) as $s |
+            $s == "SUCCESS" or $s == "NEUTRAL" or $s == "SKIPPED"
+          )) then "pass"
+          else "pending"
+          end
+        )' 2>/dev/null)
+      [ -n "$pr_info" ] && echo "$session $pr_info" > "$pr_dir/$session"
+    ) &
+    pids+=($!)
+  done < <(tmux list-sessions -F '#{session_name} #{session_path} #{pane_current_path}' 2>/dev/null)
+
+  for pid in "${pids[@]}"; do
+    wait "$pid" 2>/dev/null || true
+  done
+
+  cat "$pr_dir"/*(N) 2>/dev/null > "${PR_CACHE}.tmp"
+  mv "${PR_CACHE}.tmp" "$PR_CACHE" 2>/dev/null || rm -f "${PR_CACHE}.tmp"
   exit 0
 fi
 
@@ -190,6 +244,14 @@ if [[ "$1" == "--list" ]]; then
     done < "$STALE_CACHE"
   fi
 
+  # Read PR session cache
+  typeset -A pr_sessions
+  if [ -f "$PR_CACHE" ]; then
+    while read -r s pr_num pr_state; do
+      [ -n "$s" ] && pr_sessions[$s]="$pr_num $pr_state"
+    done < "$PR_CACHE"
+  fi
+
   # tmux returns sessions in alphabetical order — no sort needed
   for (( i=1; i<=${#sessions}; i++ )); do
     session="${sessions[$i]}"
@@ -225,15 +287,28 @@ if [[ "$1" == "--list" ]]; then
     if [ -n "$is_stale" ]; then
       stale_display=" ${ORANGE}merged${RESET}"
     fi
+    pr_display=""
+    pr_info="${pr_sessions[$session]:-}"
+    if [ -n "$pr_info" ]; then
+      pr_num="${pr_info%% *}"
+      pr_state="${pr_info##* }"
+      case "$pr_state" in
+        pass)    pr_color="$PR_PASS" ;;
+        pending) pr_color="$PR_PENDING" ;;
+        fail)    pr_color="$PR_FAIL" ;;
+        *)       pr_color="$DIM" ;;
+      esac
+      pr_display=" ${pr_color}#${pr_num}${RESET}"
+    fi
     if [ "$cur" = "1" ]; then
       if [ -n "$branch" ]; then
-        printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s%s\n" "$session" "$branch" "$stale_display" "$port_display"
+        printf "${GREEN}%s${RESET} ${DIM}[%s]${RESET}%s%s%s\n" "$session" "$branch" "$stale_display" "$pr_display" "$port_display"
       else
         printf "${GREEN}%s${RESET}%s\n" "$session" "$port_display"
       fi
     else
       if [ -n "$branch" ]; then
-        printf "%s ${DIM}[%s]${RESET}%s%s\n" "$session" "$branch" "$stale_display" "$port_display"
+        printf "%s ${DIM}[%s]${RESET}%s%s%s\n" "$session" "$branch" "$stale_display" "$pr_display" "$port_display"
       else
         printf "%s%s\n" "$session" "$port_display"
       fi
@@ -244,6 +319,8 @@ fi
 
 # Kick off stale PR check in background — results appear on next reload
 "$SELF" --refresh-stale &
+disown
+"$SELF" --refresh-prs &
 disown
 
 # Main: show fzf immediately, async reload with ports + stale cache
