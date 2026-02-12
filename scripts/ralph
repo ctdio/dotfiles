@@ -105,7 +105,7 @@ ${YELLOW}OPTIONS:${RESET}
   -f, --file <path>               Read prompt from file
   -m, --max-iterations <n>        Maximum iterations (default: 10)
   -c, --completion-promise <text> Promise phrase to detect completion (default: TASK_COMPLETE)
-  -n, --required-consecutive <n>  Successive completions needed to exit (default: 2)
+  -n, --required-consecutive <n>  Successive completions needed to exit (default: 3)
   -a, --agent <claude|codex|opencode>  Agent preset to use (default: claude)
   -M, --model <model>             Model to use (opencode default: openai/gpt-5.2-codex; format provider/model)
   -h, --help                      Show this help message
@@ -257,55 +257,37 @@ if [[ -n "$STREAM_PARSER" ]] && [[ ! -x "$STREAM_PARSER" ]]; then
 fi
 
 build_prompt() {
-  local iteration=$1
-  local iteration_context=""
-
-  if [[ $CONSECUTIVE_COMPLETIONS -gt 0 ]]; then
-    iteration_context="
-⚠️  VERIFICATION PASS
-Your previous iteration claimed the task was complete, but the system
-could not confirm it. Do NOT trust the previous assessment.
-Re-run every check from scratch and independently verify the current state.
-Only emit the completion promise if your fresh checks confirm it.
-"
-  elif [[ $iteration -gt 1 ]]; then
-    iteration_context="
-This is a continuation. Previous iterations did not complete the task.
-Check git log and file state to understand what has been done so far,
-then pick up where the previous iteration left off.
-"
-  fi
-
   cat <<EOF
 $PROMPT
 
-═══════════════════════════════════════════════════════════
-RALPH LOOP CONTEXT - Iteration ${iteration}/${MAX_ITERATIONS}
-═══════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────
 
-You are in a Ralph Loop — an automated retry harness.
-- Each iteration is a FRESH session. You have no memory of prior iterations.
-- Your previous work persists in files and git history — inspect them.
-- If the task is not complete, you will receive this prompt again.
-${iteration_context}
-ORIENTATION (do this first):
-  1. Check git log/diff to see what prior iterations changed
-  2. Inspect the current state of the task (run checks, read files)
-  3. Identify what remains to be done
+Prior work on this task may exist in git history and on disk.
+Orient yourself before acting:
+  1. Check git log and diff to see what has already been done
+  2. Inspect the current state — read files, run checks
+  3. Identify what remains
   4. Act on it
 
 COMPLETION:
 When the task is genuinely finished, output this EXACT text:
   <promise>${COMPLETION_PROMISE}</promise>
 
-The promise MUST be true. Do not emit it to escape the loop — only when
-the task is verifiably complete. A false promise wastes another iteration.
+Before emitting the promise, you MUST verify:
+  - All task requirements are met (re-read them above)
+  - Code builds/compiles without errors
+  - Tests pass (run them, don't assume)
+  - No lint or type errors introduced
+  - Changes are coherent — read your own diffs critically
+
+The promise is a statement of fact, not a wish. Only emit it when
+the task is verifiably complete.
 
 IF STUCK:
   - Re-read the original task requirements above
   - Check if a different approach would work
-  - Look at what prior iterations attempted (git log) and try something new
-═══════════════════════════════════════════════════════════
+  - Look at what prior attempts tried (git log) and try something new
+───────────────────────────────────────────────────────────
 EOF
 }
 
@@ -342,7 +324,7 @@ for ((iteration=1; iteration<=MAX_ITERATIONS; iteration++)); do
   echo -e "\n${CYAN}── iteration ${iteration}/${MAX_ITERATIONS} ──${RESET}\n"
 
   ITERATION_START_TIME=$(date +%s)
-  augmented_prompt=$(build_prompt "$iteration")
+  augmented_prompt=$(build_prompt)
 
   # Create temp file to capture output while streaming
   temp_output=$(mktemp)
