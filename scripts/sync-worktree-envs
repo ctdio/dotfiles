@@ -4,8 +4,8 @@
 # Usage: sync-worktree-envs [-v|--verbose] [--reset-dbs]
 #
 # Syncs:
-# - platform/.env* -> platform-wt*/.env*
-# - platform/apps/platform/.env* -> platform-wt*/apps/platform/.env*
+# - platform/.env -> platform-wt*/.env
+# - platform/apps/platform/.env -> platform-wt*/apps/platform/.env
 # - platform/.claude/settings.local.json -> platform-wt*/.claude/settings.local.json
 #
 # Port Configuration:
@@ -167,8 +167,8 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
 fi
 
 # Collect files to sync
-ROOT_ENV_FILES=($(find "$SOURCE_DIR" -maxdepth 1 -name ".env*" -type f 2>/dev/null))
-PLATFORM_APP_ENV_FILES=($(find "$SOURCE_DIR/apps/platform" -maxdepth 1 -name ".env*" -type f 2>/dev/null || true))
+ROOT_ENV_FILES=($(find "$SOURCE_DIR" -maxdepth 1 -name ".env" -type f 2>/dev/null))
+PLATFORM_APP_ENV_FILES=($(find "$SOURCE_DIR/apps/platform" -maxdepth 1 -name ".env" -type f 2>/dev/null || true))
 CLAUDE_SETTINGS_FILE=""
 [[ -f "$SOURCE_DIR/.claude/settings.local.json" ]] && CLAUDE_SETTINGS_FILE="$SOURCE_DIR/.claude/settings.local.json"
 
