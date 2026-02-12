@@ -182,8 +182,17 @@ flowchart TD
     AUTO_FIX --> VALIDATE
     VALIDATE_RESULT -->|VALID/NEEDS_ATTENTION| IMPL
 
-    IMPL --> WAIT_IMPL[Wait for ImplementerResult]
-    WAIT_IMPL --> CONCURRENT[Spawn verifier + reviewer + optional tester CONCURRENTLY]
+    IMPL --> POLL_LOOP[Poll agent via TaskOutput]
+    POLL_LOOP --> POLL_CHECK{Output status?}
+    POLL_CHECK -->|ImplementerResult found| PARTIAL_CHECK{Status?}
+    POLL_CHECK -->|progressing| WAIT[Wait 10 min]
+    WAIT --> POLL_LOOP
+    POLL_CHECK -->|stuck/no progress| KILL[TaskStop + check git status]
+    KILL --> CONTINUE[Build continuation from codebase]
+    PARTIAL_CHECK -->|partial| CONTINUE
+    CONTINUE --> IMPL
+    PARTIAL_CHECK -->|complete| CONCURRENT[Spawn verifier + reviewer + optional tester CONCURRENTLY]
+    PARTIAL_CHECK -->|blocked| HANDLE_BLOCK[Handle blocker]
 
     CONCURRENT --> WAIT_BOTH[Wait for ALL results]
     WAIT_BOTH --> CHECK{All PASS/APPROVED/SKIPPED?}
@@ -238,6 +247,44 @@ flowchart TD
       - After independent groups complete, spawn implementers for dependent groups
     - Wait for ALL ImplementerResults
     - **[Team] The implementer stays alive** — do NOT terminate it yet. Verifier/reviewer may DM it.
+
+12b. **Handle partial results** (continuation loop):
+
+    If ImplementerResult status is `"partial"`:
+
+    1. Note `completed_files` (from `files_modified`) and `deliverables_completed`
+    2. Filter `files_to_modify` to remaining files only (exclude completed files)
+    3. Build `continuation_context` with:
+       - `completed_summary` from the partial result
+       - `completed_files` list (so the next implementer knows what exists)
+       - `remaining_deliverables` from the partial result
+    4. Keep full `technical_details`, `testing_strategy`, and `architecture_context` (the next agent needs these)
+    5. **[Team]** Send shutdown_request to current implementer, spawn fresh implementer with continuation context
+    6. **[Fallback]** Spawn fresh implementer with continuation context
+    7. Repeat from step 12 (wait for result) until status is `"complete"` or `"blocked"`
+
+    If status is `"complete"`: proceed to step 13
+
+    If status is `"blocked"`: handle blocker (existing behavior)
+
+12c. **Monitor and handle stuck agents** (background polling loop):
+
+    In Fallback mode, agents are spawned with `run_in_background: true`. The orchestrator must actively poll them.
+
+    **Polling loop:**
+    1. `TaskOutput(task_id, block: false)` — check current output
+    2. Look for ImplementerResult in output → if found, agent completed
+    3. Look for recent progress (file edits, test runs) → if found, wait and poll again in 10 min
+    4. Look for stuck signs (no progress, error loops, context warnings) → if found, kill agent
+    
+    **When killing a stuck agent:**
+    1. `TaskStop(task_id)` — terminate immediately
+    2. `git status` / `git diff` — check what files were actually created/modified
+    3. Read modified files to understand what was implemented
+    4. Build `continuation_context` from actual codebase state (not from agent output)
+    5. Spawn fresh implementer with remaining files only
+
+    **Key insight:** Don't wait for agents to self-report problems. They won't. Poll proactively and kill aggressively when stuck.
 
 13. **Scrutinize the ImplementerResult before handing off** (YOU DO THIS — not an agent):
 
@@ -521,6 +568,22 @@ ImplementerContext:
     Phase 0 completed: Project setup, dependencies installed
 
   # ═══════════════════════════════════════════════════════════════════
+  # Continuation context (only populated when continuing from a partial result)
+  # The previous implementer completed some deliverables and returned partial.
+  # This agent picks up where they left off.
+  # ═══════════════════════════════════════════════════════════════════
+  continuation_context: null # or:
+  # continuation_context:
+  #   completed_summary: "Created TurbopufferService, wrote unit tests, ran migrations"
+  #   completed_files:
+  #     - path: src/services/turbopuffer.ts
+  #       action: created
+  #       summary: "TurbopufferService with connection pooling"
+  #   remaining_deliverables:
+  #     - "Wire service into search handler"
+  #     - "Add integration tests"
+
+  # ═══════════════════════════════════════════════════════════════════
   # Fix context (only populated on retry after verification/review failure)
   # ═══════════════════════════════════════════════════════════════════
   fix_context: null
@@ -552,7 +615,7 @@ ImplementerContext:
 
 ```yaml
 ImplementerResult:
-  status: "complete" | "blocked"
+  status: "complete" | "partial" | "blocked"
 
   files_modified:
     - path: src/services/turbopuffer.ts
@@ -571,6 +634,16 @@ ImplementerResult:
   deliverables_completed:
     - "Create TurbopufferService class"
     - "Write unit tests"
+
+  # Only when status is "partial" — what the next agent needs to finish
+  remaining_deliverables: null  # or list if partial:
+  # remaining_deliverables:
+  #   - "Wire service into search handler"
+  #   - "Add integration tests for search endpoint"
+
+  # Only when status is "partial" — brief summary for the continuation agent
+  completed_summary: null  # or string if partial:
+  # completed_summary: "Created TurbopufferService with connection pooling, wrote unit tests, ran migrations"
 
   implementation_notes: |
     Used the same pattern as PineconeService.
@@ -1076,6 +1149,8 @@ TaskCreate(
   activeForm: "Implementing Phase {N}",
   metadata: { phase: N, step: "implement", attempt: 1 }
 )
+
+# In Team mode: orchestrator can send check-in messages to monitor progress
 ```
 
 **[Fallback]:**
@@ -1083,9 +1158,54 @@ TaskCreate(
 ```
 Task(
   subagent_type: "ctdio-feature-implementation-phase-implementer",
-  mode: "bypassPermissions",
+  run_in_background: true,  # CRITICAL: Allows orchestrator to monitor progress
   prompt: "Implement Phase {N}: {Name}\n\n{ImplementerContext}\n\nReturn ImplementerResult."
 )
+# Returns task_id — use TaskOutput to poll, TaskStop to kill if stuck
+```
+
+### Spawn Continuation Implementer (Step 12b)
+
+When an implementer returns `"partial"`, spawn a fresh one with continuation context:
+
+**[Team]:**
+
+```
+# First terminate the previous implementer
+SendMessage(type: "shutdown_request", recipient: "implementer", content: "Returning partial — spawning continuation agent")
+
+# Then spawn fresh implementer with continuation context
+Task(
+  subagent_type: "ctdio-feature-implementation-phase-implementer",
+  team_name: "impl-{feature}",
+  name: "implementer",
+  mode: "bypassPermissions",
+  prompt: """
+  Continue Phase {N}: {Name} (continuation from partial result)
+
+  {ImplementerContext with:
+    - files_to_modify: ONLY remaining files (exclude completed files)
+    - continuation_context: { completed_summary, completed_files, remaining_deliverables }
+    - technical_details: FULL (unchanged)
+    - testing_strategy: FULL (unchanged)
+    - architecture_context: FULL (unchanged)
+  }
+
+  A previous implementer completed part of this phase. Review their completed work,
+  then implement the remaining deliverables. Do NOT redo completed work.
+  """
+)
+```
+
+**[Fallback]:**
+
+```
+Task(
+  subagent_type: "ctdio-feature-implementation-phase-implementer",
+  run_in_background: true,  # CRITICAL: Allows orchestrator to monitor progress
+  prompt: "Continue Phase {N}: {Name} (continuation)\n\n{ImplementerContext with continuation_context}\n\nReturn ImplementerResult."
+)
+# Returns task_id — use TaskOutput to poll, TaskStop to kill if stuck
 ```
 
 ### Spawn Verifier + Reviewer + Optional Tester Concurrently (Step 13)
@@ -1116,14 +1236,16 @@ TaskCreate("Test Phase {N}: {Name}", addBlockedBy: [implement_task_id])
 
 ```
 Task(subagent_type: "ctdio-feature-implementation-phase-verifier",
-  mode: "bypassPermissions", prompt: "Verify Phase {N}...\n\n{VerifierContext}")
+  run_in_background: true, prompt: "Verify Phase {N}...\n\n{VerifierContext}")
 
 Task(subagent_type: "ctdio-feature-implementation-phase-reviewer",
-  mode: "bypassPermissions", prompt: "Review Phase {N}...\n\n{ReviewerContext}")
+  run_in_background: true, prompt: "Review Phase {N}...\n\n{ReviewerContext}")
 
 # Only if verification-harness.md exists for this phase:
 Task(subagent_type: "ctdio-feature-implementation-phase-tester",
-  mode: "bypassPermissions", prompt: "Test Phase {N}...\n\n{TesterContext}")
+  run_in_background: true, prompt: "Test Phase {N}...\n\n{TesterContext}")
+
+# All return task_ids — poll with TaskOutput, kill with TaskStop if stuck
 ```
 
 ### Phase Completion State (Step 15)
@@ -1403,6 +1525,16 @@ This is ~10-15 lines per phase. TaskList has the structured detail; this file is
 
 **This is a fully autonomous system. Never stop to ask the user. Resolve issues yourself or document them and keep moving.**
 
+### Implementer Returns "partial"
+
+This is NOT a failure — it's planned context management. The implementer completed some deliverables and is checkpointing before context exhaustion.
+
+1. Read the partial result — note `completed_files`, `deliverables_completed`, `remaining_deliverables`, `completed_summary`
+2. Build a `continuation_context` (see step 12b)
+3. Spawn a fresh implementer with scoped-down `files_to_modify` and the continuation context
+4. The fresh agent continues from where the previous one left off
+5. Repeat until `"complete"` or `"blocked"`
+
 ### Implementer Returns "blocked"
 
 1. Read the blocker details — can you resolve it? (install a dependency, read a missing file, adjust the plan)
@@ -1422,6 +1554,115 @@ This is ~10-15 lines per phase. TaskList has the structured detail; this file is
 1. Retry the agent spawn once
 2. If still fails: spawn a fresh replacement
 3. **[Team]** If a persistent teammate becomes unresponsive, spawn a replacement with the same name
+
+### Agent Health Monitoring (CRITICAL)
+
+**The Problem:** Agents can get stuck — context exhaustion, infinite loops, or hitting API limits — without returning. If the orchestrator blocks waiting for a result, you could lose hours with no visibility. **Agents will NOT announce when they're stuck.** They just stop making progress.
+
+**The Solution:** Spawn agents in background mode and poll them proactively. Kill and restart if stuck.
+
+#### Background Mode Spawning (Fallback Mode)
+
+**ALWAYS spawn implementers with `run_in_background: true`.** This returns immediately with a `task_id`, letting you monitor progress.
+
+```
+# Spawn implementer in background
+result = Task(
+  subagent_type: "ctdio-feature-implementation-phase-implementer",
+  run_in_background: true,
+  prompt: "..."
+)
+# result contains: { task_id: "abc123" }
+
+# Now you can poll and control it:
+TaskOutput(task_id: "abc123", block: false)  # Check current output without waiting
+TaskStop(task_id: "abc123")                   # Kill the agent if stuck
+```
+
+#### Polling Protocol
+
+**Poll agents every 10 minutes.** Don't just spawn and wait forever.
+
+```
+Polling loop for implementer:
+  1. TaskOutput(task_id, block: false, timeout: 5000)
+  2. Check output for:
+     - ImplementerResult → agent completed, process result
+     - Recent file edits or test runs → agent is making progress, continue waiting
+     - Same output as last poll → agent may be stuck
+     - Error loops or context warnings → agent is definitely stuck
+  3. If stuck: TaskStop(task_id), build continuation context, spawn fresh agent
+  4. If progressing: wait 10 min, poll again
+```
+
+#### Signs an Agent is Stuck
+
+| Symptom | Diagnosis |
+|---------|-----------|
+| No new output for 10+ minutes | Likely context exhausted or infinite loop |
+| Same error repeating in output | Stuck in retry loop |
+| "Context limit" warnings | About to fail, should checkpoint |
+| Agent asking questions to itself | Confused state, won't recover |
+| Long pause after "thinking..." | May be rate-limited or deadlocked |
+
+#### Kill and Restart Protocol
+
+**Don't hesitate to kill stuck agents.** It's better to lose some work and restart than to wait hours.
+
+```
+When to kill:
+  - No progress for 10 minutes
+  - Same error 3+ times in a row  
+  - Agent output shows confusion or loops
+  - You've polled 5+ times with no ImplementerResult
+
+How to kill:
+  TaskStop(task_id: "...")
+
+After killing:
+  1. Check git status — what files were created/modified?
+  2. Read those files to understand what was implemented
+  3. Build continuation_context from actual codebase state
+  4. Spawn fresh agent with scoped-down files_to_modify
+```
+
+#### Proactive Check-ins (Team Mode)
+
+With persistent teammates, send check-in messages every 10 minutes:
+
+```
+SendMessage(type: "message", recipient: "implementer",
+  content: "Status check: What deliverables have you completed? Any blockers?",
+  summary: "Progress check")
+```
+
+**Expected response:** List of completed files, current task, any issues.
+
+**Bad signs:** No response, incoherent response, or "still working on..." with no specifics.
+
+**If 2 check-ins get no useful response → terminate and replace.**
+
+#### Recovery Flow
+
+```
+Agent appears stuck:
+  │
+  ├─ TaskStop(task_id) — kill it immediately
+  │
+  ├─ git status / git diff — what actually changed?
+  │
+  ├─ If files were created/modified:
+  │     → Read them to understand progress
+  │     → Build continuation_context from actual state
+  │     → Spawn fresh agent with remaining files only
+  │
+  └─ If no changes to codebase:
+        → Retry with smaller scope (fewer files)
+        → Add more reference files for context
+        → Consider splitting phase into smaller chunks
+```
+
+**Key principle:** The orchestrator owns progress visibility. Never assume an agent will self-report problems — proactively monitor and intervene.
 
 ---
 

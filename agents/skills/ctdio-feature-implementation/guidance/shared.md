@@ -112,6 +112,17 @@ The `spec.md` file defines:
 3. Verify test environment is correct
 4. Document the specific failure for debugging
 
+### "Implementer returned partial"
+
+This is normal, not an error. The implementer completed some deliverables and checkpointed before context exhaustion. The orchestrator:
+
+1. Reads the partial result (completed files, remaining deliverables, summary)
+2. Builds a continuation context with scoped-down files_to_modify
+3. Spawns a fresh implementer to continue from where the previous one left off
+4. Repeats until `"complete"` or `"blocked"`
+
+Partial results are planned context management — the implementer's tests for completed work should be passing.
+
 ### "Verification keeps failing"
 
 After 3 failed attempts, the orchestrator widens context and retries with a fresh approach. Before that:
@@ -144,14 +155,15 @@ ResultType:
 
 Use consistently across all communication:
 
-| Symbol | Meaning       | Use For                       |
-| ------ | ------------- | ----------------------------- |
-| ✅     | Complete/Pass | Finished tasks, passing tests |
-| 🔄     | In Progress   | Current work                  |
-| ⏳     | Pending       | Not yet started               |
-| 🔴     | Failing       | Failing tests                 |
-| ⛔     | Blocked       | Cannot proceed                |
-| ❌     | Failed        | Verification failed           |
+| Symbol | Meaning       | Use For                             |
+| ------ | ------------- | ----------------------------------- |
+| ✅     | Complete/Pass | Finished tasks, passing tests       |
+| 🔄     | In Progress   | Current work                        |
+| ⏳     | Pending       | Not yet started                     |
+| 🔶     | Partial       | Checkpoint — some deliverables done |
+| 🔴     | Failing       | Failing tests                       |
+| ⛔     | Blocked       | Cannot proceed                      |
+| ❌     | Failed        | Verification failed                 |
 
 ### Severity Levels
 
@@ -274,9 +286,10 @@ The orchestrator provides context tailored to your role:
 
 Return structured results that the orchestrator can process:
 
-- Clear status (complete/blocked/pass/fail)
+- Clear status (complete/partial/blocked/pass/fail)
 - Specific details (files, issues, evidence)
 - Actionable information (what to do next)
+- For partial: remaining deliverables and completed summary for continuation
 
 ### When Things Go Wrong
 

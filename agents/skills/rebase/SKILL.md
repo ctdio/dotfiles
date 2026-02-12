@@ -100,7 +100,9 @@ git add <resolved-files>
 
 ## VERIFICATION GATE (runs after EVERY commit resolution)
 
-**STOP. You MUST complete every gate below before running `git rebase --continue`. Do NOT batch commits. Do NOT skip gates. Each gate produces output you must review — if you have no output, you skipped the gate.**
+**HARD STOP. Running `git rebase --continue` with broken code bakes failures into the commit history. Every commit in the rebased branch must be independently clean. This is not optional.**
+
+You MUST complete every gate below before running `git rebase --continue`. Do NOT batch commits. Do NOT skip gates. Each gate produces output you must review — if you have no output, you skipped the gate.
 
 ### Gate 1: Diff Review
 
@@ -113,7 +115,7 @@ Run `git diff --cached` and read the full output. For each resolved file, confir
 
 **If you find issues:** fix them and re-stage before proceeding.
 
-### Gate 2: Prepare / Codegen (if applicable)
+### Gate 2: Prepare / Codegen
 
 Projects with generated code must regenerate before typecheck. Run the first matching command:
 
@@ -122,31 +124,51 @@ Projects with generated code must regenerate before typecheck. Run the first mat
 3. `nx` projects: `nx run <project>:prepare`
 4. Prisma projects: `npx prisma generate`
 
-### Gate 3: Type Check (if applicable)
+If none of these exist, skip this gate.
+
+### Gate 3: Type Check (BLOCKING)
+
+**You MUST run typecheck. This is not optional.** Discover the correct command:
+
+1. Check `CLAUDE.md` or `AGENT.md` for a documented typecheck command
+2. Check `package.json` scripts for `typecheck`, `type-check`, or `check-types`
+3. Fall back to `npx tsc --noEmit`
+4. For non-TypeScript projects, skip this gate
 
 ```bash
 npm run typecheck 2>/dev/null || npx tsc --noEmit
 ```
 
-**If typecheck fails:** the resolution broke something. Fix it, re-stage, re-run typecheck. Do NOT continue with type errors.
+**If typecheck fails:** the resolution broke something. Fix it, re-stage, re-run typecheck. Do NOT continue with type errors. A failing typecheck means your resolution is wrong — go back and fix it.
 
-### Gate 4: Lint (if applicable)
+### Gate 4: Lint (BLOCKING)
+
+**You MUST run lint. This is not optional.** Discover the correct command:
+
+1. Check `CLAUDE.md` or `AGENT.md` for a documented lint command
+2. Check `package.json` scripts for `lint`
+3. Fall back to `npx eslint .`
+4. For projects without a linter configured, skip this gate
 
 ```bash
 npm run lint 2>/dev/null || npx eslint . 2>/dev/null
 ```
 
-### Gate 5: Tests (if applicable)
+**If lint fails:** fix the lint errors, re-stage, re-run lint. Lint failures after conflict resolution usually indicate missing imports, unused variables from dropped code, or inconsistent formatting. Do NOT continue with lint errors.
+
+### Gate 5: Tests (recommended)
 
 ```bash
 npm test 2>/dev/null
 ```
 
+Test failures may indicate semantic conflicts that passed typecheck but broke runtime behavior. If tests fail, investigate whether the resolution caused the failure before continuing.
+
 ### Gate Result
 
-**ALL gates must pass before continuing.** If any gate fails, fix the issue and re-run that gate. Failures here almost always indicate a resolution that silently broke something.
+**Gates 1, 3, and 4 are BLOCKING — the code MUST typecheck and lint cleanly before continuing.** `git rebase --continue` is FORBIDDEN until these gates pass. If any blocking gate fails, fix the issue and re-run from that gate forward. Do not assume a fix for one gate didn't break another.
 
-Only after all gates pass:
+Only after all blocking gates pass:
 
 ```bash
 git rebase --continue
@@ -158,7 +180,7 @@ If more commits conflict, return to Step 1.
 
 ## Post-Rebase Verification
 
-After the entire rebase completes:
+After the entire rebase completes, run a final clean build to confirm the branch is healthy end-to-end:
 
 1. **Verify the full commit history looks correct:**
 
@@ -168,9 +190,18 @@ After the entire rebase completes:
 
 2. **Run the prepare/codegen script** one final time to ensure all generated artifacts are current
 
-3. **Run typecheck, lint, and tests** against the full rebased branch
+3. **Run typecheck and lint (BLOCKING)** — the rebased branch must be clean:
 
-4. **Compare the net diff** to ensure no changes were lost:
+   ```bash
+   npm run typecheck 2>/dev/null || npx tsc --noEmit
+   npm run lint 2>/dev/null || npx eslint . 2>/dev/null
+   ```
+
+   If either fails, fix the issue and commit the fix. Do NOT leave the branch in a broken state.
+
+4. **Run tests** to catch any semantic breakage the per-commit gates may have missed
+
+5. **Compare the net diff** to ensure no changes were lost:
    ```bash
    # Show what this branch adds vs the target
    git diff <target-branch>...HEAD --stat

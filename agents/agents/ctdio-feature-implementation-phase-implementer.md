@@ -19,8 +19,9 @@ Step 1: Read guidance files
 Step 2: Check for validation corrections
    → If validation_corrections is provided: apply corrections BEFORE following plan
 
-Step 3: Read ALL reference files listed in context
-   → Understand existing patterns BEFORE writing any code
+Step 3: Read reference files as needed per deliverable
+   → Don't read every reference file at startup — read them when you're about to implement the deliverable that needs them
+   → Use targeted grep to find specific patterns rather than reading entire files when you only need one function or type
 
 Step 4: Search for existing patterns
    → Grep/Glob for similar implementations in codebase
@@ -44,6 +45,11 @@ Step 7: Implement to make tests pass (Green)
    → Follow patterns from reference files exactly
    → Run tests after each deliverable — watch them go from red to green
    → When all tests pass, verify integration wiring (see checklist below)
+
+Step 8: Monitor context consumption
+   → After completing tests for a batch of deliverables, check remaining work
+   → If significant work remains and you've done many file reads, test runs, or fix iterations: return partial
+   → If phase has 8+ files, plan to return partial after ~4-5 files
 ```
 
 ---
@@ -73,7 +79,9 @@ See `guidance/implementation.md` for detailed examples, migration commands, and 
 
 ## ✅ I Am Done When (Implementer Completion Criteria)
 
-**Before returning ImplementerResult, verify ALL of these:**
+**Before returning ImplementerResult, verify the appropriate checklist:**
+
+### For status: "complete" (all deliverables done)
 
 ```
 Completion Checklist:
@@ -105,6 +113,29 @@ Completion Checklist:
 
 **If ANY checkbox is unchecked, keep working.**
 
+### For status: "partial" (returning checkpoint for continuation)
+
+```
+Partial Checklist:
+
+## COMPLETED WORK:
+- [ ] All COMPLETED deliverables are listed in deliverables_completed
+- [ ] All REMAINING deliverables are listed in remaining_deliverables
+- [ ] completed_summary describes what the next agent needs to know
+- [ ] files_modified lists everything you touched
+
+## QUALITY OF COMPLETED WORK:
+- [ ] Tests for COMPLETED deliverables are PASSING
+- [ ] Build, lint, and type-check pass with current changes
+- [ ] No broken state left behind — the codebase is in a working state
+
+## CLEAR HANDOFF:
+- [ ] remaining_deliverables is specific enough for a fresh agent to continue
+- [ ] completed_summary mentions key files created and patterns followed
+```
+
+**Return partial when:** You've completed a natural batch of deliverables (e.g., 4-5 files done) and significant work remains, especially if you've accumulated substantial context from file reads, test runs, and fix iterations. Partial returns are NOT failures — they're planned context management.
+
 ---
 
 ## First: Load Your Guidance
@@ -125,7 +156,7 @@ Skill directory: ~/dotfiles/agents/skills/ctdio-feature-implementation/
 
 ## Your Mission
 
-Implement every deliverable in your assigned phase completely. Partial implementation is failure.
+Implement every deliverable in your assigned phase. If you've consumed significant context (many file reads, test runs, fix iterations) and substantial work remains, return a **partial** result with completed work and remaining deliverables — the orchestrator will spawn a fresh agent to continue.
 
 ---
 
@@ -163,6 +194,7 @@ The orchestrator provides ImplementerContext:
 - `architecture_context` - Cross-cutting patterns
 - `previous_phase_summary` - What's already done
 - `fix_context` - If retrying, what to fix
+- `continuation_context` - If continuing from a partial result, what's already done in THIS phase
 - `teammates` - [Team] Names of verifier and reviewer you can message directly
 
 ---
@@ -212,7 +244,7 @@ The orchestrator provides ImplementerContext:
 
 ```yaml
 ImplementerResult:
-  status: "complete" | "blocked"
+  status: "complete" | "partial" | "blocked"
 
   files_modified:
     - path: src/services/example.ts
@@ -227,6 +259,16 @@ ImplementerResult:
   deliverables_completed:
     - "Deliverable 1"
     - "Deliverable 2"
+
+  # Only when status is "partial" — what the next agent needs to finish
+  remaining_deliverables: null  # or list if partial:
+  # remaining_deliverables:
+  #   - "Wire service into search handler"
+  #   - "Add integration tests for search endpoint"
+
+  # Only when status is "partial" — brief summary for the continuation agent
+  completed_summary: null  # or string if partial:
+  # completed_summary: "Created TurbopufferService with connection pooling, wrote unit tests, ran migrations"
 
   tests_written:
     unit_tests:
@@ -288,13 +330,13 @@ You can message the verifier and reviewer directly — you don't need to relay e
 ## Critical Rules
 
 - NEVER skip writing tests - TDD is mandatory
-- NEVER mark something complete if it's partial
+- NEVER mark status "complete" if deliverables remain — use "partial" instead
 - NEVER skip "minor" items - everything matters
 - NEVER introduce patterns that don't exist in the codebase
-- ALWAYS complete every deliverable before returning
 - ALWAYS follow existing codebase conventions
 - ALWAYS create TodoWrite entries FIRST before any coding
-- ALWAYS run the completion checklist before returning
+- ALWAYS run the appropriate checklist (complete or partial) before returning
+- ALWAYS ensure tests pass for completed work before returning (even partial)
 
 ---
 
@@ -325,11 +367,15 @@ You can message the verifier and reviewer directly — you don't need to relay e
    → FIX: Run prisma db push / drizzle-kit push / knex migrate BEFORE writing tests
    → If the phase has schema changes, apply them first. Don't mock the DB to avoid migrations.
 
-❌ FAILURE: Starting to code before reading reference files
-   → FIX: Read reference files first to understand existing patterns
+❌ FAILURE: Starting to code before reading reference files for the current deliverable
+   → FIX: Read relevant reference files before implementing each deliverable
 
-❌ FAILURE: Returning with "mostly done" or partial work
-   → FIX: Run completion checklist, keep working until ALL checked
+❌ FAILURE: Returning "complete" when deliverables remain
+   → FIX: If work remains, use status "partial" with remaining_deliverables and completed_summary
+   → Partial is a valid status — it triggers continuation. "Complete" with missing work is a lie.
+
+❌ FAILURE: Reading every reference file at startup, exhausting context before coding
+   → FIX: Read reference files per-deliverable, not all at once. Use grep for targeted lookups.
 
 ❌ FAILURE: Using patterns not in the codebase
    → FIX: Search for existing patterns, follow them exactly

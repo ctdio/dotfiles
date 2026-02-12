@@ -1287,6 +1287,22 @@ Use numbered prefixes for clear ordering:
 - `phase-04-polish` - UX improvements, edge cases
 - `phase-05-optimization` - Performance, cleanup (if needed)
 
+### Phase Sizing (CRITICAL)
+
+**Target 5-8 files per phase** (create + modify combined). The implementer agent has a finite context window — oversized phases cause context exhaustion and require checkpoint/continuation, which is slower than proper phase decomposition.
+
+| Phase Size | Guidance                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| 1-4 files  | Fine as a single phase                                                                       |
+| 5-8 files  | Ideal size — fits comfortably in implementer context                                         |
+| 9-12 files | Use work groups to enable parallel implementation, or split the phase                        |
+| 13+ files  | MUST split into multiple phases or use work groups — single implementer will exhaust context |
+
+**When a phase exceeds 10 files without work groups, split it.** Either:
+
+- Break into two sequential sub-phases (e.g., `phase-02a-core-services`, `phase-02b-core-wiring`)
+- Use work groups to parallelize independent file sets within the phase
+
 ### Progressive Disclosure in Practice
 
 **Level 1 - Quick Context** (2 minutes):
@@ -1376,6 +1392,9 @@ This keeps references valid as the codebase evolves.
 
 ❌ **Don't**: Skip verification harness decisions or ask about them generically
 ✅ **Do**: Make explicit per-phase harness decisions with the user, with concrete reasoning
+
+❌ **Don't**: Create phases with 10+ files without work groups
+✅ **Do**: Split oversized phases or use work groups — a single implementer will exhaust its context on 10+ files
 
 ## Example Plan Reference
 

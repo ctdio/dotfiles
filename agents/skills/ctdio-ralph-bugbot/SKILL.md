@@ -52,6 +52,7 @@ echo "Fetching unresolved bugbot comments on PR #$PR_NUM..."
 # Get ONLY unresolved review threads from bugbot (with thread IDs for resolving)
 # IMPORTANT: The jq filter ensures only isResolved==false threads are returned.
 # Do NOT process any threads outside this output.
+# Fetches ALL comments in each thread for full context (follow-ups, prior resolution attempts, human replies).
 UNRESOLVED=$(gh api graphql -f query='
 query {
   repository(owner: "'"$OWNER"'", name: "'"$REPO"'") {
@@ -60,12 +61,13 @@ query {
         nodes {
           id
           isResolved
-          comments(first: 1) {
+          comments(first: 100) {
             nodes {
               author { login }
               body
               path
               line
+              createdAt
             }
           }
         }
@@ -86,7 +88,7 @@ echo "$UNRESOLVED" | jq '.'
 
 **IMMEDIATELY after Step 2, check the count from `$COUNT`:**
 
-- **`$COUNT` is 0?** → Skip to Step 7 (Check CI Status). Bugbot is satisfied but CI may still need fixes.
+- **`$COUNT` is 0?** → Skip to Step 6c (Check CI Status). Bugbot is satisfied but CI may still need fixes.
 - **`$COUNT` > 0?** → Continue to Step 4. Process ONLY the comments in `$UNRESOLVED`. Do not deliberate.
 
 ### Step 4: Process Each Comment
@@ -122,6 +124,7 @@ Categorize before investigating:
 - Make minimal, surgical edits
 - Follow existing code patterns
 - One fix at a time
+- **DO NOT comment on the PR thread** — just fix the code. The commit and bugbot re-analysis are sufficient. Comments are ONLY for false positive resolutions.
 
 #### Resolve False Positives
 
@@ -186,25 +189,42 @@ mutation {
 
 **IMPORTANT:** Never use `git push`, `git rebase`, or `git pull`. Always use `gt submit --update-only` for pushing changes.
 
-### Step 6: Wait for Bugbot Check
+**After pushing, go to Step 6.** Every push invalidates the current state — bugbot will re-analyze and CI will re-run. You must verify the new state before reporting.
 
-**RUN THIS IMMEDIATELY after pushing. Do not skip.**
+### Step 6: Verify Clean State (Post-Push Loop)
 
-Run the `wait-for-bugbot.sh` script in this skill's directory.
+**MANDATORY after every `gt submit`. This is where you grind.**
 
-### Step 7: Check CI Status and Fix Failures
+Every push triggers new bugbot analysis and new CI runs. You cannot trust the previous state. You must re-verify everything from scratch.
 
-**RUN THIS IMMEDIATELY after bugbot completes:**
+#### 6a: Wait for Bugbot
 
-Run the `check-ci-status.sh` script in this skill's directory.
+Run `wait-for-bugbot.sh`. Do not proceed until bugbot reaches a terminal state.
 
-The script excludes bugbot checks (tracked by `wait-for-bugbot.sh`) and polls internally until all CI checks reach a terminal state.
+#### 6b: Re-fetch Bugbot Comments
 
-**Evaluate the result:**
+Re-run the Step 2 query to check for new or remaining unresolved bugbot comments.
 
-- **Exit code 0 (SUCCESS):** All CI checks passing → Continue to Step 8
-- **Exit code 1 (FAILURE):** Failing checks found → Fix them (see below)
-- **Exit code 2 (TIMEOUT):** Checks still pending after polling timeout → Wait 60s and re-run. **NEVER conclude the task while checks are pending.**
+- **New comments found?** → Go back to Step 4. Process them, fix/resolve, commit, push, return here.
+- **Zero comments?** → Continue to 6c.
+
+#### 6c: Check CI Status
+
+Run `check-ci-status.sh`.
+
+- **Exit code 0 (SUCCESS):** All CI checks passing → Continue to Step 7 (Report).
+- **Exit code 1 (FAILURE):** Failing checks found → Fix them (see "Fixing CI Failures" below), commit, push via `gt submit --update-only`, then **restart Step 6 from 6a**. The push invalidates state again.
+- **Exit code 2 (TIMEOUT):** Checks still pending → **Wait 60s and re-run. Repeat up to 3 successive times.** If still pending after 3 retries, report the pending checks and do NOT emit the completion promise. **NEVER conclude the task while checks are pending.**
+
+#### 6d: Confirm Clean
+
+You may ONLY proceed to Step 7 when ALL of these are true in a single pass through Step 6 with NO pushes required:
+
+1. `wait-for-bugbot.sh` reached a terminal state
+2. Zero unresolved bugbot comments
+3. `check-ci-status.sh` exited 0
+
+If you pushed during this step (fixing bugbot comments or CI failures), you MUST restart Step 6 from 6a. A push resets the verification. Keep grinding until a full pass completes with nothing to fix.
 
 #### Fixing CI Failures
 
@@ -256,12 +276,12 @@ golangci-lint run        # Lint
 go test ./...            # Run tests
 ```
 
-**4. After fixing:**
+**4. After fixing CI failures:**
 
 - Stage changes: `git add -A`
 - Commit: `git commit -m "fix: address CI failures"`
 - Submit via Graphite: `gt submit --update-only`
-- Re-run `check-ci-status.sh` to verify
+- **Restart Step 6 from 6a.** The push invalidates state — bugbot will re-analyze, CI will re-run.
 
 **5. If you cannot fix a CI failure:**
 
@@ -269,29 +289,48 @@ go test ./...            # Run tests
 - Let the human know what's failing and why you couldn't fix it
 - Continue with other fixable issues
 
-### Step 8: Report Progress
+### Step 7: Report Progress
 
-**Brief summary only** (don't over-explain):
+**You should only reach this step after Step 6d confirmed a completely clean state.** If you are here, it means a full pass through Step 6 completed with zero bugbot comments AND `check-ci-status.sh` exit 0 AND no pushes were needed.
+
+**If ALL checks pass** (you came through Step 6d cleanly):
 
 ```
+RESOLVED — PR is clean.
+
+Fixed: [list files:lines]
+Resolved as false positive (replied + resolved): [list files:lines with brief reason]
+CI fixes: [list what was fixed - lint, format, tests, etc.]
+Bugbot comments: 0 unresolved
+CI status: ALL PASSING
+```
+
+**If you could NOT achieve a clean state** (unfixable CI failure, pending timeout after retries, etc.):
+
+```
+NOT RESOLVED — issues remain.
+
 Fixed: [list files:lines]
 Resolved as false positive (replied + resolved): [list files:lines with brief reason]
 CI fixes: [list what was fixed - lint, format, tests, etc.]
 Remaining bugbot comments: [count]
-CI status: [PASSING/FAILING with details]
+CI status: [FAILING/PENDING with details]
+Blocking issues: [what still needs to pass]
 ```
 
-### Step 9: Loop Behavior
+**NEVER report the PR as resolved, clean, or done unless Step 6d confirmed it.** Partial success is not resolution. If you pushed fixes and didn't re-verify, you are NOT done — go back to Step 6a.
 
-After pushing and waiting for checks:
+### Step 8: Loop Behavior
 
-- The ralph-loop will re-run this skill
-- Next iteration will re-fetch comments (bugbot has finished re-analyzing)
+After reporting:
 
-**Completion criteria — ALL must be true simultaneously:**
+- If you reported RESOLVED, ralph-loop will confirm completion
+- If you reported NOT RESOLVED, ralph-loop will re-run this skill for another pass
+
+**Completion criteria — ALL must be true simultaneously in a single verification pass (Step 6) with NO pushes:**
 
 1. `wait-for-bugbot.sh` reached a terminal state (not pending, not timed out)
-2. Step 2 finds zero unresolved bugbot comments
+2. Re-fetch finds zero unresolved bugbot comments
 3. `check-ci-status.sh` exits 0 (all CI checks passing)
 
 **You are NOT done until everything has settled.** Do not rationalize early exits. Do not describe pending checks as "just a status indicator" or "external check that can be ignored." If a script is still polling, a check is still pending, or bugbot hasn't finished — you wait. The entire purpose of this skill is to keep going until the PR is clean.
@@ -301,9 +340,12 @@ After pushing and waiting for checks:
 **If bugbot or any CI check is in a PENDING state, you MUST wait for it to finish before emitting the completion promise.** Specifically:
 
 - If `wait-for-bugbot.sh` reports bugbot is still running or pending → **wait for it to complete, then re-fetch comments**
-- If `check-ci-status.sh` exits with code 2 (timeout/pending) → **sleep 60 seconds and re-run the script**
+- If `check-ci-status.sh` exits with code 2 (timeout/pending) → **sleep 60 seconds and re-run the script. Repeat up to 3 successive times.** After 3 retries, report the pending checks but do NOT emit the completion promise.
+- **Step 6 is MANDATORY after every push** — every `gt submit` invalidates state. You must re-verify bugbot AND CI from scratch.
 - **NEVER emit `<promise>` while any check is pending** — a pending check is not a passing check
 - **NEVER describe a pending check as "external" or "not blocking"** — all checks must reach a terminal state
+- **NEVER skip CI verification** — CI status must always be checked and must always reach a terminal state before you can conclude
+- **A push resets verification** — if you pushed during Step 6 (fixing bugbot or CI), restart Step 6 from 6a. You have not verified the post-push state yet.
 
 If you find yourself writing "pending" in your progress report, that is a signal you are NOT done. Go back and wait.
 
@@ -317,12 +359,14 @@ If you find yourself writing "pending" in your progress report, that is a signal
 6. **Minimal changes** - Fix the bug, don't refactor
 7. **When uncertain, skip** - Flag for human review instead of guessing
 8. **Always commit and submit** - After fixes or resolving false positives, use `gt submit --update-only`
-9. **One iteration = one pass** - Don't try to loop internally; let ralph-loop handle iteration
+9. **Grind until clean** - After every push, re-verify bugbot AND CI from scratch (Step 6). Keep looping internally until a full verification pass completes with nothing to fix. Ralph-loop handles cross-iteration retries, but within a single iteration you must exhaust the fix→push→verify loop.
 10. **Fix CI failures** - After addressing bugbot, check and fix lint/format/test failures
 11. **Run locally first** - For CI failures, run the failing check locally before pushing fixes
 12. **Never rebase, push, or pull** - Only use `git add`, `git commit`, and `gt submit --update-only`. Graphite handles branch management.
-13. **Never conclude until fully settled** - If any check is pending, any script is polling, or bugbot hasn't finished analyzing, you are not done. Do not rationalize pending checks as "status indicators" or "external checks." Wait until everything reaches a terminal state.
-14. **Never emit `<promise>` while anything is pending** - The word "pending" in your output means you are NOT done. If you wrote "pending" anywhere in your progress report, do not emit the completion promise. Go back and wait for the pending item to resolve.
+13. **Never comment on valid bug fixes** - Do NOT post replies to PR threads when fixing actual bugs. The code fix + commit is sufficient. Only post comments when resolving false positives (the explanation reply is required there). No "Fixed in commit X" or similar comments.
+14. **Never conclude until fully settled** - If any check is pending, any script is polling, or bugbot hasn't finished analyzing, you are not done. Do not rationalize pending checks as "status indicators" or "external checks." Wait until everything reaches a terminal state.
+15. **Never emit `<promise>` while anything is pending** - The word "pending" in your output means you are NOT done. If you wrote "pending" anywhere in your progress report, do not emit the completion promise. Go back and wait for the pending item to resolve.
+16. **Only report "resolved" when ALL checks pass** - Partial success is not resolution. If bugbot comments are at zero but CI is failing, you are NOT resolved. If CI is passing but bugbot comments remain, you are NOT resolved. All three completion criteria (Step 8) must be true simultaneously in a single verification pass with no pushes before you can say the PR is clean.
 
 ## Usage
 

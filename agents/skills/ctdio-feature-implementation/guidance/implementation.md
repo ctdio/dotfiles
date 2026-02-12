@@ -199,6 +199,38 @@ Example TDD flow for an API endpoint:
 
 ---
 
+## Context Management
+
+**Context is a finite resource.** The implementer agent has a limited context window. Consuming it all on upfront reading leaves nothing for implementation and debugging.
+
+### Read On Demand, Not All at Once
+
+- **Reference files**: Read them when you're about to implement the deliverable that needs them, not all at startup
+- **Targeted grep**: When you only need one function signature or type, grep for it instead of reading the entire file
+- **Test output**: After confirming tests pass, note the result (pass/fail + key errors) but don't retain full output — re-run if you need details later
+
+### Plan for Partial Returns on Large Phases
+
+- If a phase has **8+ files** (create + modify combined), plan to return partial after ~4-5 files
+- Complete a natural batch of deliverables, verify tests pass, then checkpoint
+- The orchestrator will spawn a fresh agent with your completed work as context
+
+### Signs You Should Return Partial
+
+- You've done many file reads, test runs, and fix iterations
+- You've completed 4-5+ files and significant work remains
+- Your responses are getting shorter or less precise (context pressure)
+- You're about to start a major new deliverable that will require substantial reading
+
+### What a Good Partial Return Looks Like
+
+- All completed deliverables have passing tests
+- `remaining_deliverables` is specific enough for a fresh agent to continue
+- `completed_summary` mentions key files created, patterns followed, and any gotchas
+- The codebase builds and type-checks with current changes
+
+---
+
 ## Coding Standards
 
 ### Follow Existing Patterns
@@ -353,7 +385,7 @@ Your result must include:
 
 ```yaml
 ImplementerResult:
-  status: "complete" | "blocked"
+  status: "complete" | "partial" | "blocked"
 
   files_modified:
     - path: src/services/example.ts
@@ -363,6 +395,16 @@ ImplementerResult:
   deliverables_completed:
     - "Deliverable 1 name"
     - "Deliverable 2 name"
+
+  # Only when status is "partial"
+  remaining_deliverables: null  # or list:
+  # remaining_deliverables:
+  #   - "Wire service into search handler"
+  #   - "Add integration tests for search endpoint"
+
+  # Only when status is "partial"
+  completed_summary: null  # or string:
+  # completed_summary: "Created TurbopufferService with connection pooling, wrote unit tests"
 
   tests_written:
     unit_tests:
