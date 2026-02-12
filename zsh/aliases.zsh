@@ -72,7 +72,7 @@ alias cc-no-chill='claude --add-dir ~/.ai --dangerously-skip-permissions'
 alias oc='opencode'
 alias ca='cursor-agent -f'
 alias agent="cd ~/projects/open-source/agent && bun run agent.ts"
-alias rbb='ralph "Use ctdio-ralph-bugbot skill. Look for bugbot feedback and address feedback until bugbot stops reporting issues." -m 10 -c "BUGBOT RESOLVED"'
+alias rbb='ralph "Address all unresolved bugbot feedback and CI failures on this PR. Use the ctdio-ralph-bugbot skill and follow its steps exactly. Do not skip steps or exit early." -m 10 -c "BUGBOT RESOLVED"'
 
 function ralph-implement-plan() {
   local plan=""
@@ -108,6 +108,21 @@ function ralph-implement-plan() {
   # Convert to uppercase and replace special chars with spaces
   local completion_promise=$(echo "$plan" | tr '[:lower:]' '[:upper:]' | sed 's/[^A-Z0-9]/ /g' | tr -s ' ' | xargs)
   completion_promise="${completion_promise} IMPLEMENTED"
-  ralph "${ralph_opts[@]}" "Load the feature implementation skill. Implement the $plan plan. Follow the spec closely. Completely implement each and every phase." -m 25 -c "$completion_promise"
+
+  local prompt
+  prompt=$(cat <<EOF
+Your FIRST action MUST be to load the ctdio-feature-implementation skill by invoking:
+  /ctdio-feature-implementation
+This is NON-NEGOTIABLE. Do not proceed without loading the skill first.
+
+Implement the ${plan} plan located in ~/.ai/plans.
+The skill will guide the full orchestration workflow once loaded.
+
+If agent team tools are available (TeamCreate, SendMessage, TaskList), you MUST use
+them. Do not implement phases yourself — delegate to agent teammates.
+EOF
+)
+
+  ralph "${ralph_opts[@]}" "$prompt" -m 25 -n 5 -c "$completion_promise"
 }
 
