@@ -284,8 +284,8 @@ export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
 - Check if the feature already exists in a different form
 - Look for established patterns for the type of task you're doing
 
-**Architecture for Testability:**
-Design using "functional core, imperative shell"—keep pure business logic separate from code that does IO. Pure functions (no side effects, deterministic outputs) are trivial to test. Push IO, state mutations, and external calls to the outer edges where they can be easily mocked or replaced.
+**Architecture for Testability (CRITICAL):**
+Design using "functional core, imperative shell" — all business logic in pure functions (no side effects, deterministic outputs), all IO/state/external calls in a thin orchestration layer. The functional core is trivially testable with unit tests — no mocks needed. The imperative shell is tested with integration tests using real dependencies. If you need heavy mocking to test something, the code needs refactoring, not more mocks.
 
 **Error handling:** Fix breakage as part of task
 

@@ -1,0 +1,137 @@
+---
+description: Testing Philosophy and Patterns
+globs: "**/*.{test,spec}.{ts,tsx,js,jsx}"
+---
+
+# Testing Rules
+
+## Core Philosophy
+
+**Tests should verify behavior, not implementation.** A good test survives refactoring — if you rename an internal function, restructure modules, or swap an algorithm, tests that verify the same behavior should still pass. If they break, they were testing implementation details.
+
+**Prefer real code over mocks.** Every mock is a lie — it asserts how you *think* a dependency works, not how it *actually* works. Mocks drift from reality silently. Use real implementations whenever feasible.
+
+## Functional Core, Imperative Shell
+
+This is the architectural pattern that makes testing easy without mocks.
+
+**Functional core:** Pure functions that take inputs and return outputs. No side effects, no IO, no database calls, no network requests. All business logic lives here.
+
+**Imperative shell:** Thin layer that handles IO, orchestrates calls to the functional core, and interacts with external systems. Minimal logic — just wiring.
+
+```typescript
+// ✅ CORRECT - Functional core (pure, trivially testable)
+function calculateOrderTotal(items: OrderItem[], taxRate: number): OrderTotal {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = subtotal * taxRate;
+  return { subtotal, tax, total: subtotal + tax };
+}
+
+function validateOrder(order: Order): ValidationResult {
+  const errors: string[] = [];
+  if (order.items.length === 0) errors.push('Order must have items');
+  if (order.items.some(i => i.quantity <= 0)) errors.push('Quantities must be positive');
+  return { valid: errors.length === 0, errors };
+}
+
+// ✅ CORRECT - Imperative shell (thin, wiring only)
+export async function submitOrder(orderId: string, db: Database): Promise<OrderResult> {
+  const order = await db.orders.findById(orderId);
+  const validation = validateOrder(order);
+  if (!validation.valid) return { success: false, errors: validation.errors };
+
+  const total = calculateOrderTotal(order.items, order.taxRate);
+  await db.orders.update(orderId, { total: total.total, status: 'submitted' });
+  return { success: true, total };
+}
+```
+
+```typescript
+// Tests for the functional core — no mocks needed
+describe('calculateOrderTotal', () => {
+  it('computes subtotal, tax, and total', () => {
+    const items = [{ price: 10, quantity: 2 }, { price: 5, quantity: 1 }];
+    const result = calculateOrderTotal(items, 0.1);
+    expect(result).toEqual({ subtotal: 25, tax: 2.5, total: 27.5 });
+  });
+});
+```
+
+**The goal:** Push logic into pure functions so heavily that the imperative shell is so thin it's barely worth testing. When you must test the shell, use integration tests with real dependencies.
+
+## Test Type Hierarchy
+
+**Prefer in order:**
+
+1. **Unit tests on pure functions** — fast, reliable, no setup. Test the functional core directly with real inputs and expected outputs. No mocks.
+2. **Integration tests** — test components/modules working together with real (or realistic) dependencies. Use test databases, in-memory stores, or test servers.
+3. **Component tests** — render real components with real child components. Mock only the network boundary (MSW, not `jest.mock`).
+4. **Mocking as last resort** — only when external systems are genuinely unavailable in test (third-party APIs, payment processors, email services).
+
+## What to Mock (and What NOT to Mock)
+
+**Acceptable to mock:**
+- External third-party APIs (Stripe, SendGrid, etc.)
+- System clock (`Date.now`, timers)
+- Randomness (`Math.random`, UUIDs)
+- Environment-specific resources unavailable in CI
+
+**NEVER mock:**
+- Your own modules (`jest.mock('./myModule')`)
+- Database queries — use a test database
+- Internal function calls between modules
+- Framework internals (React hooks, Express middleware)
+
+```typescript
+// ❌ BRITTLE - Mocking your own code
+jest.mock('./userService', () => ({
+  getUser: jest.fn().mockResolvedValue({ id: '1', name: 'Test' })
+}));
+
+// ❌ BRITTLE - Mocking hooks
+jest.mock('@/api/hooks', () => ({
+  useGetUser: () => ({ data: mockUser, isLoading: false })
+}));
+
+// ✅ CORRECT - Test the actual function with real inputs
+const result = formatUserDisplay({ id: '1', name: 'Test', email: 'test@example.com' });
+expect(result).toBe('Test <test@example.com>');
+
+// ✅ CORRECT - Use MSW for network boundary
+const server = setupServer(
+  http.get('/api/users/:id', () => HttpResponse.json({ id: '1', name: 'Test' }))
+);
+```
+
+## Anti-Patterns
+
+**Testing implementation details:**
+```typescript
+// ❌ Tests HOW, not WHAT — breaks when you refactor
+expect(mockService.getUser).toHaveBeenCalledWith('123');
+expect(mockService.getUser).toHaveBeenCalledTimes(1);
+
+// ✅ Tests WHAT — survives refactoring
+const result = await processUser('123');
+expect(result.status).toBe('active');
+```
+
+**Snapshot overuse:**
+```typescript
+// ❌ Meaningless snapshot — any change breaks it, nobody reads the diff
+expect(component).toMatchSnapshot();
+
+// ✅ Assert specific behavior
+expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+```
+
+**Over-mocking to reach 100% coverage:**
+If you need 5+ mocks to test a function, the function has too many dependencies. Refactor it — extract pure logic into the functional core, reduce the imperative shell's responsibilities.
+
+## Writing Tests That Last
+
+1. **Name tests by behavior:** `'returns error when order has no items'` not `'test validateOrder'`
+2. **One behavior per test** — if a test name has "and" in it, split it
+3. **Arrange-Act-Assert** — clear separation, no interleaving
+4. **Use real data structures** — construct actual objects, not minimal partial mocks
+5. **Test edge cases in pure functions** — empty arrays, zero values, boundary conditions. This is where unit tests shine.
