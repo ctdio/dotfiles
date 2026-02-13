@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# SessionStart hook: Injects scoped learnings into Claude Code context.
+# Reads from ~/.ai/learnings/ (global, project, workspace).
+
+LOADER="$HOME/.ai/learnings/load.sh"
+
+[ -f "$LOADER" ] || exit 0
+
+input=$(cat)
+cwd=$(echo "$input" | jq -r '.cwd // empty')
+
+[ -n "$cwd" ] || exit 0
+
+content=$("$LOADER" "$cwd")
+
+[ -n "$content" ] || exit 0
+
+jq -n --arg context "$content" '{
+  hookSpecificOutput: {
+    hookEventName: "SessionStart",
+    additionalContext: $context
+  }
+}'

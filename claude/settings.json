@@ -11,7 +11,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/ctdio/dotfiles/claude/hooks/load-env-context",
+            "command": "~/dotfiles/claude/hooks/agent-queue",
             "timeout": 5
           }
         ]
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/dotfiles/claude/hooks/agent-queue",
+            "command": "~/dotfiles/claude/hooks/load-learnings",
             "timeout": 5
           }
         ]
@@ -105,5 +105,6 @@
     "skim@skim": true
   },
   "syntaxHighlightingDisabled": false,
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
