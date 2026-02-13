@@ -3,7 +3,7 @@
 # SessionStart hook: Injects scoped learnings into Claude Code context.
 # Reads from ~/.ai/learnings/ (global, project, workspace).
 
-LOADER="$HOME/.ai/learnings/load.sh"
+LOADER="$HOME/dotfiles/scripts/load-learnings"
 
 [ -f "$LOADER" ] || exit 0
 

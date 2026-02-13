@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# Learnings loader — agent-agnostic, outputs scoped learnings to stdout.
+# Usage: load-learnings [cwd]
+
+LEARNINGS_DIR="$HOME/.ai/learnings"
+TARGET_DIR="${1:-$PWD}"
+
+# Detect project name from git remote, fall back to directory basename
+detect_project() {
+  local dir="$1"
+  local remote
+  remote=$(git -C "$dir" remote get-url origin 2>/dev/null)
+  if [ -n "$remote" ]; then
+    basename "$remote" .git
+  else
+    basename "$dir"
+  fi
+}
+
+# Read content above the --- separator (or full file if no separator)
+read_above_separator() {
+  local file="$1"
+  [ -f "$file" ] || return
+  sed '/^---$/,$d' "$file"
+}
+
+# Read full file content
+read_full() {
+  local file="$1"
+  [ -f "$file" ] || return
+  cat "$file"
+}
+
+project=$(detect_project "$TARGET_DIR")
+workspace=$(basename "$TARGET_DIR")
+
+output=""
+
+# Global learnings (above separator)
+global_file="$LEARNINGS_DIR/global.md"
+if [ -f "$global_file" ]; then
+  content=$(read_above_separator "$global_file")
+  if [ -n "$content" ]; then
+    output+="# Global Learnings"$'\n\n'"$content"$'\n\n'
+  fi
+fi
+
+# Project learnings (above separator)
+project_file="$LEARNINGS_DIR/projects/$project/project.md"
+if [ -f "$project_file" ]; then
+  content=$(read_above_separator "$project_file")
+  if [ -n "$content" ]; then
+    output+="# Project Learnings ($project)"$'\n\n'"$content"$'\n\n'
+  fi
+fi
+
+# Workspace learnings (full content)
+workspace_file="$LEARNINGS_DIR/projects/$project/workspaces/$workspace.md"
+if [ -f "$workspace_file" ]; then
+  content=$(read_full "$workspace_file")
+  if [ -n "$content" ]; then
+    output+="# Workspace Learnings ($workspace)"$'\n\n'"$content"$'\n\n'
+  fi
+fi
+
+# Output with instructions preamble if any learnings exist
+if [ -n "$output" ]; then
+  cat <<'PREAMBLE'
+# Learnings — Persistent Knowledge Base
+
+These learnings persist across sessions. Apply them to your work.
+
+**You MUST write new learnings when:**
+- You discover a non-obvious bug or root cause
+- You find a reusable pattern
+- The user corrects your approach or states a preference
+- You waste effort on something prior knowledge would have prevented
+- You realize an assumption was wrong
+
+**How:** Add a bullet (`- <learning>`) under the right section header in the right file.
+
+**Where to write:**
+- Global (`~/.ai/learnings/global.md`): Universal — any agent, any project
+- Project (`~/.ai/learnings/projects/{repo}/project.md`): This codebase only
+- Workspace (`~/.ai/learnings/projects/{repo}/workspaces/{workspace}.md`): This task only
+
+PREAMBLE
+  printf '%s' "$output"
+fi
