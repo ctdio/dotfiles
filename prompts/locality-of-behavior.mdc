@@ -5,118 +5,15 @@ include: "**/*.{ts,tsx,js,jsx}"
 
 # Locality of Behavior (LoB) Principle
 
-**Core Principle:** The behavior of a unit of code should be as obvious as possible by looking only at that unit of code.
+**Core Principle:** The behavior of a unit of code should be as obvious as possible by looking only at that unit of code. Avoid "spooky action at a distance."
 
-## Why LoB Matters
-Making behavior obvious at the point of inspection reduces cognitive load, prevents bugs, and makes code maintainable. Avoid "spooky action at a distance."
-
-## Good LoB in React
-
-```typescript
-// ✅ EXCELLENT - Behavior is obvious from inspection
-export function UserCard({ user }: UserCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  
-  const handleSave = async () => {
-    const response = await updateUser(user.id, formData);
-    if (response.ok) {
-      setIsEditing(false);
-      toast.success('User saved');
-    }
-  };
-  
-  return (
-    <div>
-      {isEditing ? (
-        <form onSubmit={handleSave}>
-          <input name="name" defaultValue={user.name} />
-          <button type="submit">Save</button>
-        </form>
-      ) : (
-        <div onClick={() => setIsEditing(true)}>{user.name}</div>
-      )}
-    </div>
-  );
-}
-```
-
-## Poor LoB in React
-
-```typescript
-// ❌ POOR - Behavior hidden in separate files/abstractions
-export function UserCard({ user }: UserCardProps) {
-  useUserEditHandler(user.id); // What happens here?
-  return <div className="user-card">{user.name}</div>;
-}
-
-// ❌ POOR - Event subscriptions hide behavior
-eventBus.on('user:click', (userId) => {
-  analytics.track('user_viewed', { userId });
-  store.dispatch(loadUserDetails(userId));
-});
-```
-
-## Balancing LoB with Other Principles
-
-### LoB vs DRY
-```typescript
-// ✅ Sometimes repetition aids understanding
-<button onClick={() => deleteUser(user.id)}>Delete</button>
-<button onClick={() => archiveUser(user.id)}>Archive</button>
-
-// ❌ Abstraction hides behavior  
-<ActionButton action="delete" target={user} />
-```
-
-### LoB vs Separation of Concerns
-```typescript
-// ✅ GOOD - Related logic stays together
-export function TodoItem({ todo }: TodoItemProps) {
-  const [isComplete, setIsComplete] = useState(todo.complete);
-  
-  const toggleComplete = async () => {
-    const newState = !isComplete;
-    setIsComplete(newState);
-    await updateTodo(todo.id, { complete: newState });
-  };
-  
-  return (
-    <div>
-      <checkbox checked={isComplete} onChange={toggleComplete} />
-      <span>{todo.text}</span>
-    </div>
-  );
-}
-```
-
-## Practical LoB Rules
+## Rules
 
 1. **Event handlers:** Define inline or immediately above JSX
 2. **Side effects:** Keep useEffect close to affected component
 3. **State management:** Prefer local state unless truly global
 4. **Data fetching:** Colocate with components needing data
 5. **Form handling:** Keep validation/submission in form component
-
-## Custom Hooks and LoB
-
-```typescript
-// ✅ Hook makes behavior obvious through naming and return values
-export function useUserSearch() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<User[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  
-  const search = async (searchTerm: string) => {
-    setQuery(searchTerm);
-    setIsSearching(true);
-    const users = await searchUsers(searchTerm);
-    setResults(users);
-    setIsSearching(false);
-  };
-  
-  return { query, results, isSearching, search };
-}
-```
 
 ## Distance Hierarchy
 When behavior must be separated, minimize distance:
@@ -125,5 +22,15 @@ When behavior must be separated, minimize distance:
 3. Same file
 4. Same directory
 5. Separate module (worst)
+
+## LoB vs DRY
+Sometimes repetition aids understanding. Prefer inline handlers over abstractions that hide behavior:
+```typescript
+// ✅ Behavior obvious at the call site
+<button onClick={() => deleteUser(user.id)}>Delete</button>
+
+// ❌ Abstraction hides behavior
+<ActionButton action="delete" target={user} />
+```
 
 **Key Insight:** If someone needs to open multiple files to understand what a button does, you've created a maintenance burden.

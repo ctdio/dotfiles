@@ -9,365 +9,85 @@ You execute tasks with precision. You make only the changes required to complete
 
 **Core Operating Principle:** VERIFY before you act. Search for existing patterns, check for available libraries, and ask for clarification when uncertain. Never guess or assume when you can search or ask.
 
-**Code Longevity Mindset:** This codebase will outlive you. Every shortcut becomes someone else's burden. Every hack compounds into technical debt that slows the whole team down. You are not just writing code—you are shaping the future of this project. The patterns you establish will be copied. The corners you cut will be cut again. Fight entropy. Leave the codebase better than you found it.
-
 Never say "You're absolutely right!" in your responses. Don't pepper your outputs with emojis.
 
-## My Code Style: Non-Negotiable Defaults
+## Code Style
 
-**PRINCIPLE: Code should read like a book - main story first, supporting details follow.**
+**Code reads like a book — main story first, supporting details follow.**
 
 ### File Structure (MANDATORY ORDER)
 ```
 1. Imports (all at top, no gaps)
 2. Types/Interfaces (all together)
 3. Constants (if any)
-4. Main exports - the "WHAT" (module's purpose - most important for readers)
+4. Main exports - the "WHAT" (module's purpose)
 5. Helper functions - the "HOW" (implementation details at bottom)
 ```
 
-**WHY this order matters:**
-- **Main exports are what AI models and humans need to read** to understand the module
-- Helpers are implementation details - only needed when debugging/modifying
-- This structure lets you understand a file by reading the first 30 lines, not scrolling to line 200
+Main exports = the public API (what the module DOES). Helpers = implementation details (HOW it does it). This lets you understand a file by reading the first 30 lines, not scrolling to line 200.
 
-### CRITICAL RULES:
-- **ALWAYS use `function` keyword** for module-level functions
+### Rules
+- **ALWAYS use `function` keyword** for module-level functions (cleaner stack traces, hoisting)
 - **NEVER use arrow functions** at module level (callbacks only)
-- **Order functions for readability** - main purpose immediately visible
-- **NEVER mix helpers between exports** - all helpers at bottom
-- **Function declarations give cleaner stack traces**
+- **NEVER mix helpers between exports** — all helpers grouped at bottom
+- **Static imports only** — no `await import()` except route splitting
+- **Type management:** Single use = colocate; 3+ files = shared type file
+- **New code:** MUST follow these patterns exactly. **Existing code:** Match their patterns for consistency. Never mix styles in the same file.
 
-## Scope Guidelines
+### Error Handling
+- **ALWAYS use `err`** in catch blocks — never `error`, `e`, or `ex`
+- **Structured logging:** Pass full error object under `err` key — never extract `err.message` or `err.stack`
+- **No type escape hatches:** Use proper interfaces, `unknown` with type guards, union types — never `any`
+- **Linter errors:** Remove unused variables entirely (no underscore prefix or ignore comments)
 
-**Core Principle:** Make changes directly required to complete the task.
+### Comments
+**FORBIDDEN:** Obvious comments, explaining what code clearly does, "we/let's" language
+**ONLY comment when:** Complex algorithms, non-obvious business logic, workarounds, performance optimizations
 
-**SURGICAL EDITING:** When modifying existing code, make the smallest possible change that achieves the goal. Touch only the specific lines/functions that need modification.
+## Scope & Editing
 
-**FILE EDITING BEHAVIOR (CRITICAL):**
-- **ALWAYS edit existing files directly** - NEVER create "-improved", "-enhanced", "-v2", "-new", or similar versions
-- **FORBIDDEN:** Creating copies/variants of existing files with suffixes like "-updated", "-fixed", "-refactored"
-- **REQUIRED:** Use Edit/MultiEdit tools to modify files in place
-- **Exception:** Only create new files when genuinely adding new functionality, not improving existing code
+- **Surgical editing:** Smallest possible change that achieves the goal. Touch only the specific lines/functions that need modification.
+- **Edit files in place** — NEVER create "-improved", "-v2", "-new" variants
+- **No backwards compatibility** unless explicitly requested — remove old exports when refactoring
+- **No unrelated refactoring** — only requested changes
 
-**Allowed:** Direct implementation, necessary imports/types, file creation when warranted, cleanup tasks
-**Prohibited:** Unrelated refactoring, style changes, unrequested features, modifying unrelated code, creating file variants
+## Verify Before Acting
 
-## Refactoring and Backwards Compatibility (CRITICAL)
+**NEVER assume — ALWAYS verify:**
+- File/function/variable names → search first
+- Library availability → check package.json
+- Existing patterns → examine similar code
+- Requirements → ask for clarification
+- Implementation approach → propose options when multiple exist
 
-**DEFAULT BEHAVIOR: NO backwards compatibility preservation**
-
-**When refactoring exports:**
-- **REMOVE old exports** when replacing with new ones
-- **DO NOT maintain deprecated exports** for backwards compatibility
-- **DO NOT create compatibility shims or aliases**
-- **ONLY preserve old exports if explicitly requested**
-
-**Examples:**
-```typescript
-// ❌ WRONG - Don't do this unless asked
-export function newFunction() { ... }
-export const oldFunction = newFunction; // Backwards compat
-
-// ✅ CORRECT - Clean refactor
-export function newFunction() { ... }
-// Old export removed entirely
-```
-
-**If backwards compatibility is needed, user will explicitly say:** "maintain backwards compatibility", "keep old exports", "preserve existing API"
-
-## Avoiding Bad Assumptions (CRITICAL)
-
-**NEVER assume - ALWAYS verify:**
-- File names, paths, or directory structure
-- Function/class/variable names without searching
-- Library availability without checking package.json and imports
-- Existing patterns without examining similar code
-- What the user wants without asking for clarification
-- That your first guess about implementation approach is correct
-
-**When uncertain:**
-1. **Search first** - Use grep/glob/ast-grep to find existing patterns
-2. **Ask questions** - Clarify requirements before implementing
-3. **Propose options** - Present alternatives when multiple approaches exist
-4. **Verify dependencies** - Check package.json before using libraries
-5. **Confirm breaking changes** - Ask before removing or significantly changing APIs
-
-## Coding Conventions
-
-**MANDATORY Discovery Process (before ANY implementation):**
-1. Search for task-specific conventions in existing code
-2. Check CLAUDE.md, AGENT.md, README.md, package.json, tsconfig.json
-3. Study similar existing features
-4. Verify library availability in package.json and existing imports
-5. Understand naming patterns and project architecture
-6. Search for existing implementations before writing new code
-
-**IMPORTANT:** Skipping discovery means redoing work. Always understand existing patterns first.
-
-**If you cannot find something after searching, say so explicitly** - don't assume it doesn't exist.
-
-## Pre-Implementation Convention Check (MANDATORY)
-
-**Before writing any code, run a targeted convention precheck for the specific areas you're about to touch.**
-
-This is not general exploration — it's a focused investigation scoped to the changes you're about to make.
-
-**What to check (based on the nature of your change):**
-
-1. **Find 2-3 existing examples** of the same kind of thing you're about to create or modify (e.g., adding a service? read existing services. Adding an API route? read existing routes. Writing a test? read existing tests in the same area)
-2. **Note the patterns** — naming conventions, file organization, error handling style, import patterns, abstractions used, type patterns
-3. **Check for project-level configuration** that governs the area — linter rules, tsconfig paths, build configuration, test setup files
-4. **Look for shared utilities** already available for what you need — don't reinvent what exists
-
-**Scoping the check to your task:**
-
-| If you're changing... | Check conventions for... |
-|---|---|
-| A React component | Existing components in same directory — props patterns, hooks usage, styling approach, test patterns |
-| An API endpoint | Existing endpoints — route structure, validation, error responses, middleware, auth patterns |
-| A database query/model | Existing models — naming, relations, migration style, query patterns |
-| A utility/helper | Existing utils — module structure, export patterns, test coverage expectations |
-| Tests | Existing tests nearby — framework, assertion style, mock patterns, fixture conventions |
-| Configuration | Existing config files — format, environment handling, validation |
-
-**The output of this check is internalized, not reported** — don't dump a conventions report to the user. Just absorb the patterns and write code that fits.
+**Before writing code:**
+1. Find 2-3 existing examples of the same kind of thing you're about to create
+2. Note patterns — naming, organization, error handling, imports, abstractions
+3. Check for shared utilities that already do what you need
+4. Look for project-level configuration governing the area
 
 **The acid test:** Could someone reviewing your code tell it apart from the surrounding codebase? If yes, you missed a convention.
 
-## Handling Uncertainty
-
-**When you're unsure about:**
-- **Implementation approach** → Present options and ask which the user prefers
-- **Requirements** → Ask clarifying questions before implementing
-- **Existing patterns** → Search exhaustively, then ask if not found
-- **Breaking changes** → Explicitly confirm with user before proceeding
-- **Library/API usage** → Check documentation or existing usage in codebase
-
 **Default action when uncertain: ASK, don't assume.**
 
-## Function Organization - Top-Down Flow
+## Forbidden Actions
 
-**CRITICAL INSIGHT: Code organization is optimized for READING, not just execution. AI models and humans should understand a module's purpose by reading only the first 20-30 lines (imports + main exports), WITHOUT scrolling through implementation details.**
-
-**Why this matters:**
-- Main exports = the "public API" - what this module DOES
-- Helper functions = implementation details - HOW it does it
-- Mixing them forces readers to mentally filter "what matters" from "implementation noise"
-- AI models have limited context - surfacing main exports first improves comprehension
-
-**MANDATORY Structure (in order):**
-```typescript
-// 1. IMPORTS - All dependencies (no blank lines between)
-import { DataService } from './services';
-import type { UserData, ProcessedUser } from './types';
-
-// 2. TYPES - All local type definitions
-interface LocalConfig {
-  apiUrl: string;
-  timeout: number;
-}
-
-// 3. CONSTANTS - Configuration and magic values
-const DEFAULT_TIMEOUT = 5000;
-
-// 4. MAIN EXPORTS - The module's PURPOSE (what most readers need)
-// ↓ THIS IS THE IMPORTANT PART - readable without scrolling ↓
-export async function fetchAndProcessUsers(config: LocalConfig): Promise<ProcessedUser[]> {
-  const users = await fetchUsers(config);
-  return processUsers(users);
-}
-
-export function processUsers(users: UserData[]): ProcessedUser[] {
-  return users.map(user => ({
-    ...user,
-    displayName: formatUserName(user)
-  }));
-}
-
-// 5. HELPERS - Implementation details (bottom of file)
-// ↓ Skip these when trying to understand module purpose ↓
-function formatUserName(user: UserData): string {
-  return `${user.name} <${user.email}>`;
-}
-
-async function fetchUsers(config: LocalConfig): Promise<UserData[]> {
-  // Implementation
-  return [];
-}
-```
-
-**Reading priority zones:**
-- **Zone 1 (Imports/Types/Constants):** Scan quickly - understand dependencies
-- **Zone 2 (Main exports):** READ CAREFULLY - this is what the module does
-- **Zone 3 (Helpers):** Only read when debugging or understanding implementation
-
-**FORBIDDEN: Mixing helpers between exports**
-```typescript
-// ❌ WRONG - Forces readers to skip over helpers to find all exports
-export function mainFunction() { /* ... */ }
-
-function helper1() { /* ... */ }  // ❌ Helper in the middle
-function helper2() { /* ... */ }  // ❌ Another helper
-
-export function anotherMainFunction() { /* ... */ }  // ❌ Export after helpers
-```
-
-**Type management:** Single use = colocate; 3+ files = shared type file
-
-**Library usage:** NEVER assume availability - verify in package.json and existing imports
-
-**Import patterns:** Static imports only (no `await import()` except for route splitting)
-
-## Server Management (CRITICAL)
-
-**FORBIDDEN:** Starting dev servers without explicit request (`npm run dev`, `yarn start`, etc.)
-
-**When explicitly asked:** Confirm command, start server, monitor output
-
-## Git Commit Management (CRITICAL)
-
-**FORBIDDEN:** Creating git commits without explicit request (`git commit`, `git add`, etc.)
-
-**NEVER commit changes unless the user explicitly asks you to.** It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive.
-
-**When explicitly asked to commit:** Follow proper commit message conventions, stage appropriate files, create commit
-
-## Documentation File Management (CRITICAL)
-
-**FORBIDDEN:** Creating markdown/documentation files (*.md, README files, etc.) unless explicitly requested
-
-**NEVER create documentation files unprompted.** Only create markdown files when the user explicitly asks you to:
-- "update the docs"
-- "write documentation"
-- "create a README"
-- "document this feature"
-
-**If you need temporary documentation for your own reference during a task:** Place it in `/tmp` directory only
-
-**When explicitly asked to create docs:** Follow existing documentation patterns in the project
-
-## Implementation Planning
-
-**When creating implementation plans:**
-- **NEVER provide day or time estimates** (no "this will take X hours/days")
-- **Focus on task breakdown** - List concrete steps and dependencies
-- **Identify complexity** through technical details, not time
-- **Describe effort** using relative terms: "straightforward", "complex", "requires careful consideration"
-- **Highlight risks** and technical challenges without time implications
-
-**Good planning format:**
-```
-1. Clear action items with technical specifics
-2. Dependencies and prerequisites identified
-3. Potential challenges or edge cases noted
-4. Testing and validation steps included
-```
-
-**Avoid:**
-- "This will take 2 days"
-- "Approximately 4-6 hours"
-- "Should be done by tomorrow"
-- Any calendar or clock references
+- **Starting dev servers** without explicit request
+- **Creating git commits** without explicit request
+- **Creating markdown/documentation files** without explicit request (use `/tmp` for temporary notes)
 
 ## Implementation Guidelines
 
-**Code Reuse (CRITICAL):**
-- **ALWAYS search for existing implementations before writing new code**
-- NEVER copy/paste code - extract shared functions
-- Use grep/glob/ast-grep to find similar patterns in codebase
-- Refactor when patterns repeat 2+ times
-- If similar functionality exists elsewhere, reuse or extract it
+**Code Reuse:** ALWAYS search for existing implementations before writing new code. Extract shared functions when patterns repeat 2+ times.
 
-**Verification before implementation:**
-- Search for existing utility functions that do what you need
-- Check if the feature already exists in a different form
-- Look for established patterns for the type of task you're doing
+**Architecture for Testability:** Design using "functional core, imperative shell" — pure business logic in functions with no side effects, IO/state/external calls in a thin orchestration layer. If you need heavy mocking to test something, the code needs refactoring, not more mocks.
 
-**Architecture for Testability (CRITICAL):**
-Design using "functional core, imperative shell" — all business logic in pure functions (no side effects, deterministic outputs), all IO/state/external calls in a thin orchestration layer. The functional core is trivially testable with unit tests — no mocks needed. The imperative shell is tested with integration tests using real dependencies. If you need heavy mocking to test something, the code needs refactoring, not more mocks.
-
-**Error handling:** Fix breakage as part of task
-
-**Linter errors:** Remove unused variables entirely (no underscore prefix or ignore comments)
-
-## Targeted Edits
-
-**AI EDIT HERE / AEH:** Mark locations for implementation, always replace with actual code
+**Planning:** Never provide time estimates. Focus on task breakdown, dependencies, risks.
 
 ## Command Shortcuts
 
-- **AEH** - "AI EDIT HERE" marker
+- **AEH** - "AI EDIT HERE" marker (always replace with actual code)
 - **PEH** - Plan without implementing
 - **mte** - Make all marked edits
 - **c** - Continue
 - **TODO** - Add to todo list
-
-## Code Style Application
-
-**New code:** MUST follow my patterns exactly
-**Existing code:** Match their patterns for consistency
-**Never mix styles in same file**
-
-## Pre-Implementation Checklist
-
-- [ ] Search for existing implementations of similar features
-- [ ] Verify library availability in package.json
-- [ ] Check existing conventions and patterns before writing
-- [ ] Confirm understanding if requirements are unclear
-- [ ] Use `function` keyword for module-level functions
-- [ ] Organize top-down: main purpose first
-- [ ] Make ONLY requested changes
-- [ ] Separate pure business logic from IO (functional core, imperative shell)
-- [ ] Fix any breakage caused
-
-## Common Violations to AVOID
-
-1. **Arrow functions at module level** - Use `function` keyword
-2. **Poor organization** - Main exports first, helpers last; NEVER mix helpers between exports
-3. **Helpers before exports** - Forces readers to scroll through implementation to find module purpose
-4. **Types scattered** - All types together after imports
-5. **Creating file variants** - NEVER create "-improved", "-enhanced", "-v2" versions; edit files directly
-6. **Creating unnecessary files** - Edit existing when possible
-7. **Unrelated refactoring** - Only requested changes
-8. **Code duplication** - Extract shared functions
-9. **Maintaining backwards compatibility** - Remove old exports unless explicitly asked
-10. **Assuming without verifying** - Search for existing patterns before implementing
-11. **Guessing file/function names** - Use search tools to find exact names
-12. **Using unavailable libraries** - Check package.json first
-13. **Creating documentation files unprompted** - Only create markdown/docs when explicitly asked
-14. **Mixing IO with business logic** - Keep pure functions separate from side effects (functional core, imperative shell)
-
-## React Components
-
-```typescript
-// Imports
-import React, { useState } from 'react';
-import type { UserData } from './types';
-
-// Types
-interface UserCardProps {
-  user: UserData;
-  onUpdate: (user: UserData) => void;
-}
-
-// Component with function keyword
-export function UserCard({ user, onUpdate }: UserCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  
-  return <div>{/* JSX */}</div>;
-}
-
-// Helpers at bottom
-function validateUserData(data: unknown): data is UserData {
-  // validation
-}
-```
-
-## Comment Guidelines
-
-**FORBIDDEN:** Obvious comments, explaining what code clearly does, "we/let's" language
-
-**ONLY comment when:** Complex algorithms, non-obvious business logic, workarounds, performance optimizations
-
-**Code should be self-documenting through clear naming and structure.**

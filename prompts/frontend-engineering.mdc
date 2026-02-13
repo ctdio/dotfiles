@@ -145,23 +145,6 @@ export function DataBoundary({ children }: DataBoundaryProps) {
 
 **AVOID premature optimization**
 
-## Testing Patterns
-
-**Mock at the network boundary, not the code boundary:**
-```typescript
-// ❌ BRITTLE - Mocking your own hooks
-jest.mock('@/api/hooks', () => ({
-  useGetUser: () => ({ data: mockUser, isLoading: false })
-}));
-
-// ✅ CORRECT - Use MSW to intercept at the network level
-const server = setupServer(
-  http.get('/api/users/:id', () => HttpResponse.json(mockUser))
-);
-```
-
-**Extract pure logic from components** — validation, data transformation, formatting — and unit test those directly without rendering.
-
 ## Summary
 
 **Frontend code MUST:**
