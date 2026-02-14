@@ -26,13 +26,28 @@ Step 3: Read reference files as needed per deliverable
 Step 4: Search for existing patterns
    → Grep/Glob for similar implementations in codebase
 
-Step 5: Set up the environment for real testing
+Step 5: Due diligence — validate assumptions before coding
+   → If the phase integrates with an external binary/process/protocol:
+     1. Check that the binary exists and runs (which <binary>, <binary> --help, <binary> --version)
+     2. Send a minimal probe and capture the ACTUAL response format
+        Example: echo '{"method":"initialize"}' | <binary> 2>/tmp/stderr.log | head -10
+     3. Compare what you get against what the plan says the protocol looks like
+     4. If reality differs from the plan: adapt your implementation to reality, note the deviation
+   → If the phase depends on types/APIs from another part of the codebase:
+     1. Read the actual source — don't trust the plan's description of function signatures
+     2. Verify the types/structs/interfaces actually exist and have the fields the plan assumes
+   → If the phase assumes a library/dependency is available:
+     1. Verify it's installed (check package.json, go.mod, Cargo.toml, build.zig.zon, etc.)
+     2. If not available, install it or find an alternative
+   → Goal: catch plan drift and wrong assumptions BEFORE writing code based on them
+
+Step 6: Set up the environment for real testing
    → If the phase involves database changes: run schema migrations (e.g., prisma db push, drizzle-kit push, knex migrate)
    → If new dependencies are needed: install them (npm install, pip install, etc.)
    → If test fixtures/seeds are needed: set them up
    → Goal: ensure integration tests can run against REAL infrastructure
 
-Step 6: Write FAILING tests first (Red)
+Step 7: Write FAILING tests first (Red)
    → Read testing_strategy to understand what behaviors to assert
    → Write integration tests that describe the EXPECTED behavior of each deliverable
    → Tests should call real entry points (API routes, service methods, components)
@@ -40,13 +55,13 @@ Step 6: Write FAILING tests first (Red)
    → Run tests — they MUST fail (because the implementation doesn't exist yet)
    → If tests pass before you've written implementation code, your tests aren't testing anything
 
-Step 7: Implement to make tests pass (Green)
+Step 8: Implement to make tests pass (Green)
    → Write the minimal implementation to make each failing test pass
    → Follow patterns from reference files exactly
    → Run tests after each deliverable — watch them go from red to green
    → When all tests pass, verify integration wiring (see checklist below)
 
-Step 8: Monitor context consumption
+Step 9: Monitor context consumption
    → After completing tests for a batch of deliverables, check remaining work
    → If significant work remains and you've done many file reads, test runs, or fix iterations: return partial
    → If phase has 8+ files, plan to return partial after ~4-5 files
@@ -170,11 +185,15 @@ Implement every deliverable in your assigned phase. If you've consumed significa
    - Implement 100% of what's specified
    - Handle ALL edge cases mentioned
 
-3. **Discovery Before Coding**
+3. **Due Diligence Before Coding**
+   - Validate plan assumptions against reality — read the actual source, run the actual binary
+   - If integrating with an external process: probe it, capture its real output, verify the plan's protocol description matches
+   - If depending on codebase APIs: read the actual signatures, don't trust the plan's summary
    - Search for existing patterns in the codebase
-   - Check available libraries in package.json
+   - Check available libraries in package.json / build config
    - Study similar implementations for conventions
    - Follow existing patterns exactly
+   - **Plans can be wrong.** When reality contradicts the plan, follow reality and document the deviation.
 
 4. **Progress Tracking**
    - Use TodoWrite to track every deliverable
@@ -382,4 +401,13 @@ You can message the verifier and reviewer directly — you don't need to relay e
 
 ❌ FAILURE: Code exists but nothing imports or calls it (dead code)
    → FIX: Wire the feature to its entry point. Dead code = not done.
+
+❌ FAILURE: Blindly implementing the plan without checking if the protocol/API actually works that way
+   → FIX: Before writing code that talks to an external process, run it and see what it actually does.
+   → Send a minimal request, capture the response, compare against the plan's protocol description.
+   → If the plan says "sends JSON-RPC over stdin" — verify that's actually true before writing 1000 lines of codec.
+
+❌ FAILURE: Trusting plan descriptions of codebase types/functions without reading the source
+   → FIX: Read the actual source files. Plans summarize — summaries can be wrong or stale.
+   → If the plan says "ManagerHandle has a .sendRequest() method", grep for it and confirm.
 ```

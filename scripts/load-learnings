@@ -71,14 +71,23 @@ if [ -n "$output" ]; then
 
 These learnings persist across sessions. Apply them to your work.
 
-**You MUST write new learnings when:**
-- You discover a non-obvious bug or root cause
-- You find a reusable pattern
-- The user corrects your approach or states a preference
-- You waste effort on something prior knowledge would have prevented
-- You realize an assumption was wrong
+**These files are your working memory.** They survive across sessions so you and
+future agents don't repeat discoveries, mistakes, or wasted effort. Treat them
+like a developer's notebook — write to them as you work, not as an afterthought.
 
-**How:** Add a bullet (`- <learning>`) under the right section header in the right file.
+**Write a learning as soon as it happens:**
+- You made a wrong assumption or took a bad approach → log what went wrong and the correct answer
+- You discovered something useful (a pattern, shortcut, or how something works) → note it for next time
+- You discovered a codebase pattern → note it so you don't have to rediscover it
+- The user corrected you or stated a preference → record it before continuing
+- You wasted time on something → log what you wish you'd known
+- You found a useful command, flag, or config detail → jot it down
+
+The cost of writing a one-line learning is near zero. The cost of rediscovering
+something from scratch is high. Bias toward writing.
+
+**How:** Add a bullet (`- <learning>`) under the right section header.
+If the file doesn't exist, create it with section headers (Mistakes, Patterns, Preferences) + `---` separator.
 
 **Where to write:**
 - Global (`~/.ai/learnings/global.md`): Universal — any agent, any project

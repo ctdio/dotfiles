@@ -156,7 +156,39 @@ The plan lists reference files to follow. Read them to understand:
 - Error handling approaches
 - Testing patterns
 
-### Step 3: Set Up Environment
+### Step 3: Due Diligence — Validate Assumptions
+
+**Plans can be wrong.** Before writing code, verify the plan's assumptions against reality.
+
+**For integration/protocol features** (external binaries, APIs, wire formats):
+
+1. Check that the external binary/service exists and runs
+2. Send a minimal probe and capture the **actual** response
+3. Compare the actual format against what the plan describes
+4. If they differ: adapt your implementation to reality, document the deviation
+
+```bash
+# Example: Plan says "codex app-server speaks JSON-RPC over stdin/stdout"
+# VERIFY this before writing a codec:
+which codex && codex --help
+echo '{"id":0,"method":"initialize","params":{}}' | codex app-server 2>/tmp/stderr.log | head -10
+# Now you know the ACTUAL response format
+```
+
+**For codebase dependencies** (types, APIs, function signatures the plan references):
+
+1. Read the actual source files — don't trust the plan's summary of signatures
+2. Verify types/structs/interfaces have the fields the plan assumes
+3. If the plan says "call handle.sendRequest()" — grep for that method and confirm it exists
+
+**For libraries/dependencies:**
+
+1. Verify the dependency is available (check package.json, go.mod, Cargo.toml, build.zig.zon)
+2. If not available, install it or find an alternative
+
+**When reality contradicts the plan:** Follow reality. Document the deviation. The plan was written before implementation — you have ground truth now.
+
+### Step 3.5: Set Up Environment
 
 Before writing tests, ensure the environment supports real integration testing:
 

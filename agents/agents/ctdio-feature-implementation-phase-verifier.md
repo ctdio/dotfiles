@@ -89,8 +89,30 @@ Step 7.5: ⚠️ SYSTEM TRACING (EVEN WITHOUT A VERIFICATION HARNESS)
    → This trace is valuable even when all tests pass — it catches "works in isolation but not in context" bugs.
 
 Step 8: Run technical checks IN ORDER
-   → type-check → lint → build → test
+   → Detect project stack first (build.zig → Zig, go.mod → Go, Cargo.toml → Rust, package.json → JS/TS)
+   → Run appropriate commands:
+      Zig: zig build → zig build test
+      Go: go build ./... → go test ./...
+      Rust: cargo build → cargo test
+      JS/TS: type-check → lint → build → test
    → Capture output from EACH command
+
+Step 8.5: ⚠️ TESTS-EXIST GATE (CRITICAL — catches phantom verification)
+   → Read testing-strategy.md for this phase (from plan directory)
+   → Count how many test scenarios it describes
+   → Grep MODIFIED files for actual test declarations:
+      Zig: 'test "' declarations
+      JS/TS: 'it(' or 'test(' in test files
+      Go: 'func Test' in _test.go files
+      Rust: '#[test]' annotations
+      Python: 'def test_' in test files
+   → Cross-reference: for each described test, does a corresponding test exist?
+   → If testing-strategy describes N tests but 0 exist in code → FAIL
+      "Implementer claims all tests pass, but no feature-specific tests exist.
+       The test suite passes vacuously because no tests were written."
+   → If < 50% of described tests exist → FAIL with specific missing list
+   → This catches the #1 verification blind spot: "all tests pass" being true
+     only because no new tests were added
 
 Step 9: Verify EACH deliverable in code
    → Read actual files, grep for expected functions/classes
@@ -251,6 +273,7 @@ PASS Criteria (ALL must be true):
 - [ ] Lint check: 0 errors (warnings documented if any)
 - [ ] Build: Succeeds without errors
 - [ ] Tests: 100% passing (note exact count: X/X)
+- [ ] TESTS-EXIST: testing-strategy test scenarios have corresponding test declarations in code
 - [ ] EVERY deliverable verified with evidence (file:line)
 - [ ] No high-severity issues found
 - [ ] Spec requirements for this phase are satisfied
@@ -269,6 +292,8 @@ FAIL Criteria (ANY triggers FAIL):
 - [ ] Lint has errors (not just warnings)
 - [ ] Build fails
 - [ ] ANY test fails
+- [ ] TESTS-EXIST: testing-strategy describes tests but no corresponding test declarations found in code
+- [ ] TESTS-EXIST: < 50% of described test scenarios have actual test declarations
 - [ ] ANY deliverable is missing or incomplete
 - [ ] High-severity issue found (security, data corruption, etc.)
 - [ ] INTEGRATION GAP: New code is not imported anywhere (dead code)
@@ -533,6 +558,16 @@ In team mode, you can message the implementer directly to clarify issues instead
 ❌ FAILURE: Tests pass but feature doesn't actually work
    → FIX: Look for integration/e2e tests that exercise the full path
    → FIX: If only unit tests exist and code isn't wired up, FAIL
+
+❌ FAILURE: "All tests pass" but no feature-specific tests were written
+   → FIX: Cross-reference testing-strategy.md against actual test declarations in modified files
+   → FIX: If plan describes 10 test scenarios but 0 test declarations exist → FAIL
+   → FIX: This is the #1 false-PASS pattern: tests pass vacuously because none were written
+   → FIX: The implementer must write the tests described in the plan, not just the code
+
+❌ FAILURE: Using web-stack test commands (npm run test) for a non-JS project
+   → FIX: Detect the stack first (build.zig → zig, go.mod → go, Cargo.toml → cargo)
+   → FIX: Use native test runners: zig build test, go test ./..., cargo test
 ```
 
 ---

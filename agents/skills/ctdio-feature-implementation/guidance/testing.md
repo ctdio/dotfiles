@@ -9,6 +9,28 @@ This guide is for the **phase-tester** agent. Read this for detailed guidance on
 3. **Evidence-Based Results**: Every test result must include specific output, expected vs actual, and actionable fix suggestions.
 4. **Non-Destructive**: You never modify the implementation. You create temporary scripts, run them, and clean up.
 5. **Capability-First**: Detect what you can run BEFORE attempting anything. Don't waste time on doomed tests.
+6. **Stack-Aware**: Adapt to the project's technology. A Zig project needs `zig build test`, not vitest. A Go project needs `go test`, not jest.
+7. **Exploratory When Needed**: When the verification harness describes integration with external processes or protocols, write discovery scripts that actually exercise the integration — don't just verify the code compiles.
+
+---
+
+## Stack Detection (MANDATORY FIRST STEP)
+
+Before any capability checks, detect the project's technology stack:
+
+```
+Check project root for:
+  build.zig         → Zig project (use: zig build, zig build test)
+  Cargo.toml        → Rust project (use: cargo build, cargo test)
+  go.mod            → Go project (use: go build ./..., go test ./...)
+  package.json      → JS/TS project (use: npm/yarn/pnpm commands)
+  pyproject.toml    → Python project (use: pytest, python -m unittest)
+  setup.py          → Python project (legacy)
+  Makefile          → Inspect contents for language hints
+
+Record the stack. ALL subsequent capability checks must use stack-appropriate tools.
+Do NOT look for vitest/jest in a Zig project. Do NOT look for package.json in a Go project.
+```
 
 ---
 
@@ -17,6 +39,8 @@ This guide is for the **phase-tester** agent. Read this for detailed guidance on
 ### Step-by-Step Detection
 
 Run all capability checks before executing any tests. This prevents wasted effort on tests that can't complete.
+
+### For JS/TS projects (package.json exists):
 
 ```
 1. Read package.json from project root
@@ -579,6 +603,141 @@ TesterResult:
     no playwright. Environment does not support custom verification tests.
     This is non-blocking — verifier and reviewer results determine pass/fail.
 ```
+
+---
+
+## Native Test Suite Execution (Non-JS Projects)
+
+For Zig, Go, Rust, and Python projects, run the native test suite instead of looking for vitest/jest.
+
+### Zig Projects
+
+```
+1. Build check: zig build 2>&1
+   → Must succeed. Build failure = FAIL.
+
+2. Test suite: zig build test 2>&1
+   → Runs all tests declared with 'test "..."' blocks
+   → Capture full output including pass/fail counts
+
+3. Feature test audit:
+   → Grep modified .zig files for 'test "' declarations
+   → Count feature-specific tests
+   → If testing-strategy.md describes N tests but modified files contain 0 → FAIL
+```
+
+### Go Projects
+
+```
+1. Build check: go build ./... 2>&1
+2. Test suite: go test ./... -v -count=1 2>&1
+3. Feature test audit: Look for _test.go files alongside modified .go files
+```
+
+### Rust Projects
+
+```
+1. Build check: cargo build 2>&1
+2. Test suite: cargo test 2>&1
+3. Feature test audit: Grep modified .rs files for '#[test]'
+```
+
+### Python Projects
+
+```
+1. Check runner: python -m pytest --version OR python -m unittest
+2. Test suite: python -m pytest -v 2>&1
+3. Feature test audit: Look for test_*.py or *_test.py files alongside modified files
+```
+
+---
+
+## Exploratory Testing (CRITICAL for Protocol/Integration Features)
+
+When the verification harness describes integration with external processes, tools, or protocols, you MUST go beyond compile-and-run. Write discovery scripts that actually exercise the integration.
+
+### When to Do Exploratory Testing
+
+- Feature integrates with an external binary or service (e.g., `codex app-server`, `redis-server`)
+- Feature implements a protocol (JSON-RPC, gRPC, WebSocket, HTTP API)
+- Feature spawns child processes and communicates via stdin/stdout
+- Feature connects to external systems that can be run locally
+
+### How to Do Exploratory Testing
+
+**1. Check if the external dependency is available:**
+
+```bash
+# Example: checking if codex binary exists
+which codex 2>/dev/null && echo "AVAILABLE" || echo "NOT_AVAILABLE"
+```
+
+**2. Write a minimal interaction script:**
+
+```bash
+# Example: test a stdin/stdout protocol
+echo '{"id":0,"method":"initialize","params":{}}' | codex app-server 2>/tmp/stderr.log | head -5
+# Capture the ACTUAL response format
+# Compare against what the codec expects
+```
+
+**3. Verify the implementation handles real responses:**
+
+- Capture real output from the external tool
+- Compare against what the codec/parser expects
+- Flag any mismatches between assumed and actual protocol
+
+**4. Document what you find:**
+
+```yaml
+exploratory_tests:
+  - name: "codex app-server handshake"
+    prerequisite: "codex binary in PATH"
+    available: true | false
+    result: "PASS" | "FAIL" | "SKIPPED"
+    evidence: "Actual response: {...}, expected format: {...}"
+    issues: []
+```
+
+### Graceful Degradation for Exploratory Tests
+
+- External binary not available → SKIPPED (not FAIL)
+- External binary available but requires auth → note in evidence, SKIP the test
+- External binary crashes → FAIL with stderr output as evidence
+- Response format doesn't match implementation assumptions → FAIL with both actual and expected
+
+### Key Insight
+
+The tester is uniquely positioned to catch "works in theory, fails in practice" bugs.
+The implementer may have written a codec based on documentation or type definitions,
+but never actually run it against the real tool. You are the reality check.
+
+If the verification harness describes a live integration test, DO NOT just verify the
+test code exists — actually run it if prerequisites are met. If you can't run it,
+write a simpler version that tests the same integration point.
+
+---
+
+## Tests-Exist Gate
+
+Before running any tests, cross-reference the testing-strategy.md against actual test declarations:
+
+```
+1. Read testing-strategy.md for this phase
+2. Count described test scenarios
+3. Grep modified files for test declarations:
+   - Zig: 'test "' in .zig files
+   - JS/TS: 'it(' or 'test(' in test files
+   - Go: 'func Test' in _test.go files
+   - Rust: '#[test]' in .rs files
+   - Python: 'def test_' in test files
+4. Calculate coverage ratio: declarations_found / scenarios_described
+5. If ratio < 0.5 or declarations_found == 0 → FAIL
+   "Testing strategy describes N test scenarios but only M were implemented"
+```
+
+This gate catches the single most common failure mode: code that compiles and "all tests pass"
+because no tests were actually written for the new feature.
 
 ---
 

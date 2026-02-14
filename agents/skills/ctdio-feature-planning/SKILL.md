@@ -65,6 +65,26 @@ Each `phase-NN-{name}/` directory **MUST** contain exactly these three files:
 
 **Note:** `verification-harness.md` triggers a tester agent during implementation. If this file does not exist for a phase, no tester is spawned. This is fully backward compatible — don't create it unless the phase truly benefits from custom behavioral verification beyond standard tests.
 
+### VERIFICATION APPROACH CLASSIFICATION (MANDATORY)
+
+Before writing verification harnesses, classify the project's technology stack and choose verification strategies that actually apply. Writing a web-oriented verification harness for a Zig project wastes the tester agent's time.
+
+| Project Stack   | Build Check      | Test Runner      | Eval Scripts        | API Smoke              | Browser    | Exploratory                  |
+| --------------- | ---------------- | ---------------- | ------------------- | ---------------------- | ---------- | ---------------------------- |
+| **Zig**         | `zig build`      | `zig build test` | Bash scripts        | N/A unless HTTP server | N/A        | External binary interaction  |
+| **Go**          | `go build ./...` | `go test ./...`  | Go test files       | curl-based             | N/A        | External process interaction |
+| **Rust**        | `cargo build`    | `cargo test`     | Rust test files     | curl-based             | N/A        | External process interaction |
+| **JS/TS (web)** | `npm run build`  | vitest/jest      | vitest/jest scripts | curl-based             | Playwright | Dev server interaction       |
+| **Python**      | N/A              | pytest           | Python scripts      | curl-based             | N/A        | External service interaction |
+
+**Exploratory testing** is for features that integrate with external processes, protocols, or services. The tester should write scripts that actually exercise the integration — not just verify the code compiles. Examples:
+
+- Spawning an external binary and sending it real protocol messages
+- Connecting to a real database and verifying schema changes
+- Starting a service and hitting its actual endpoints
+
+When writing `verification-harness.md`, use the stack-appropriate runner and patterns. Do NOT default to vitest/jest/Playwright for all projects.
+
 ### FILE NAMING RULES
 
 - Phase directories: `phase-{NN}-{kebab-case-name}` (e.g., `phase-01-foundation`)
@@ -941,6 +961,8 @@ This file is **optional**. Only create it for phases that benefit from custom be
 - Standard unit/integration tests already cover the behavior adequately
 - The phase is purely foundational (types, configs, schemas)
 
+**IMPORTANT:** Adapt this template to the project's technology stack. The sections below show multiple stack variants — use the one that matches your project. Do NOT include vitest/jest/Playwright sections for a Zig or Go project.
+
 ````markdown
 # Phase [N]: Verification Harness
 
@@ -948,7 +970,13 @@ This file is **optional**. Only create it for phases that benefit from custom be
 > AFTER implementation, concurrently with verifier and reviewer.
 > If this file does not exist, no tester is spawned.
 
-## Dev Server Configuration (optional overrides)
+## Project Stack
+
+**Stack**: [zig | go | rust | js | python]
+**Build Command**: [`zig build` | `go build ./...` | `cargo build` | `npm run build`]
+**Test Command**: [`zig build test` | `go test ./...` | `cargo test` | `npm test`]
+
+## Dev Server Configuration (optional — web projects or projects with a server component)
 
 - **Port**: [3000]
 - **Start Command**: [`npm run dev`]
@@ -956,6 +984,8 @@ This file is **optional**. Only create it for phases that benefit from custom be
 - **Startup Timeout**: [30 seconds]
 
 ## Eval Scripts
+
+### For JS/TS projects:
 
 ### Eval: [Name]
 
@@ -965,23 +995,71 @@ This file is **optional**. Only create it for phases that benefit from custom be
 
 ```typescript
 // Tester creates the actual script based on this outline
-// Import from actual implementation paths
 import { SearchService } from "../../src/services/search";
-
-// Test the behavior
 const service = new SearchService(config);
 const results = await service.search("test query");
-
-// Assert expected outcome
 expect(results).toHaveLength(/* expected count */);
-expect(results[0]).toHaveProperty("title");
+```
+
+### For Zig/Go/Rust projects:
+
+### Eval: [Name]
+
+**Runner**: zig test | bash
+**Purpose**: [What this verifies beyond standard tests]
+**Script Outline**:
+
+```zig
+// or bash, or go, or rust — match the project stack
+test "feature X roundtrip" {
+    // Exercise the actual implementation
+    const result = try myModule.doThing(input);
+    try testing.expectEqual(expected, result);
+}
 ```
 
 **Expected Outcome**: [What passing looks like]
 
 ---
 
-## API Smoke Tests
+## Exploratory / Integration Tests
+
+> For features that integrate with external processes, protocols, or services.
+> The tester should actually exercise the integration, not just verify compilation.
+
+### Explore: [Name]
+
+**Prerequisite**: [What must be available — e.g., "codex binary in PATH", "redis-server running"]
+**Purpose**: [What real-world behavior this validates]
+**Script**:
+
+```bash
+#!/bin/bash
+# Example: verify the implementation handles real protocol responses
+# Check prerequisite
+which codex >/dev/null 2>&1 || { echo "SKIP: codex not in PATH"; exit 0; }
+
+# Exercise the real integration
+echo '{"id":0,"method":"initialize","params":{"clientInfo":{"name":"test","version":"0.1.0"}}}' \
+  | codex app-server 2>/tmp/stderr.log \
+  | head -1 > /tmp/response.json
+
+# Verify the response format matches what the codec expects
+python3 -c "
+import json, sys
+resp = json.load(open('/tmp/response.json'))
+assert 'id' in resp, 'Missing id in response'
+assert 'result' in resp, 'Missing result in response'
+print('PASS: Handshake response has expected structure')
+"
+```
+
+**Expected Outcome**: [What the real tool actually returns and what the implementation should handle]
+**Graceful Degradation**: [SKIP if prerequisite not met, FAIL if prerequisite met but test fails]
+
+---
+
+## API Smoke Tests (web projects or projects with HTTP endpoints)
 
 ### Smoke: [Endpoint Name]
 
@@ -1005,7 +1083,7 @@ expect(results[0]).toHaveProperty("title");
 
 ---
 
-## Browser Tests
+## Browser Tests (web projects only)
 
 ### Browser: [Test Name]
 
@@ -1029,6 +1107,7 @@ expect(results[0]).toHaveProperty("title");
 
 Capabilities unavailable in the environment are SKIPPED, not failed.
 The tester reports which capabilities ran and which were skipped.
+External dependencies (binaries, services) not available → SKIP, not FAIL.
 ````
 
 ## Usage Instructions
@@ -1115,9 +1194,9 @@ Cover these categories in your initial questions:
 - **Integration Points**: What existing features does this touch? External APIs?
 - **Success Criteria**: How will we know this is working?
 
-### Phase B: Codebase Exploration (USE Task TOOL WITH Explore AGENT)
+### Phase B: Codebase Exploration & Due Diligence (USE Task TOOL WITH Explore AGENT)
 
-**MANDATORY: After Round 1 answers, explore the codebase BEFORE asking more questions.**
+**MANDATORY: After Round 1 answers, explore the codebase AND validate assumptions BEFORE asking more questions.**
 
 You are making assumptions about the codebase based on the user's description. Those assumptions are likely incomplete or wrong. Before you can ask sharp follow-up questions, you need ground truth.
 
@@ -1130,12 +1209,43 @@ You are making assumptions about the codebase based on the user's description. T
 5. **Entry points** — What API routes, pages, or CLI commands exist near this feature area?
 6. **Dev server / build setup** — What scripts exist in package.json? What's the dev workflow?
 
+**Due Diligence for External Integrations (CRITICAL):**
+
+If the feature integrates with an external binary, process, protocol, or service, you MUST validate your assumptions about how it works **during planning, not during implementation**.
+
+1. **Probe the external system:**
+
+   ```bash
+   # Does the binary exist? What does it accept?
+   which codex && codex --help
+
+   # What does it actually respond with?
+   echo '{"id":0,"method":"initialize","params":{}}' | codex app-server 2>/tmp/stderr.log | head -10
+
+   # What's the actual wire format?
+   codex app-server < /dev/null 2>/tmp/stderr.log | xxd | head -20
+   ```
+
+2. **Capture actual behavior, not just documentation:**
+   - What is the exact response format? (JSON? newline-delimited? length-prefixed?)
+   - What fields does the response contain?
+   - What happens on invalid input?
+   - What error codes/messages does it produce?
+
+3. **Document findings in technical-details.md:**
+   - Include actual captured responses, not paraphrased descriptions
+   - Note any discrepancies between documentation and actual behavior
+   - Record the exact binary version tested
+
+**Why this matters:** The codex-app-server feature failed because the plan described a protocol based on reading TypeScript source, but nobody probed the actual binary to verify it behaved that way. Two full implementation runs were scrapped. A 5-minute experiment during planning would have caught this.
+
 **What exploration gives you:**
 
 - Real file paths and function names instead of guesses
 - Understanding of which phases will have API endpoints, UI pages, or complex behavior
 - Knowledge of existing patterns the feature should follow
 - Concrete examples to reference in follow-up questions
+- **Validated protocol/integration assumptions** based on actual probing, not documentation
 
 **Do NOT skip this phase.** A plan built on assumptions about the codebase is a plan that will fail during implementation.
 

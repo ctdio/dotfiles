@@ -303,6 +303,8 @@ flowchart TD
     - Are there suspicious deviations? "Added retry logic" is fine. "Skipped the entire API layer" is a red flag.
     - Does the implementation actually connect to the system? Trace the feature flow in your head: user action → entry point → new code → result. If you can't trace it, the implementer may have created dead code.
     - Are there planned files that weren't touched and weren't explained in `planned_files_skipped`?
+    - **Tests-exist check**: Does `tests_written` list actual test files and names? If the field is empty or says "all existing tests pass" without listing NEW tests, the implementer likely skipped writing tests. Send it back.
+    - **Self-reported claims need corroboration**: If the implementer claims "live integration test confirmed X works," check whether a test file actually exists that does this. Uncorroborated claims about runtime behavior should be flagged.
 
     **If something looks wrong:** Don't send it to the verifier. Send it back to the implementer with specific questions. "You said you completed the API endpoint, but I don't see `routes.ts` in your modified files. Did you wire it up?"
 
@@ -327,7 +329,18 @@ flowchart TD
 
 17. **Advance**: If more phases, go to step 9 for next phase (fresh implementer will be spawned). If all phases complete, continue to step 17.
 
-18. **Complete**:
+18. **Post-completion smoke test** (YOU DO THIS — not an agent):
+
+    Before declaring complete, run a final sanity check yourself:
+    1. **Build**: Run the project's build command (`zig build`, `npm run build`, `go build ./...`, `cargo build`)
+    2. **Tests**: Run the full test suite (`zig build test`, `npm test`, `go test ./...`, `cargo test`)
+    3. **Regression check**: Verify no pre-existing tests broke (compare test count before vs after)
+    4. If either fails → do NOT declare complete. Fix or document the issue.
+
+    This catches cases where individual phases passed but the combined result has conflicts,
+    or where the verifier's environment differed from the final state.
+
+19. **Complete**:
     - **[Team]** Send shutdown_request to each teammate, then TeamDelete
     - Output `<promise>FEATURE_COMPLETE</promise>`
 
@@ -1507,6 +1520,16 @@ The orchestrator writes and maintains this file **directly** — no state-manage
 
 **Last Updated**: {DATE}
 **Status**: in_progress | completed
+**Run**: 1 (increment if restarting from scratch)
+
+## Previous Runs (if any)
+
+### Run 1 — ABANDONED {DATE}
+
+- **Reason**: {Why was the previous run scrapped?}
+- **Phases completed**: 3/5
+- **Key failures**: {What went wrong — build failures, wrong protocol types, etc.}
+- **Lessons**: {What should be done differently this time}
 
 ## Phase 1: {Name} — COMPLETED
 
@@ -1515,6 +1538,7 @@ The orchestrator writes and maintains this file **directly** — no state-manage
 - **Attempts**: 1
 - **Key Files**: src/services/turbopuffer.ts, src/services/**tests**/turbopuffer.test.ts
 - **Gotchas**: Added retry logic not in plan (API timeouts)
+- **Tests written**: 4 unit tests, 1 integration test (in src/services/**tests**/turbopuffer.test.ts)
 
 ## Phase 2: {Name} — IN PROGRESS
 
@@ -1526,6 +1550,10 @@ The orchestrator writes and maintains this file **directly** — no state-manage
 ```
 
 This is ~10-15 lines per phase. TaskList has the structured detail; this file is the human-readable summary.
+
+**CRITICAL: Track test counts.** When recording phase completion, note how many tests were written and where. This provides a quick sanity check — if a phase has 0 tests written, something is wrong.
+
+**CRITICAL: Track previous runs.** If the feature was attempted before and scrapped, document what failed and why. This prevents the next run from making the same mistakes.
 
 ---
 

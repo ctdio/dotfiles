@@ -103,25 +103,65 @@ coverage: "3/4 modified, 1 justified skip"
 - **Justified skip** (reason makes sense) → plans evolve, this is fine
 - **"Files to Modify"** items are most commonly forgotten — pay attention to these
 
-### Step 1: Run Technical Checks
+### Step 1: Detect Project Stack
 
-Run the standard verification commands in order:
+Before running technical checks, determine the project's technology stack:
 
-```bash
-# 1. Type checking (catch type errors)
-npm run type-check  # or tsc --noEmit, etc.
-
-# 2. Linting (catch style/quality issues)
-npm run lint
-
-# 3. Build (ensure it compiles)
-npm run build
-
-# 4. Tests (ensure functionality works)
-npm run test
+```
+Detection rules (check in order):
+  build.zig           → Zig     (build: zig build, test: zig build test)
+  go.mod              → Go      (build: go build ./..., test: go test ./...)
+  Cargo.toml          → Rust    (build: cargo build, test: cargo test)
+  package.json        → JS/TS   (build: npm run build, test: npm run test)
+  pyproject.toml      → Python  (test: pytest)
+  requirements.txt    → Python  (test: pytest)
 ```
 
-**Capture the output** of each command for your result.
+### Step 1.5: Run Technical Checks
+
+Run the verification commands appropriate for the detected stack:
+
+**Zig projects:**
+
+```bash
+zig build              # Build
+zig build test         # Run tests
+```
+
+**Go projects:**
+
+```bash
+go build ./...         # Build
+go vet ./...           # Lint/static analysis
+go test ./...          # Run tests
+```
+
+**Rust projects:**
+
+```bash
+cargo build            # Build
+cargo clippy           # Lint
+cargo test             # Run tests
+```
+
+**JS/TS projects:**
+
+```bash
+npm run type-check     # Type checking (or tsc --noEmit)
+npm run lint           # Linting
+npm run build          # Build
+npm run test           # Tests
+```
+
+**Python projects:**
+
+```bash
+python -m py_compile <files>   # Syntax check
+ruff check . || flake8         # Lint (if available)
+pytest                         # Tests
+```
+
+**Capture the output** of each command for your result. Do NOT skip commands because the stack is unfamiliar — run whatever build/test commands exist for the project.
 
 ### Step 2: Verify Deliverables
 
@@ -191,6 +231,41 @@ Feature flow: Manual activity creation
 - Or you're missing context → DM the implementer [Team mode] / flag in your result
 - Include what you CAN trace and where the chain breaks
 
+### Step 4.75: Exploratory Verification (For Integration/Protocol Features)
+
+**When the feature integrates with an external process, protocol, or binary, you MUST verify the integration actually works — not just that the code compiles.**
+
+This applies when the feature:
+
+- Communicates with an external binary (stdin/stdout, sockets, HTTP)
+- Implements a protocol (JSON-RPC, LSP, custom wire format)
+- Wraps a CLI tool or external service
+
+**How to verify:**
+
+1. **Check if the external binary/service exists and runs:**
+
+   ```bash
+   which codex          # Does the binary exist?
+   codex --version      # Does it respond?
+   codex --help         # What commands/flags does it accept?
+   ```
+
+2. **Send a minimal probe and capture the actual response:**
+
+   ```bash
+   echo '{"id":0,"method":"initialize","params":{}}' | codex app-server 2>/tmp/stderr.log | head -5
+   ```
+
+3. **Compare the actual response against what the codec/parser expects:**
+   - Does the response format match the types defined in the code?
+   - Are there fields the code doesn't handle?
+   - Is the framing correct (newline-delimited, length-prefixed, etc.)?
+
+4. **If the integration doesn't work, this is a HIGH-severity FAIL** — not a "nice to have" check. The feature's core purpose is this integration.
+
+**If the external binary isn't available in the test environment**, document this as a blocker but do NOT mark the feature as PASS. A feature that can't be tested against its target is unverified.
+
 ### Step 5: Review Code Quality
 
 Check for common issues:
@@ -206,45 +281,7 @@ Check for common issues:
 
 ## Technical Checks Detail
 
-### Type Check
-
-**What to look for:**
-
-- No type errors
-- No implicit `any` types (if strict mode)
-- Proper type exports
-
-**Pass criteria:**
-
-```
-0 errors
-```
-
-**Failure example:**
-
-```
-src/services/example.ts:45:3 - error TS2322: Type 'string' is not assignable to type 'number'.
-```
-
-### Lint Check
-
-**What to look for:**
-
-- No lint errors
-- No warnings (or only acceptable ones)
-- Consistent code style
-
-**Pass criteria:**
-
-```
-No lint errors or warnings
-```
-
-**Failure example:**
-
-```
-src/services/example.ts:12:5 - 'unused' is defined but never used
-```
+Technical check commands depend on the project stack (detected in Step 1). Below are stack-specific examples.
 
 ### Build Check
 
@@ -252,13 +289,28 @@ src/services/example.ts:12:5 - 'unused' is defined but never used
 
 - Build completes successfully
 - No compilation errors
-- Output files generated
 
-**Pass criteria:**
+**Pass criteria by stack:**
 
-```
-Build completed successfully
-```
+| Stack  | Command                | Pass Output             |
+| ------ | ---------------------- | ----------------------- |
+| Zig    | `zig build`            | No errors (exit 0)      |
+| Go     | `go build ./...`       | No errors (exit 0)      |
+| Rust   | `cargo build`          | `Compiling... Finished` |
+| JS/TS  | `npm run build`        | Build completed         |
+| Python | `python -m py_compile` | No errors               |
+
+### Lint / Static Analysis Check
+
+**Not all stacks have a separate lint step.** Run what's available:
+
+| Stack  | Command                    | Notes                            |
+| ------ | -------------------------- | -------------------------------- |
+| Zig    | (included in build)        | Zig compiler catches most issues |
+| Go     | `go vet ./...`             | Static analysis                  |
+| Rust   | `cargo clippy`             | If installed                     |
+| JS/TS  | `npm run lint`             | ESLint or similar                |
+| Python | `ruff check .` or `flake8` | If configured                    |
 
 ### Test Check
 
@@ -266,23 +318,19 @@ Build completed successfully
 
 - All tests pass
 - No skipped tests (unless intentional)
-- Adequate coverage (if metrics available)
+- Test runner exits with 0
 
-**Pass criteria:**
+**Commands by stack:**
 
-```
-All tests passed: 142/142
-Coverage: 85% (if applicable)
-```
+| Stack  | Command          |
+| ------ | ---------------- |
+| Zig    | `zig build test` |
+| Go     | `go test ./...`  |
+| Rust   | `cargo test`     |
+| JS/TS  | `npm run test`   |
+| Python | `pytest`         |
 
-**Failure example:**
-
-```
-FAIL src/__tests__/example.test.ts
-  ✗ should handle error case (15ms)
-    Expected: "error message"
-    Received: undefined
-```
+**CRITICAL:** If the test command exits 0 but produces no test output (0 tests run), this is NOT a pass. It means no tests exist — flag this as a tests-exist gate failure.
 
 ---
 
